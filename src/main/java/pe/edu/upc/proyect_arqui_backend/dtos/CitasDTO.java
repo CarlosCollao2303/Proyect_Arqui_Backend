@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 public class CitasDTO {
     private int idCita;
 
-    @NotNull(message = "El id del paciente es obligatorio")
+    // Sin @NotNull: si quien registra es PACIENTE se ignora y se usa su propio id.
+    // CitasController lo exige a mano para ADMIN y MEDICO.
     private Integer idPaciente;
 
     @NotNull(message = "El id del medico es obligatorio")

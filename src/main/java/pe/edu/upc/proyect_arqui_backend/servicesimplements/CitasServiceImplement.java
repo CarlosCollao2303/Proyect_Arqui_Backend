@@ -41,4 +41,9 @@ public class CitasServiceImplement implements ICitasService {
     public Optional<Citas> listId(int id) {
         return cR.findById(id);
     }
+
+    @Override
+    public List<Citas> listByParticipanteCorreo(String correo) {
+        return cR.findByParticipanteCorreo(correo);
+    }
 }

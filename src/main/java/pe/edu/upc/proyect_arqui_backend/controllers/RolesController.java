@@ -6,6 +6,7 @@ import pe.edu.upc.proyect_arqui_backend.entities.Roles;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRolesService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@PreAuthorize("hasAuthority('ADMIN')")
 @RequestMapping("/roles")
 public class RolesController {
 
@@ -23,6 +25,7 @@ public class RolesController {
         this.rS = rS;
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/Listar")
     public ResponseEntity<List<RolesDTO>> listar() {
         List<RolesDTO> lista = rS.list()
@@ -33,6 +36,7 @@ public class RolesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<RolesDTO> listarPorId(@PathVariable int id) {
         Roles rol = rS.listId(id)
