@@ -18,6 +18,21 @@ public class RolesServiceImplement implements IRolesService {
     }
 
     @Override
+    public void insert(Roles r) {
+        rR.save(r);
+    }
+
+    @Override
+    public void delete(int id) {
+        rR.deleteById(id);
+    }
+
+    @Override
+    public void update(Roles r) {
+        rR.save(r);
+    }
+
+    @Override
     public List<Roles> list() {
         return rR.findAll();
     }
