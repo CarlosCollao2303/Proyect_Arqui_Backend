@@ -26,6 +26,22 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(
+            BadRequestException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(
             MethodArgumentNotValidException ex,
@@ -56,8 +72,8 @@ public class GlobalExceptionHandler {
 
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
-                "La operacion viola una restriccion de la base de datos. " +
-                        "Verifique que el registro no este siendo usado por otro y que no duplique un valor unico.",
+                "La operacion viola una restriccion de la base de datos: puede faltar un campo " +
+                        "obligatorio, duplicarse un valor unico, o el registro estar siendo usado por otro.",
                 request.getRequestURI()
         );
 

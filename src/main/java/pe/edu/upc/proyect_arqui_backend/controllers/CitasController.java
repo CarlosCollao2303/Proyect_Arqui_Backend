@@ -37,6 +37,18 @@ public class CitasController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<CitasDTO> listarPorId(@PathVariable int id) {
+        Citas cita = cS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una cita con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(cita));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<CitasDTO> registrar(@Valid @RequestBody CitasDTO dto) {
         Usuarios paciente = uS.listId(dto.getIdPaciente())

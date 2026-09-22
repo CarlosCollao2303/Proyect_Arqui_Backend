@@ -33,6 +33,18 @@ public class RolesController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<RolesDTO> listarPorId(@PathVariable int id) {
+        Roles rol = rS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe un rol con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(rol));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<RolesDTO> registrar(@Valid @RequestBody RolesDTO dto) {
         Roles rol = new Roles();

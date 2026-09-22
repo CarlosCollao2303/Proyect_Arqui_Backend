@@ -33,6 +33,18 @@ public class EspecialidadesController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<EspecialidadesDTO> listarPorId(@PathVariable int id) {
+        Especialidades especialidad = eS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una especialidad con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(especialidad));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<EspecialidadesDTO> registrar(@Valid @RequestBody EspecialidadesDTO dto) {
         Especialidades especialidad = new Especialidades();

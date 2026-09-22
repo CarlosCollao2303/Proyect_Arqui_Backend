@@ -41,6 +41,18 @@ public class DetalleHistorialController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<DetalleHistorialDTO> listarPorId(@PathVariable int id) {
+        DetalleHistorial detalle = dhS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe un detalle de historial con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(detalle));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<DetalleHistorialDTO> registrar(@Valid @RequestBody DetalleHistorialDTO dto) {
         HistoriasClinicas historiaClinica = hS.listId(dto.getIdHistoriaClinica())

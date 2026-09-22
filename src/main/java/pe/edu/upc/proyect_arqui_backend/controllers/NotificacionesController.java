@@ -37,6 +37,18 @@ public class NotificacionesController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<NotificacionesDTO> listarPorId(@PathVariable int id) {
+        Notificaciones notificacion = nS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una notificacion con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(notificacion));
+    }
+
     @PostMapping
     public ResponseEntity<NotificacionesDTO> registrar(@Valid @RequestBody NotificacionesDTO dto) {
         Usuarios usuario = uS.listId(dto.getIdUsuario())

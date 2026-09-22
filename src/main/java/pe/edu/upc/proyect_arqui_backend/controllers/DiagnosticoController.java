@@ -37,6 +37,18 @@ public class DiagnosticoController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<DiagnosticoDTO> listarPorId(@PathVariable int id) {
+        Diagnostico diagnostico = dS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe un diagnostico con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(diagnostico));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<DiagnosticoDTO> registrar(@Valid @RequestBody DiagnosticoDTO dto) {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());

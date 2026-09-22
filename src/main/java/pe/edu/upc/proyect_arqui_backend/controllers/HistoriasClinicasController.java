@@ -37,6 +37,18 @@ public class HistoriasClinicasController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<HistoriasClinicasDTO> listarPorId(@PathVariable int id) {
+        HistoriasClinicas historiaClinica = hS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una historia clinica con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(historiaClinica));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<HistoriasClinicasDTO> registrar(@Valid @RequestBody HistoriasClinicasDTO dto) {
         Usuarios paciente = uS.listId(dto.getIdPaciente())

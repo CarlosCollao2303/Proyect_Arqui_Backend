@@ -37,6 +37,18 @@ public class ExamenesController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<ExamenesDTO> listarPorId(@PathVariable int id) {
+        Examenes examen = eS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe un examen con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(examen));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<ExamenesDTO> registrar(@Valid @RequestBody ExamenesDTO dto) {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());

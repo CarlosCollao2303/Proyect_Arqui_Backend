@@ -37,6 +37,18 @@ public class RecetasController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<RecetasDTO> listarPorId(@PathVariable int id) {
+        Recetas receta = rS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una receta con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(receta));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<RecetasDTO> registrar(@Valid @RequestBody RecetasDTO dto) {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());

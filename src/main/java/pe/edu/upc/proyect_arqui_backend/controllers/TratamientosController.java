@@ -37,6 +37,18 @@ public class TratamientosController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<TratamientosDTO> listarPorId(@PathVariable int id) {
+        Tratamientos tratamiento = tS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe un tratamiento con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(tratamiento));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<TratamientosDTO> registrar(@Valid @RequestBody TratamientosDTO dto) {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
