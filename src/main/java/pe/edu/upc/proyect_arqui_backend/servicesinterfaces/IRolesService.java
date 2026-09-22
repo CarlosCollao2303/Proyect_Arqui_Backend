@@ -11,4 +11,5 @@ public interface IRolesService {
     public void update(Roles r);
     public List<Roles> list();
     public Optional<Roles> listId(int id);
+    public Optional<Roles> listByNombre(String nombre);
 }

@@ -41,4 +41,9 @@ public class RolesServiceImplement implements IRolesService {
     public Optional<Roles> listId(int id) {
         return rR.findById(id);
     }
+
+    @Override
+    public Optional<Roles> listByNombre(String nombre) {
+        return rR.findByNombre(nombre);
+    }
 }

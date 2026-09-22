@@ -8,6 +8,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDiagnosticoService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@PreAuthorize("hasAnyAuthority('ADMIN','MEDICO')")
 @RequestMapping("/diagnosticos")
 public class DiagnosticoController {
 
@@ -99,6 +101,7 @@ public class DiagnosticoController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Diagnostico diagnostico = dS.listId(id)

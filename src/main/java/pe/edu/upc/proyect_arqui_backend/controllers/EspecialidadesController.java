@@ -6,6 +6,7 @@ import pe.edu.upc.proyect_arqui_backend.entities.Especialidades;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IEspecialidadesService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@PreAuthorize("hasAuthority('ADMIN')")
 @RequestMapping("/especialidades")
 public class EspecialidadesController {
 
@@ -23,6 +25,7 @@ public class EspecialidadesController {
         this.eS = eS;
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/Listar")
     public ResponseEntity<List<EspecialidadesDTO>> listar() {
         List<EspecialidadesDTO> lista = eS.list()
@@ -33,6 +36,7 @@ public class EspecialidadesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<EspecialidadesDTO> listarPorId(@PathVariable int id) {
         Especialidades especialidad = eS.listId(id)

@@ -41,4 +41,9 @@ public class UsuariosServiceImplement implements IUsuariosService {
     public Optional<Usuarios> listId(int id) {
         return uR.findById(id);
     }
+
+    @Override
+    public Optional<Usuarios> listByCorreo(String correo) {
+        return uR.findByCorreo(correo);
+    }
 }

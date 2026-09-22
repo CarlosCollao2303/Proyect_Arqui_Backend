@@ -11,4 +11,5 @@ public interface ICitasService {
     public void update(Citas c);
     public List<Citas> list();
     public Optional<Citas> listId(int id);
+    public List<Citas> listByParticipanteCorreo(String correo);
 }

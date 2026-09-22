@@ -3,12 +3,12 @@ package pe.edu.upc.proyect_arqui_backend.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public class UsuariosDTO {
     private int idUsuario;
 
-    @NotNull(message = "El id del rol es obligatorio")
+    // Sin @NotNull: en el registro publico se ignora y se asigna PACIENTE.
+    // UsuariosController lo exige a mano cuando quien llama es ADMIN.
     private Integer idRol;
 
     // Nullable: los pacientes no tienen especialidad, solo los medicos

@@ -11,4 +11,5 @@ public interface IUsuariosService {
     public void update(Usuarios u);
     public List<Usuarios> list();
     public Optional<Usuarios> listId(int id);
+    public Optional<Usuarios> listByCorreo(String correo);
 }
