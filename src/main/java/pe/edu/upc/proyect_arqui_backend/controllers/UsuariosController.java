@@ -1,14 +1,17 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
+import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.UsuariosDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Especialidades;
 import pe.edu.upc.proyect_arqui_backend.entities.Roles;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IEspecialidadesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRolesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -23,11 +26,14 @@ public class UsuariosController {
     private final IUsuariosService uS;
     private final IRolesService rS;
     private final IEspecialidadesService eS;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuariosController(IUsuariosService uS, IRolesService rS, IEspecialidadesService eS) {
+    public UsuariosController(IUsuariosService uS, IRolesService rS, IEspecialidadesService eS,
+                              PasswordEncoder passwordEncoder) {
         this.uS = uS;
         this.rS = rS;
         this.eS = eS;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/Listar")
@@ -40,8 +46,26 @@ public class UsuariosController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<UsuariosDTO> listarPorId(@PathVariable int id) {
+        Usuarios usuario = uS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe un usuario con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(usuario));
+    }
+
     @PostMapping("/Registrar")
-    public ResponseEntity<UsuariosDTO> registrar(@RequestBody UsuariosDTO dto) {
+    public ResponseEntity<UsuariosDTO> registrar(@Valid @RequestBody UsuariosDTO dto) {
+        // La contrasena no lleva @NotBlank en el DTO (el PUT puede omitirla),
+        // asi que al registrar se exige aqui para no llamar a encode(null).
+        if (dto.getContrasenaHash() == null || dto.getContrasenaHash().isBlank()) {
+            throw new BadRequestException("La contrasena es obligatoria para registrar un usuario");
+        }
+
         Roles rol = rS.listId(dto.getIdRol())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -59,7 +83,7 @@ public class UsuariosController {
         usuario.setDni(dto.getDni());
         usuario.setTelefono(dto.getTelefono());
         usuario.setCorreo(dto.getCorreo());
-        usuario.setContrasenaHash(dto.getContrasenaHash());
+        usuario.setContrasenaHash(passwordEncoder.encode(dto.getContrasenaHash()));
         usuario.setColegiatura(dto.getColegiatura());
         usuario.setRegionUbicacion(dto.getRegionUbicacion());
         usuario.setEstado(dto.isEstado());
@@ -80,7 +104,7 @@ public class UsuariosController {
     }
 
     @PutMapping("/Actualizar")
-    public ResponseEntity<UsuariosDTO> actualizar(@RequestBody UsuariosDTO dto) {
+    public ResponseEntity<UsuariosDTO> actualizar(@Valid @RequestBody UsuariosDTO dto) {
         Optional<Usuarios> existente = uS.listId(dto.getIdUsuario());
 
         if (existente.isEmpty()) {
@@ -106,7 +130,13 @@ public class UsuariosController {
         usuario.setDni(dto.getDni());
         usuario.setTelefono(dto.getTelefono());
         usuario.setCorreo(dto.getCorreo());
-        usuario.setContrasenaHash(dto.getContrasenaHash());
+
+        // Solo se re-encripta si el cliente mando una contrasena nueva; si viene vacia
+        // se conserva la que ya tenia. Sin esto, un PUT normal re-hashearia el hash.
+        if (dto.getContrasenaHash() != null && !dto.getContrasenaHash().isBlank()) {
+            usuario.setContrasenaHash(passwordEncoder.encode(dto.getContrasenaHash()));
+        }
+
         usuario.setColegiatura(dto.getColegiatura());
         usuario.setRegionUbicacion(dto.getRegionUbicacion());
         usuario.setEstado(dto.isEstado());
@@ -158,7 +188,7 @@ public class UsuariosController {
         dto.setDni(usuario.getDni());
         dto.setTelefono(usuario.getTelefono());
         dto.setCorreo(usuario.getCorreo());
-        dto.setContrasenaHash(usuario.getContrasenaHash());
+        // La contrasena no se copia al DTO: es WRITE_ONLY y nunca sale en las respuestas.
         dto.setColegiatura(usuario.getColegiatura());
         dto.setRegionUbicacion(usuario.getRegionUbicacion());
         dto.setEstado(usuario.isEstado());

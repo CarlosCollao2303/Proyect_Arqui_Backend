@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
+import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitasDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
@@ -36,8 +37,20 @@ public class CitasController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<CitasDTO> listarPorId(@PathVariable int id) {
+        Citas cita = cS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una cita con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(cita));
+    }
+
     @PostMapping("/Registrar")
-    public ResponseEntity<CitasDTO> registrar(@RequestBody CitasDTO dto) {
+    public ResponseEntity<CitasDTO> registrar(@Valid @RequestBody CitasDTO dto) {
         Usuarios paciente = uS.listId(dto.getIdPaciente())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -75,7 +88,7 @@ public class CitasController {
     }
 
     @PutMapping("/Actualizar")
-    public ResponseEntity<CitasDTO> actualizar(@RequestBody CitasDTO dto) {
+    public ResponseEntity<CitasDTO> actualizar(@Valid @RequestBody CitasDTO dto) {
         Optional<Citas> existente = cS.listId(dto.getIdCita());
 
         if (existente.isEmpty()) {

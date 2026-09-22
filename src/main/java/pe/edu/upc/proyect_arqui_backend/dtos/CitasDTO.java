@@ -1,12 +1,21 @@
 package pe.edu.upc.proyect_arqui_backend.dtos;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 public class CitasDTO {
     private int idCita;
+
+    @NotNull(message = "El id del paciente es obligatorio")
     private Integer idPaciente;
+
+    @NotNull(message = "El id del medico es obligatorio")
     private Integer idMedico;
+
+    @NotNull(message = "La fecha y hora programada es obligatoria")
     private LocalDateTime fechaHoraProgramada;
+
     private int tiempoEsperaMinutos;
     private String estado;
 
