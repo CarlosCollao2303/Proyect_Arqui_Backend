@@ -56,7 +56,6 @@ public class RecetasController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Recetas receta = new Recetas();
-        receta.setDetalleHistorial(detalle);
         receta.setMedicamento(dto.getMedicamento());
         receta.setDosis(dto.getDosis());
         receta.setFrecuencia(dto.getFrecuencia());
@@ -65,6 +64,8 @@ public class RecetasController {
         receta.setFechaEmision(dto.getFechaEmision());
 
         rS.insert(receta);
+        detalle.setReceta(receta);
+        dhS.update(detalle);
 
         RecetasDTO responseDTO = convertirADTO(receta);
 
@@ -92,7 +93,6 @@ public class RecetasController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Recetas receta = existente.get();
-        receta.setDetalleHistorial(detalle);
         receta.setMedicamento(dto.getMedicamento());
         receta.setDosis(dto.getDosis());
         receta.setFrecuencia(dto.getFrecuencia());
@@ -101,6 +101,14 @@ public class RecetasController {
         receta.setFechaEmision(dto.getFechaEmision());
 
         rS.update(receta);
+        dhS.findByRecetaId(receta.getIdReceta()).ifPresent(anterior -> {
+            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
+                anterior.setReceta(null);
+                dhS.update(anterior);
+            }
+        });
+        detalle.setReceta(receta);
+        dhS.update(detalle);
 
         RecetasDTO responseDTO = convertirADTO(receta);
 
@@ -117,6 +125,10 @@ public class RecetasController {
                         )
                 );
 
+        dhS.findByRecetaId(receta.getIdReceta()).ifPresent(detalle -> {
+            detalle.setReceta(null);
+            dhS.update(detalle);
+        });
         rS.delete(receta.getIdReceta());
         return ResponseEntity.noContent().build();
     }
@@ -133,7 +145,11 @@ public class RecetasController {
     private RecetasDTO convertirADTO(Recetas receta) {
         RecetasDTO dto = new RecetasDTO();
         dto.setIdReceta(receta.getIdReceta());
-        dto.setIdDetalleHistorial(receta.getDetalleHistorial().getIdDetalleHistorial());
+        dto.setIdDetalleHistorial(dhS.findByRecetaId(receta.getIdReceta())
+                .map(DetalleHistorial::getIdDetalleHistorial)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe el detalle de historial asociado a la receta con el id: " + receta.getIdReceta()
+                )));
         dto.setMedicamento(receta.getMedicamento());
         dto.setDosis(receta.getDosis());
         dto.setFrecuencia(receta.getFrecuencia());

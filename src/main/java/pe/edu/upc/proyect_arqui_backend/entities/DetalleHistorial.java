@@ -19,6 +19,22 @@ public class DetalleHistorial {
     @JoinColumn(name = "medico_id", nullable = false)
     private Usuarios medico;
 
+    @ManyToOne
+    @JoinColumn(name = "examen_id")
+    private Examenes examen;
+
+    @ManyToOne
+    @JoinColumn(name = "diagnostico_id")
+    private Diagnostico diagnostico;
+
+    @ManyToOne
+    @JoinColumn(name = "tratamiento_id")
+    private Tratamientos tratamiento;
+
+    @ManyToOne
+    @JoinColumn(name = "receta_id")
+    private Recetas receta;
+
     @Column(name = "motivo_consulta")
     private String motivoConsulta;
 
@@ -62,6 +78,38 @@ public class DetalleHistorial {
 
     public void setMedico(Usuarios medico) {
         this.medico = medico;
+    }
+
+    public Examenes getExamen() {
+        return examen;
+    }
+
+    public void setExamen(Examenes examen) {
+        this.examen = examen;
+    }
+
+    public Diagnostico getDiagnostico() {
+        return diagnostico;
+    }
+
+    public void setDiagnostico(Diagnostico diagnostico) {
+        this.diagnostico = diagnostico;
+    }
+
+    public Tratamientos getTratamiento() {
+        return tratamiento;
+    }
+
+    public void setTratamiento(Tratamientos tratamiento) {
+        this.tratamiento = tratamiento;
+    }
+
+    public Recetas getReceta() {
+        return receta;
+    }
+
+    public void setReceta(Recetas receta) {
+        this.receta = receta;
     }
 
     public String getMotivoConsulta() {

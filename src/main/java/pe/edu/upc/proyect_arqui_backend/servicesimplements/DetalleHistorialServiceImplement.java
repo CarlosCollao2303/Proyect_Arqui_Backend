@@ -41,4 +41,24 @@ public class DetalleHistorialServiceImplement implements IDetalleHistorialServic
     public Optional<DetalleHistorial> listId(int id) {
         return dhR.findById(id);
     }
+
+    @Override
+    public Optional<DetalleHistorial> findByExamenId(int idExamen) {
+        return dhR.findByExamen_IdExamen(idExamen);
+    }
+
+    @Override
+    public Optional<DetalleHistorial> findByDiagnosticoId(int idDiagnostico) {
+        return dhR.findByDiagnostico_IdDiagnostico(idDiagnostico);
+    }
+
+    @Override
+    public Optional<DetalleHistorial> findByTratamientoId(int idTratamiento) {
+        return dhR.findByTratamiento_IdTratamiento(idTratamiento);
+    }
+
+    @Override
+    public Optional<DetalleHistorial> findByRecetaId(int idReceta) {
+        return dhR.findByReceta_IdReceta(idReceta);
+    }
 }
