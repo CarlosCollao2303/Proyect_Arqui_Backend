@@ -56,13 +56,14 @@ public class ExamenesController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Examenes examen = new Examenes();
-        examen.setDetalleHistorial(detalle);
         examen.setTipoExamen(dto.getTipoExamen());
         examen.setResultado(dto.getResultado());
         examen.setFechaSolicitud(dto.getFechaSolicitud());
         examen.setFechaResultado(dto.getFechaResultado());
 
         eS.insert(examen);
+        detalle.setExamen(examen);
+        dhS.update(detalle);
 
         ExamenesDTO responseDTO = convertirADTO(examen);
 
@@ -90,13 +91,20 @@ public class ExamenesController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Examenes examen = existente.get();
-        examen.setDetalleHistorial(detalle);
         examen.setTipoExamen(dto.getTipoExamen());
         examen.setResultado(dto.getResultado());
         examen.setFechaSolicitud(dto.getFechaSolicitud());
         examen.setFechaResultado(dto.getFechaResultado());
 
         eS.update(examen);
+        dhS.findByExamenId(examen.getIdExamen()).ifPresent(anterior -> {
+            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
+                anterior.setExamen(null);
+                dhS.update(anterior);
+            }
+        });
+        detalle.setExamen(examen);
+        dhS.update(detalle);
 
         ExamenesDTO responseDTO = convertirADTO(examen);
 
@@ -113,6 +121,10 @@ public class ExamenesController {
                         )
                 );
 
+        dhS.findByExamenId(examen.getIdExamen()).ifPresent(detalle -> {
+            detalle.setExamen(null);
+            dhS.update(detalle);
+        });
         eS.delete(examen.getIdExamen());
         return ResponseEntity.noContent().build();
     }
@@ -129,7 +141,11 @@ public class ExamenesController {
     private ExamenesDTO convertirADTO(Examenes examen) {
         ExamenesDTO dto = new ExamenesDTO();
         dto.setIdExamen(examen.getIdExamen());
-        dto.setIdDetalleHistorial(examen.getDetalleHistorial().getIdDetalleHistorial());
+        dto.setIdDetalleHistorial(dhS.findByExamenId(examen.getIdExamen())
+                .map(DetalleHistorial::getIdDetalleHistorial)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe el detalle de historial asociado al examen con el id: " + examen.getIdExamen()
+                )));
         dto.setTipoExamen(examen.getTipoExamen());
         dto.setResultado(examen.getResultado());
         dto.setFechaSolicitud(examen.getFechaSolicitud());

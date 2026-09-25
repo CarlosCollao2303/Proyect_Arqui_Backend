@@ -56,12 +56,13 @@ public class DiagnosticoController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Diagnostico diagnostico = new Diagnostico();
-        diagnostico.setDetalleHistorial(detalle);
         diagnostico.setCodigoCie10(dto.getCodigoCie10());
         diagnostico.setDescripcion(dto.getDescripcion());
         diagnostico.setFechaRegistro(dto.getFechaRegistro());
 
         dS.insert(diagnostico);
+        detalle.setDiagnostico(diagnostico);
+        dhS.update(detalle);
 
         DiagnosticoDTO responseDTO = convertirADTO(diagnostico);
 
@@ -89,12 +90,19 @@ public class DiagnosticoController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Diagnostico diagnostico = existente.get();
-        diagnostico.setDetalleHistorial(detalle);
         diagnostico.setCodigoCie10(dto.getCodigoCie10());
         diagnostico.setDescripcion(dto.getDescripcion());
         diagnostico.setFechaRegistro(dto.getFechaRegistro());
 
         dS.update(diagnostico);
+        dhS.findByDiagnosticoId(diagnostico.getIdDiagnostico()).ifPresent(anterior -> {
+            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
+                anterior.setDiagnostico(null);
+                dhS.update(anterior);
+            }
+        });
+        detalle.setDiagnostico(diagnostico);
+        dhS.update(detalle);
 
         DiagnosticoDTO responseDTO = convertirADTO(diagnostico);
 
@@ -111,6 +119,10 @@ public class DiagnosticoController {
                         )
                 );
 
+        dhS.findByDiagnosticoId(diagnostico.getIdDiagnostico()).ifPresent(detalle -> {
+            detalle.setDiagnostico(null);
+            dhS.update(detalle);
+        });
         dS.delete(diagnostico.getIdDiagnostico());
         return ResponseEntity.noContent().build();
     }
@@ -127,7 +139,11 @@ public class DiagnosticoController {
     private DiagnosticoDTO convertirADTO(Diagnostico diagnostico) {
         DiagnosticoDTO dto = new DiagnosticoDTO();
         dto.setIdDiagnostico(diagnostico.getIdDiagnostico());
-        dto.setIdDetalleHistorial(diagnostico.getDetalleHistorial().getIdDetalleHistorial());
+        dto.setIdDetalleHistorial(dhS.findByDiagnosticoId(diagnostico.getIdDiagnostico())
+                .map(DetalleHistorial::getIdDetalleHistorial)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe el detalle de historial asociado al diagnostico con el id: " + diagnostico.getIdDiagnostico()
+                )));
         dto.setCodigoCie10(diagnostico.getCodigoCie10());
         dto.setDescripcion(diagnostico.getDescripcion());
         dto.setFechaRegistro(diagnostico.getFechaRegistro());

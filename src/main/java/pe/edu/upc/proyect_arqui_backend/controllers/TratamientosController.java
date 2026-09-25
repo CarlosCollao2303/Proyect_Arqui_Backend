@@ -56,13 +56,14 @@ public class TratamientosController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Tratamientos tratamiento = new Tratamientos();
-        tratamiento.setDetalleHistorial(detalle);
         tratamiento.setDescripcion(dto.getDescripcion());
         tratamiento.setFechaInicio(dto.getFechaInicio());
         tratamiento.setFechaFin(dto.getFechaFin());
         tratamiento.setEstado(dto.getEstado());
 
         tS.insert(tratamiento);
+        detalle.setTratamiento(tratamiento);
+        dhS.update(detalle);
 
         TratamientosDTO responseDTO = convertirADTO(tratamiento);
 
@@ -90,13 +91,20 @@ public class TratamientosController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Tratamientos tratamiento = existente.get();
-        tratamiento.setDetalleHistorial(detalle);
         tratamiento.setDescripcion(dto.getDescripcion());
         tratamiento.setFechaInicio(dto.getFechaInicio());
         tratamiento.setFechaFin(dto.getFechaFin());
         tratamiento.setEstado(dto.getEstado());
 
         tS.update(tratamiento);
+        dhS.findByTratamientoId(tratamiento.getIdTratamiento()).ifPresent(anterior -> {
+            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
+                anterior.setTratamiento(null);
+                dhS.update(anterior);
+            }
+        });
+        detalle.setTratamiento(tratamiento);
+        dhS.update(detalle);
 
         TratamientosDTO responseDTO = convertirADTO(tratamiento);
 
@@ -113,6 +121,10 @@ public class TratamientosController {
                         )
                 );
 
+        dhS.findByTratamientoId(tratamiento.getIdTratamiento()).ifPresent(detalle -> {
+            detalle.setTratamiento(null);
+            dhS.update(detalle);
+        });
         tS.delete(tratamiento.getIdTratamiento());
         return ResponseEntity.noContent().build();
     }
@@ -129,7 +141,11 @@ public class TratamientosController {
     private TratamientosDTO convertirADTO(Tratamientos tratamiento) {
         TratamientosDTO dto = new TratamientosDTO();
         dto.setIdTratamiento(tratamiento.getIdTratamiento());
-        dto.setIdDetalleHistorial(tratamiento.getDetalleHistorial().getIdDetalleHistorial());
+        dto.setIdDetalleHistorial(dhS.findByTratamientoId(tratamiento.getIdTratamiento())
+                .map(DetalleHistorial::getIdDetalleHistorial)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe el detalle de historial asociado al tratamiento con el id: " + tratamiento.getIdTratamiento()
+                )));
         dto.setDescripcion(tratamiento.getDescripcion());
         dto.setFechaInicio(tratamiento.getFechaInicio());
         dto.setFechaFin(tratamiento.getFechaFin());
