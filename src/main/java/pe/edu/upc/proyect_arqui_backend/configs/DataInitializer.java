@@ -9,15 +9,11 @@ import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
 import pe.edu.upc.proyect_arqui_backend.repositories.IRolesRepository;
 import pe.edu.upc.proyect_arqui_backend.repositories.IUsuariosRepository;
 
-import java.util.List;
-
 // Crea al arrancar los roles que usan los @PreAuthorize (si no existen) y, si se
 // configuran app.admin.correo y app.admin.password, el primer usuario ADMIN.
 // Sin esto nadie podria llegar a ser ADMIN: el registro publico siempre da PACIENTE.
 @Component
 public class DataInitializer implements CommandLineRunner {
-
-    private static final List<String> ROLES = List.of("ADMIN", "MEDICO", "PACIENTE");
 
     private final IRolesRepository rR;
     private final IUsuariosRepository uR;
@@ -37,7 +33,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        for (String nombre : ROLES) {
+        for (String nombre : Roles.ROLES_BASE) {
             if (rR.findByNombre(nombre).isEmpty()) {
                 rR.save(new Roles(0, nombre));
             }

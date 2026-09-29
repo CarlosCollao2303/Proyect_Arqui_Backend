@@ -3,8 +3,10 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.RolesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Roles;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRolesService;
+import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +22,11 @@ import java.util.Optional;
 public class RolesController {
 
     private final IRolesService rS;
+    private final IUsuariosService uS;
 
-    public RolesController(IRolesService rS) {
+    public RolesController(IRolesService rS, IUsuariosService uS) {
         this.rS = rS;
+        this.uS = uS;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -51,8 +55,14 @@ public class RolesController {
 
     @PostMapping("/Registrar")
     public ResponseEntity<RolesDTO> registrar(@Valid @RequestBody RolesDTO dto) {
+        String nombre = normalizarNombre(dto.getNombre());
+
+        if (rS.listByNombre(nombre).isPresent()) {
+            throw new BadRequestException("Ya existe un rol con el nombre: " + nombre);
+        }
+
         Roles rol = new Roles();
-        rol.setNombre(dto.getNombre());
+        rol.setNombre(nombre);
 
         rS.insert(rol);
 
@@ -80,7 +90,17 @@ public class RolesController {
         }
 
         Roles rol = existente.get();
-        rol.setNombre(dto.getNombre());
+        String nombre = normalizarNombre(dto.getNombre());
+
+        if (!nombre.equals(rol.getNombre())) {
+            verificarQueNoEsRolBase(rol, "renombrar");
+
+            if (rS.listByNombre(nombre).isPresent()) {
+                throw new BadRequestException("Ya existe un rol con el nombre: " + nombre);
+            }
+        }
+
+        rol.setNombre(nombre);
 
         rS.update(rol);
 
@@ -98,8 +118,37 @@ public class RolesController {
                         )
                 );
 
+        verificarQueNoEsRolBase(rol, "eliminar");
+
+        if (uS.existsByRol(rol.getIdRol())) {
+            throw new BadRequestException(
+                    "No se puede eliminar el rol " + rol.getNombre() + " porque tiene usuarios asignados"
+            );
+        }
+
         rS.delete(rol.getIdRol());
         return ResponseEntity.noContent().build();
+    }
+
+    // Los @PreAuthorize comparan el nombre exacto ('ADMIN', 'MEDICO'...), asi que se
+    // guarda siempre en mayusculas. La coma se rechaza porque el claim "roles" del JWT
+    // se separa por comas (ver CustomJwtAuthenticationConverter).
+    private String normalizarNombre(String nombre) {
+        String normalizado = nombre.trim().toUpperCase();
+
+        if (normalizado.contains(",")) {
+            throw new BadRequestException("El nombre del rol no puede contener comas");
+        }
+
+        return normalizado;
+    }
+
+    private void verificarQueNoEsRolBase(Roles rol, String accion) {
+        if (Roles.ROLES_BASE.contains(rol.getNombre())) {
+            throw new BadRequestException(
+                    "El rol " + rol.getNombre() + " es del sistema y no se puede " + accion
+            );
+        }
     }
 
     private RolesDTO convertirADTO(Roles rol) {

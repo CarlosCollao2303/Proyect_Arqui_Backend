@@ -46,4 +46,9 @@ public class UsuariosServiceImplement implements IUsuariosService {
     public Optional<Usuarios> listByCorreo(String correo) {
         return uR.findByCorreo(correo);
     }
+
+    @Override
+    public boolean existsByRol(int idRol) {
+        return uR.existsByRolIdRol(idRol);
+    }
 }

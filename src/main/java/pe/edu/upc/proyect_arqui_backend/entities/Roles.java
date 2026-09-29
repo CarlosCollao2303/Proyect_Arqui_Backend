@@ -2,9 +2,15 @@ package pe.edu.upc.proyect_arqui_backend.entities;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "roles")
 public class Roles {
+    // Roles que usan los @PreAuthorize y el registro publico: se crean al arrancar
+    // (DataInitializer) y no se pueden renombrar ni eliminar desde la app.
+    public static final List<String> ROLES_BASE = List.of("ADMIN", "MEDICO", "PACIENTE");
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idRol;

@@ -169,6 +169,30 @@ public class UsuariosController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    // Cambia solo el rol de un usuario, sin tener que mandar todos sus datos como en
+    // /Actualizar. Un ADMIN no puede cambiarse su propio rol para no quitarse el acceso.
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/AsignarRol/{idUsuario}/{idRol}")
+    public ResponseEntity<UsuariosDTO> asignarRol(@PathVariable int idUsuario, @PathVariable int idRol,
+                                                  Authentication auth) {
+        Usuarios usuario = uS.listId(idUsuario)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe un usuario con el id: " + idUsuario
+                        )
+                );
+
+        if (usuario.getCorreo().equals(auth.getName())) {
+            throw new BadRequestException("No puedes cambiar tu propio rol");
+        }
+
+        usuario.setRol(obtenerRol(idRol));
+
+        uS.update(usuario);
+
+        return ResponseEntity.ok(convertirADTO(usuario));
+    }
+
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
