@@ -1,6 +1,7 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import pe.edu.upc.proyect_arqui_backend.dtos.CitaEstadoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitasDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
@@ -66,6 +67,16 @@ public class CitasController {
         return ResponseEntity.ok(convertirADTO(cita));
     }
 
+    // HU-10. ADMIN y MEDICO consultan cualquier cita; un PACIENTE solo las suyas
+    // (el service responde 404 si no existe y 403 si es de otro paciente).
+    @PreAuthorize("hasAnyAuthority('ADMIN','MEDICO','PACIENTE')")
+    @GetMapping("/{idCita}/estado")
+    public ResponseEntity<CitaEstadoDTO> consultarEstado(@PathVariable int idCita, Authentication auth) {
+        boolean puedeVerTodas = tieneRol(auth, "ADMIN") || tieneRol(auth, "MEDICO");
+
+        return ResponseEntity.ok(cS.consultarEstado(idCita, auth.getName(), puedeVerTodas));
+    }
+
     // Un PACIENTE solo reserva para si mismo: el paciente sale del token y se ignora
     // el idPaciente del body. Ademas la cita nace PENDIENTE y sin tiempo de espera;
     // esos campos los maneja el personal. ADMIN y MEDICO pueden registrar para cualquiera.
@@ -93,7 +104,9 @@ public class CitasController {
         cita.setMedico(medico);
         cita.setFechaHoraProgramada(dto.getFechaHoraProgramada());
         cita.setTiempoEsperaMinutos(esPaciente ? 0 : dto.getTiempoEsperaMinutos());
-        cita.setEstado(esPaciente ? "PENDIENTE" : dto.getEstado());
+        cita.setEstado(esPaciente || dto.getEstado() == null
+                ? Citas.ESTADO_PENDIENTE
+                : validarEstado(dto.getEstado()));
 
         cS.insert(cita);
 
@@ -128,7 +141,7 @@ public class CitasController {
         cita.setMedico(medico);
         cita.setFechaHoraProgramada(dto.getFechaHoraProgramada());
         cita.setTiempoEsperaMinutos(dto.getTiempoEsperaMinutos());
-        cita.setEstado(dto.getEstado());
+        cita.setEstado(validarEstado(dto.getEstado()));
 
         cS.update(cita);
 
@@ -179,6 +192,17 @@ public class CitasController {
         }
 
         return medico;
+    }
+
+    // Se guarda en mayusculas para que "pendiente" y "PENDIENTE" no queden como estados distintos.
+    private String validarEstado(String estado) {
+        String normalizado = estado == null ? "" : estado.trim().toUpperCase();
+
+        if (!Citas.ESTADOS.contains(normalizado)) {
+            throw new BadRequestException("El estado de la cita debe ser uno de: " + Citas.ESTADOS);
+        }
+
+        return normalizado;
     }
 
     private boolean tieneRol(Authentication auth, String rol) {

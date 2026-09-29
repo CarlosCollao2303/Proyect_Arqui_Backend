@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesinterfaces;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.CitaEstadoDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 
 import java.util.List;
@@ -12,4 +13,5 @@ public interface ICitasService {
     public List<Citas> list();
     public Optional<Citas> listId(int id);
     public List<Citas> listByParticipanteCorreo(String correo);
+    public CitaEstadoDTO consultarEstado(int idCita, String correo, boolean puedeVerTodas);
 }
