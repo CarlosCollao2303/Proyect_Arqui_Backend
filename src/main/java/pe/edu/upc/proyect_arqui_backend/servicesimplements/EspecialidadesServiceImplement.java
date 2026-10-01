@@ -40,4 +40,14 @@ public class EspecialidadesServiceImplement implements IEspecialidadesService {
     public Optional<Especialidades> listId(int id) {
         return eR.findById(id);
     }
+
+    @Override
+    public List<Especialidades> listByNombre(String nombre) {
+        return eR.findByNombreContainingIgnoreCase(nombre);
+    }
+
+    @Override
+    public long countMedicosByEspecialidadId(int idEspecialidad) {
+        return eR.countMedicosByEspecialidadId(idEspecialidad);
+    }
 }

@@ -3,6 +3,7 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.EspecialidadesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Especialidades;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IEspecialidadesService;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,33 @@ public class EspecialidadesController {
         return ResponseEntity.ok(convertirADTO(especialidad));
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/Buscar")
+    public ResponseEntity<List<EspecialidadesDTO>> buscarPorNombre(@RequestParam String nombre) {
+        if (nombre.isBlank()) {
+            throw new BadRequestException("El nombre de la especialidad no puede estar vacio");
+        }
+
+        List<EspecialidadesDTO> lista = eS.listByNombre(nombre.trim())
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+
+        return ResponseEntity.ok(lista);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/ContarMedicos/{id}")
+    public ResponseEntity<Long> contarMedicos(@PathVariable int id) {
+        if (eS.listId(id).isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "No existe una especialidad con el id: " + id
+            );
+        }
+
+        return ResponseEntity.ok(eS.countMedicosByEspecialidadId(id));
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<EspecialidadesDTO> registrar(@Valid @RequestBody EspecialidadesDTO dto) {
         Especialidades especialidad = new Especialidades();
@@ -59,8 +87,8 @@ public class EspecialidadesController {
         EspecialidadesDTO responseDTO = convertirADTO(especialidad);
 
         URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
+                .fromCurrentContextPath()
+                .path("/especialidades/ListarPorId/{id}")
                 .buildAndExpand(especialidad.getIdEspecialidad())
                 .toUri();
 

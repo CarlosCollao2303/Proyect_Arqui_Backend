@@ -3,6 +3,7 @@ pe\edu\upc\proyect_arqui_backend\ProyectArquiBackendApplication.class
 pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IDiagnosticoService.class
 pe\edu\upc\proyect_arqui_backend\dtos\TratamientosDTO.class
 pe\edu\upc\proyect_arqui_backend\dtos\DetalleHistorialDTO.class
+pe\edu\upc\proyect_arqui_backend\dtos\CitaEstadoDTO.class
 pe\edu\upc\proyect_arqui_backend\entities\HistoriasClinicas.class
 pe\edu\upc\proyect_arqui_backend\entities\Usuarios.class
 pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IExamenesService.class

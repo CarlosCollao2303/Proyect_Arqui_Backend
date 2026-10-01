@@ -41,4 +41,9 @@ public class HistoriasClinicasServiceImplement implements IHistoriasClinicasServ
     public Optional<HistoriasClinicas> listId(int id) {
         return hR.findById(id);
     }
+
+    @Override
+    public Optional<HistoriasClinicas> listByPacienteId(int idPaciente) {
+        return hR.findByPacienteIdNative(idPaciente);
+    }
 }

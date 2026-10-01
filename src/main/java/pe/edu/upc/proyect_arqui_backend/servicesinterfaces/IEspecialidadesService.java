@@ -11,4 +11,6 @@ public interface IEspecialidadesService {
     public void update(Especialidades e);
     public List<Especialidades> list();
     public Optional<Especialidades> listId(int id);
+    public List<Especialidades> listByNombre(String nombre);
+    public long countMedicosByEspecialidadId(int idEspecialidad);
 }

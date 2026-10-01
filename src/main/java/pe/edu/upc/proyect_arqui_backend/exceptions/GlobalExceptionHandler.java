@@ -10,8 +10,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import pe.edu.upc.proyect_arqui_backend.dtos.ErrorResponse;
 
+import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final String UNIQUE_VIOLATION_SQL_STATE = "23505";
+    private static final String NOT_NULL_VIOLATION_SQL_STATE = "23502";
+    private static final Pattern UNIQUE_FIELD_PATTERN = Pattern.compile("Key \\(([^)]+)\\)=");
+    private static final Pattern NOT_NULL_FIELD_PATTERN =
+            Pattern.compile("null value in column \"([^\"]+)\"");
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex,
@@ -92,8 +102,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
-                "La operacion viola una restriccion de la base de datos: puede faltar un campo " +
-                        "obligatorio, duplicarse un valor unico, o el registro estar siendo usado por otro.",
+                mensajeIntegridad(ex),
                 request.getRequestURI()
         );
 
@@ -101,5 +110,48 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(error);
     }
-}
 
+    private String mensajeIntegridad(DataIntegrityViolationException ex) {
+        for (Throwable causa = ex; causa != null; causa = causa.getCause()) {
+            if (!(causa instanceof SQLException sqlException)) {
+                continue;
+            }
+
+            String mensaje = sqlException.getMessage();
+            if (UNIQUE_VIOLATION_SQL_STATE.equals(sqlException.getSQLState())) {
+                String campo = extraerCampo(mensaje, UNIQUE_FIELD_PATTERN);
+                if (campo != null) {
+                    return "El valor del campo " + nombreCampo(campo) + " ya esta registrado.";
+                }
+            } else if (NOT_NULL_VIOLATION_SQL_STATE.equals(sqlException.getSQLState())) {
+                String campo = extraerCampo(mensaje, NOT_NULL_FIELD_PATTERN);
+                if (campo != null) {
+                    return "El campo " + nombreCampo(campo) + " es obligatorio.";
+                }
+            }
+        }
+
+        return "La operacion viola una restriccion de la base de datos. Verifique los campos obligatorios, " +
+                "los valores duplicados y las relaciones con otros registros.";
+    }
+
+    private String extraerCampo(String mensaje, Pattern patron) {
+        if (mensaje == null) {
+            return null;
+        }
+
+        Matcher matcher = patron.matcher(mensaje);
+        return matcher.find() ? matcher.group(1) : null;
+    }
+
+    private String nombreCampo(String campo) {
+        return switch (campo) {
+            case "dni" -> "DNI";
+            case "correo" -> "correo";
+            case "telefono" -> "telefono";
+            case "especialidad_id" -> "especialidad";
+            case "rol_id" -> "rol";
+            default -> "'" + campo.replace('_', ' ') + "'";
+        };
+    }
+}

@@ -1,1 +1,5 @@
+pe\edu\upc\proyect_arqui_backend\controllers\CitasControllerTest.class
+pe\edu\upc\proyect_arqui_backend\servicesimplements\CitasServiceImplementTest.class
+pe\edu\upc\proyect_arqui_backend\repositories\ConsultasRepositoryTest.class
 pe\edu\upc\proyect_arqui_backend\ProyectArquiBackendApplicationTests.class
+pe\edu\upc\proyect_arqui_backend\repositories\ICitasRepositoryTest.class
