@@ -8,7 +8,6 @@ import java.util.List;
 @Entity
 @Table(name = "citas")
 public class Citas {
-    // Estados validos (HU-10). Toda cita nace PENDIENTE.
     public static final String ESTADO_PENDIENTE = "PENDIENTE";
     public static final List<String> ESTADOS = List.of(ESTADO_PENDIENTE, "ATENDIDA", "CANCELADA");
 

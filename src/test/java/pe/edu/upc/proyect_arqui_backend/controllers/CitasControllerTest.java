@@ -12,13 +12,18 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaEstadoDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.CitaMedicoDTO;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.securities.SecurityConfig;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICitasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,7 +35,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// Carga la SecurityConfig real para que se apliquen los @PreAuthorize.
 @WebMvcTest(CitasController.class)
 @Import(SecurityConfig.class)
 class CitasControllerTest {
@@ -127,6 +131,99 @@ class CitasControllerTest {
     @Test
     void sinToken_401() throws Exception {
         mockMvc.perform(get("/citas/1/estado"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    private static final String MIS_CITAS_MEDICO = "/citas/medico/mis-citas";
+
+    @Test
+    void medico_listaSusCitas_200() throws Exception {
+        when(cS.listarCitasDelMedico("luis@clinica.pe", null, null, null)).thenReturn(List.of(
+                new CitaMedicoDTO(1, LocalDateTime.of(2026, 10, 5, 9, 30), "PENDIENTE",
+                        "Ana Torres", "Cardiologia")
+        ));
+
+        mockMvc.perform(get(MIS_CITAS_MEDICO).with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idCita").value(1))
+                .andExpect(jsonPath("$[0].fecha").value("2026-10-05"))
+                .andExpect(jsonPath("$[0].hora").value("09:30:00"))
+                .andExpect(jsonPath("$[0].estado").value("PENDIENTE"))
+                .andExpect(jsonPath("$[0].paciente").value("Ana Torres"))
+                .andExpect(jsonPath("$[0].especialidad").value("Cardiologia"));
+    }
+
+    @Test
+    void medico_pasaFiltrosAlServiceConElCorreoDelToken() throws Exception {
+        when(cS.listarCitasDelMedico(any(), any(), any(), any())).thenReturn(List.of());
+
+        mockMvc.perform(get(MIS_CITAS_MEDICO)
+                        .param("estado", "ATENDIDA")
+                        .param("inicio", "2026-10-01")
+                        .param("fin", "2026-10-31")
+                        .with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isOk());
+
+        verify(cS).listarCitasDelMedico("luis@clinica.pe", "ATENDIDA",
+                LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 31));
+    }
+
+    @Test
+    void medico_sinCitas_404() throws Exception {
+        when(cS.listarCitasDelMedico("luis@clinica.pe", null, null, null))
+                .thenThrow(new ResourceNotFoundException("No tienes citas programadas"));
+
+        mockMvc.perform(get(MIS_CITAS_MEDICO).with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("No tienes citas programadas"))
+                .andExpect(jsonPath("$.path").value(MIS_CITAS_MEDICO));
+    }
+
+    @Test
+    void medico_inicioPosteriorAFin_400() throws Exception {
+        when(cS.listarCitasDelMedico("luis@clinica.pe", null,
+                LocalDate.of(2026, 10, 31), LocalDate.of(2026, 10, 1)))
+                .thenThrow(new BadRequestException("La fecha de inicio no puede ser posterior a la fecha de fin"));
+
+        mockMvc.perform(get(MIS_CITAS_MEDICO)
+                        .param("inicio", "2026-10-31")
+                        .param("fin", "2026-10-01")
+                        .with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("La fecha de inicio no puede ser posterior a la fecha de fin"));
+    }
+
+    @Test
+    void medico_fechaConFormatoInvalido_400() throws Exception {
+        mockMvc.perform(get(MIS_CITAS_MEDICO)
+                        .param("inicio", "10-2026")
+                        .with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("El parametro 'inicio' tiene un formato invalido (use yyyy-MM-dd)"));
+
+        verify(cS, never()).listarCitasDelMedico(any(), any(), any(), any());
+    }
+
+    @Test
+    void paciente_noPuedeUsarMisCitasDeMedico_403() throws Exception {
+        mockMvc.perform(get(MIS_CITAS_MEDICO).with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isForbidden());
+
+        verify(cS, never()).listarCitasDelMedico(any(), any(), any(), any());
+    }
+
+    @Test
+    void admin_noPuedeUsarMisCitasDeMedico_403() throws Exception {
+        mockMvc.perform(get(MIS_CITAS_MEDICO).with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isForbidden());
+
+        verify(cS, never()).listarCitasDelMedico(any(), any(), any(), any());
+    }
+
+    @Test
+    void misCitasMedico_sinToken_401() throws Exception {
+        mockMvc.perform(get(MIS_CITAS_MEDICO))
                 .andExpect(status().isUnauthorized());
     }
 }

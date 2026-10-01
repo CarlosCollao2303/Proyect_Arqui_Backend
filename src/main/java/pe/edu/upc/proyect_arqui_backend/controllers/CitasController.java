@@ -2,6 +2,7 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaEstadoDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.CitaMedicoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitasDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
@@ -9,6 +10,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICitasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,14 +70,22 @@ public class CitasController {
         return ResponseEntity.ok(convertirADTO(cita));
     }
 
-    // HU-10. ADMIN y MEDICO consultan cualquier cita; un PACIENTE solo las suyas
-    // (el service responde 404 si no existe y 403 si es de otro paciente).
     @PreAuthorize("hasAnyAuthority('ADMIN','MEDICO','PACIENTE')")
     @GetMapping("/{idCita}/estado")
     public ResponseEntity<CitaEstadoDTO> consultarEstado(@PathVariable int idCita, Authentication auth) {
         boolean puedeVerTodas = tieneRol(auth, "ADMIN") || tieneRol(auth, "MEDICO");
 
         return ResponseEntity.ok(cS.consultarEstado(idCita, auth.getName(), puedeVerTodas));
+    }
+
+    @PreAuthorize("hasAuthority('MEDICO')")
+    @GetMapping("/medico/mis-citas")
+    public ResponseEntity<List<CitaMedicoDTO>> misCitasComoMedico(
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin,
+            Authentication auth) {
+        return ResponseEntity.ok(cS.listarCitasDelMedico(auth.getName(), estado, inicio, fin));
     }
 
     // Un PACIENTE solo reserva para si mismo: el paciente sale del token y se ignora
@@ -194,7 +205,6 @@ public class CitasController {
         return medico;
     }
 
-    // Se guarda en mayusculas para que "pendiente" y "PENDIENTE" no queden como estados distintos.
     private String validarEstado(String estado) {
         String normalizado = estado == null ? "" : estado.trim().toUpperCase();
 
