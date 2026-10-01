@@ -2,6 +2,7 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.EspecialidadesDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.MedicoPorEspecialidadDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Especialidades;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
@@ -75,6 +76,12 @@ public class EspecialidadesController {
         }
 
         return ResponseEntity.ok(eS.countMedicosByEspecialidadId(id));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN','MEDICO','PACIENTE')")
+    @GetMapping("/{idEspecialidad}/medicos")
+    public ResponseEntity<List<MedicoPorEspecialidadDTO>> listarMedicos(@PathVariable int idEspecialidad) {
+        return ResponseEntity.ok(eS.listMedicosByEspecialidadId(idEspecialidad));
     }
 
     @PostMapping("/Registrar")

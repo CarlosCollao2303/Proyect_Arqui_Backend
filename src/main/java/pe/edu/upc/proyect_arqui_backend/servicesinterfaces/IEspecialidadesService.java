@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesinterfaces;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.MedicoPorEspecialidadDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Especialidades;
 
 import java.util.List;
@@ -13,4 +14,5 @@ public interface IEspecialidadesService {
     public Optional<Especialidades> listId(int id);
     public List<Especialidades> listByNombre(String nombre);
     public long countMedicosByEspecialidadId(int idEspecialidad);
+    public List<MedicoPorEspecialidadDTO> listMedicosByEspecialidadId(int idEspecialidad);
 }
