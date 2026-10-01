@@ -12,4 +12,5 @@ public interface IEspecialidadesService {
     public List<Especialidades> list();
     public Optional<Especialidades> listId(int id);
     public List<Especialidades> listByNombre(String nombre);
+    public long countMedicosByEspecialidadId(int idEspecialidad);
 }

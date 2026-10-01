@@ -194,6 +194,28 @@ public class UsuariosController {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/AsignarEspecialidad/{idUsuario}/{idEspecialidad}")
+    public ResponseEntity<UsuariosDTO> asignarEspecialidad(
+            @PathVariable int idUsuario,
+            @PathVariable int idEspecialidad) {
+        Usuarios usuario = uS.listId(idUsuario)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe un usuario con el id: " + idUsuario
+                        )
+                );
+
+        if (!"MEDICO".equals(usuario.getRol().getNombre())) {
+            throw new BadRequestException("Solo se puede asignar especialidad a un medico");
+        }
+
+        usuario.setEspecialidad(obtenerEspecialidad(idEspecialidad));
+        uS.update(usuario);
+
+        return ResponseEntity.ok(convertirADTO(usuario));
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Usuarios usuario = uS.listId(id)
