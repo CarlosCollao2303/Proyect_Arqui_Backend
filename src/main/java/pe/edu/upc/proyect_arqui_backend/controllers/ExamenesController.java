@@ -51,6 +51,16 @@ public class ExamenesController {
         return ResponseEntity.ok(convertirADTO(examen));
     }
 
+    @GetMapping("/Buscar")
+    public ResponseEntity<List<ExamenesDTO>> buscarPorTipo(@RequestParam String tipoExamen) {
+        List<ExamenesDTO> lista = eS.listByTipoExamen(tipoExamen)
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+
+        return ResponseEntity.ok(lista);
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<ExamenesDTO> registrar(@Valid @RequestBody ExamenesDTO dto) {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());

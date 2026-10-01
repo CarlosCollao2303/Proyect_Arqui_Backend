@@ -41,4 +41,9 @@ public class ExamenesServiceImplement implements IExamenesService {
     public Optional<Examenes> listId(int id) {
         return eR.findById(id);
     }
+
+    @Override
+    public List<Examenes> listByTipoExamen(String tipoExamen) {
+        return eR.findByTipoExamenContainingIgnoreCase(tipoExamen);
+    }
 }

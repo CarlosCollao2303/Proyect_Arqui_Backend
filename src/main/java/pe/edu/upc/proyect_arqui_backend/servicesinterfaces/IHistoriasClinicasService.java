@@ -11,4 +11,5 @@ public interface IHistoriasClinicasService {
     public void update(HistoriasClinicas h);
     public List<HistoriasClinicas> list();
     public Optional<HistoriasClinicas> listId(int id);
+    public Optional<HistoriasClinicas> listByPacienteId(int idPaciente);
 }

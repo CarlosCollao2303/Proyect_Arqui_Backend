@@ -11,4 +11,5 @@ public interface IExamenesService {
     public void update(Examenes e);
     public List<Examenes> list();
     public Optional<Examenes> listId(int id);
+    public List<Examenes> listByTipoExamen(String tipoExamen);
 }

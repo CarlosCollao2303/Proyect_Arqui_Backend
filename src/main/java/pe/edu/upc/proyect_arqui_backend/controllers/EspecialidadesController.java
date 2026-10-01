@@ -49,6 +49,17 @@ public class EspecialidadesController {
         return ResponseEntity.ok(convertirADTO(especialidad));
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/Buscar")
+    public ResponseEntity<List<EspecialidadesDTO>> buscarPorNombre(@RequestParam String nombre) {
+        List<EspecialidadesDTO> lista = eS.listByNombre(nombre)
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+
+        return ResponseEntity.ok(lista);
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<EspecialidadesDTO> registrar(@Valid @RequestBody EspecialidadesDTO dto) {
         Especialidades especialidad = new Especialidades();

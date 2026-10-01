@@ -1,82 +1,83 @@
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\configs\DataInitializer.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\configs\ModelMapperConfig.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\CitasController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\DetalleHistorialController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\DiagnosticoController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\EspecialidadesController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\ExamenesController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\HistoriasClinicasController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\LoginController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\NotificacionesController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\RecetasController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\RolesController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\TratamientosController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\UsuariosController.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\CitasDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\DetalleHistorialDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\DiagnosticoDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\ErrorResponse.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\EspecialidadesDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\ExamenesDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\HistoriasClinicasDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\LoginRequestDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\LoginResponseDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\NotificacionesDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\RecetasDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\RolesDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\TratamientosDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\UsuariosDTO.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Citas.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\DetalleHistorial.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Diagnostico.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Especialidades.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Examenes.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\HistoriasClinicas.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Notificaciones.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Recetas.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Roles.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Tratamientos.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Usuarios.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\exceptions\BadRequestException.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\exceptions\GlobalExceptionHandler.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\exceptions\ResourceNotFoundException.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\ProyectArquiBackendApplication.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\ICitasRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IDetalleHistorialRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IDiagnosticoRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IEspecialidadesRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IExamenesRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IHistoriasClinicasRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\INotificacionesRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IRecetasRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IRolesRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\ITratamientosRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IUsuariosRepository.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\CustomJwtAuthenticationConverter.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\JwtConfig.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\JwtTokenService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\OpenApiConfig.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\SecurityConfig.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\CitasServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\DetalleHistorialServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\DiagnosticoServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\EspecialidadesServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\ExamenesServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\HistoriasClinicasServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\JwtUserDetailsService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\NotificacionesServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\RecetasServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\RolesServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\TratamientosServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\UsuariosServiceImplement.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\ICitasService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IDetalleHistorialService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IDiagnosticoService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IEspecialidadesService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IExamenesService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IHistoriasClinicasService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\INotificacionesService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IRecetasService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IRolesService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\ITratamientosService.java
-D:\ARQUI WEB\TF V4\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IUsuariosService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\configs\DataInitializer.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\configs\ModelMapperConfig.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\CitasController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\DetalleHistorialController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\DiagnosticoController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\EspecialidadesController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\ExamenesController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\HistoriasClinicasController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\LoginController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\NotificacionesController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\RecetasController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\RolesController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\TratamientosController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\UsuariosController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\CitaEstadoDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\CitasDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\DetalleHistorialDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\DiagnosticoDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\ErrorResponse.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\EspecialidadesDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\ExamenesDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\HistoriasClinicasDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\LoginRequestDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\LoginResponseDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\NotificacionesDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\RecetasDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\RolesDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\TratamientosDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\UsuariosDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Citas.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\DetalleHistorial.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Diagnostico.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Especialidades.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Examenes.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\HistoriasClinicas.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Notificaciones.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Recetas.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Roles.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Tratamientos.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\entities\Usuarios.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\exceptions\BadRequestException.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\exceptions\GlobalExceptionHandler.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\exceptions\ResourceNotFoundException.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\ProyectArquiBackendApplication.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\ICitasRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IDetalleHistorialRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IDiagnosticoRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IEspecialidadesRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IExamenesRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IHistoriasClinicasRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\INotificacionesRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IRecetasRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IRolesRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\ITratamientosRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\repositories\IUsuariosRepository.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\CustomJwtAuthenticationConverter.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\JwtConfig.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\JwtTokenService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\OpenApiConfig.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\securities\SecurityConfig.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\CitasServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\DetalleHistorialServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\DiagnosticoServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\EspecialidadesServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\ExamenesServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\HistoriasClinicasServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\JwtUserDetailsService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\NotificacionesServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\RecetasServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\RolesServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\TratamientosServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\UsuariosServiceImplement.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\ICitasService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IDetalleHistorialService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IDiagnosticoService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IEspecialidadesService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IExamenesService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IHistoriasClinicasService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\INotificacionesService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IRecetasService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IRolesService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\ITratamientosService.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IUsuariosService.java
