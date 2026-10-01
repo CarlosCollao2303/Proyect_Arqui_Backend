@@ -8,9 +8,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import pe.edu.upc.proyect_arqui_backend.dtos.ErrorResponse;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,9 +55,6 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    // Sin esto el 403 sale con el cuerpo vacio. Cubre tanto los @PreAuthorize como
-    // los AccessDeniedException que se lanzan a mano (p. ej. un PACIENTE viendo
-    // la cita de otro).
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(
             AccessDeniedException ex,
@@ -69,6 +68,23 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
+                .body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "El parametro '" + ex.getName() + "' tiene un formato invalido" +
+                        (ex.getRequiredType() == LocalDate.class ? " (use yyyy-MM-dd)" : ""),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .badRequest()
                 .body(error);
     }
 

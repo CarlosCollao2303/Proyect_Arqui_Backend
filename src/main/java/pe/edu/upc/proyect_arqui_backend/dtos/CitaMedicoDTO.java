@@ -4,24 +4,22 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-public record CitaEstadoDTO(
+public record CitaMedicoDTO(
         int idCita,
         LocalDate fecha,
         LocalTime hora,
         String estado,
         String paciente,
-        String medico,
         String especialidad
 ) {
-    public CitaEstadoDTO(int idCita, LocalDateTime fechaHoraProgramada, String estado,
-                         String paciente, String medico, String especialidad) {
+    public CitaMedicoDTO(int idCita, LocalDateTime fechaHoraProgramada, String estado,
+                         String paciente, String especialidad) {
         this(
                 idCita,
                 fechaHoraProgramada != null ? fechaHoraProgramada.toLocalDate() : null,
                 fechaHoraProgramada != null ? fechaHoraProgramada.toLocalTime() : null,
                 estado,
                 paciente,
-                medico,
                 especialidad
         );
     }
