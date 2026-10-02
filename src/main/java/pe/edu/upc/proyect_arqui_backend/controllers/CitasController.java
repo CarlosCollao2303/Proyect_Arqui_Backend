@@ -1,5 +1,9 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
+import pe.edu.upc.proyect_arqui_backend.dtos.CitaPacienteDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitasDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +40,13 @@ public class CitasController {
 
         return ResponseEntity.ok(lista);
     }
-
+    @PreAuthorize("hasAuthority('PACIENTE')")
+    @GetMapping("/paciente/mis-citas")
+    public ResponseEntity<List<CitaPacienteDTO>> misCitasPorFecha(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            Authentication auth) {
+        return ResponseEntity.ok(cS.listarCitasDelPacientePorFecha(auth.getName(), fecha));
+    }
     @PostMapping("/Registrar")
     public ResponseEntity<CitasDTO> registrar(@RequestBody CitasDTO dto) {
         Usuarios paciente = uS.listId(dto.getIdPaciente())

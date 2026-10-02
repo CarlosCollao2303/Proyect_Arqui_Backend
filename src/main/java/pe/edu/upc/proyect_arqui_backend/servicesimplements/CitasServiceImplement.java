@@ -1,10 +1,13 @@
 package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.CitaPacienteDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.repositories.ICitasRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICitasService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,5 +43,13 @@ public class CitasServiceImplement implements ICitasService {
     @Override
     public Optional<Citas> listId(int id) {
         return cR.findById(id);
+    }
+
+    @Override
+    public List<CitaPacienteDTO> listarCitasDelPacientePorFecha(String correoPaciente, LocalDate fecha) {
+        LocalDateTime inicio = fecha.atStartOfDay();
+        LocalDateTime fin = fecha.plusDays(1).atStartOfDay();
+
+        return cR.findCitasDelPacienteEntre(correoPaciente, inicio, fin);
     }
 }
