@@ -1,15 +1,38 @@
 package pe.edu.upc.proyect_arqui_backend.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 public class UsuariosDTO {
     private int idUsuario;
+
+    // Sin @NotNull: en el registro publico se ignora y se asigna PACIENTE.
+    // UsuariosController lo exige a mano cuando quien llama es ADMIN.
     private Integer idRol;
+
+    // Nullable: los pacientes no tienen especialidad, solo los medicos
     private Integer idEspecialidad;
+
+    @NotBlank(message = "Los nombres son obligatorios")
     private String nombres;
+
+    @NotBlank(message = "Los apellidos son obligatorios")
     private String apellidos;
+
     private String dni;
     private String telefono;
+
+    @NotBlank(message = "El correo es obligatorio")
+    @Email(message = "El correo no tiene un formato valido")
     private String correo;
+
+    // WRITE_ONLY: Jackson la acepta en el JSON de entrada (POST/PUT) pero nunca la
+    // escribe en las respuestas. Sin @NotBlank porque el PUT puede omitirla para
+    // conservar la actual; el POST la exige a mano en UsuariosController.
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String contrasenaHash;
+
     private String colegiatura;
     private String regionUbicacion;
     private boolean estado;

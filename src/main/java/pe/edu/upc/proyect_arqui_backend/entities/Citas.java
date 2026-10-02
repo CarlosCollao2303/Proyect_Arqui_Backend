@@ -3,10 +3,14 @@ package pe.edu.upc.proyect_arqui_backend.entities;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "citas")
 public class Citas {
+    public static final String ESTADO_PENDIENTE = "PENDIENTE";
+    public static final List<String> ESTADOS = List.of(ESTADO_PENDIENTE, "ATENDIDA", "CANCELADA");
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idCita;

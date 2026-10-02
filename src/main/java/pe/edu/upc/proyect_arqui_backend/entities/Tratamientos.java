@@ -11,10 +11,6 @@ public class Tratamientos {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idTratamiento;
 
-    @ManyToOne
-    @JoinColumn(name = "detalle_id", nullable = false)
-    private DetalleHistorial detalleHistorial;
-
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
@@ -30,9 +26,8 @@ public class Tratamientos {
     public Tratamientos() {
     }
 
-    public Tratamientos(int idTratamiento, DetalleHistorial detalleHistorial, String descripcion, LocalDate fechaInicio, LocalDate fechaFin, String estado) {
+    public Tratamientos(int idTratamiento, String descripcion, LocalDate fechaInicio, LocalDate fechaFin, String estado) {
         this.idTratamiento = idTratamiento;
-        this.detalleHistorial = detalleHistorial;
         this.descripcion = descripcion;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
@@ -45,14 +40,6 @@ public class Tratamientos {
 
     public void setIdTratamiento(int idTratamiento) {
         this.idTratamiento = idTratamiento;
-    }
-
-    public DetalleHistorial getDetalleHistorial() {
-        return detalleHistorial;
-    }
-
-    public void setDetalleHistorial(DetalleHistorial detalleHistorial) {
-        this.detalleHistorial = detalleHistorial;
     }
 
     public String getDescripcion() {

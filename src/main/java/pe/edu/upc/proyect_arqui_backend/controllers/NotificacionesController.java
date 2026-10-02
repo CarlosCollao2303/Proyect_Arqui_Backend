@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
+import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.NotificacionesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Notificaciones;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
@@ -7,6 +8,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.INotificacionesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@PreAuthorize("hasAnyAuthority('ADMIN','MEDICO')")
 @RequestMapping("/notificaciones")
 public class NotificacionesController {
 
@@ -36,8 +39,20 @@ public class NotificacionesController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ListarPorId/{id}")
+    public ResponseEntity<NotificacionesDTO> listarPorId(@PathVariable int id) {
+        Notificaciones notificacion = nS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una notificacion con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(notificacion));
+    }
+
     @PostMapping
-    public ResponseEntity<NotificacionesDTO> registrar(@RequestBody NotificacionesDTO dto) {
+    public ResponseEntity<NotificacionesDTO> registrar(@Valid @RequestBody NotificacionesDTO dto) {
         Usuarios usuario = uS.listId(dto.getIdUsuario())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -68,7 +83,7 @@ public class NotificacionesController {
     }
 
     @PutMapping
-    public ResponseEntity<NotificacionesDTO> actualizar(@RequestBody NotificacionesDTO dto) {
+    public ResponseEntity<NotificacionesDTO> actualizar(@Valid @RequestBody NotificacionesDTO dto) {
         Optional<Notificaciones> existente = nS.listId(dto.getIdNotificacion());
 
         if (existente.isEmpty()) {
@@ -98,6 +113,7 @@ public class NotificacionesController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Notificaciones notificacion = nS.listId(id)

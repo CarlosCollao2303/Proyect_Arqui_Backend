@@ -3,9 +3,12 @@ package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 import pe.edu.upc.proyect_arqui_backend.entities.Recetas;
 import pe.edu.upc.proyect_arqui_backend.repositories.IRecetasRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRecetasService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
+@Service
 public class RecetasServiceImplement implements IRecetasService {
 
     private final IRecetasRepository rR;
@@ -32,5 +35,10 @@ public class RecetasServiceImplement implements IRecetasService {
     @Override
     public List<Recetas> list() {
         return rR.findAll();
+    }
+
+    @Override
+    public Optional<Recetas> listId(int id) {
+        return rR.findById(id);
     }
 }

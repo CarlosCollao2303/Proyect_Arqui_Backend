@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: pe.edu.upc.proyect_arqui_backend.ProyectArquiBackendApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.197 s -- in pe.edu.upc.proyect_arqui_backend.ProyectArquiBackendApplicationTests

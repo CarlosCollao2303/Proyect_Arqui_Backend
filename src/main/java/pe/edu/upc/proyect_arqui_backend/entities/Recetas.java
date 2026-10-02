@@ -11,10 +11,6 @@ public class Recetas {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idReceta;
 
-    @ManyToOne
-    @JoinColumn(name = "detalle_id", nullable = false)
-    private DetalleHistorial detalleHistorial;
-
     @Column(name = "medicamento")
     private String medicamento;
 
@@ -36,9 +32,8 @@ public class Recetas {
     public Recetas() {
     }
 
-    public Recetas(int idReceta, DetalleHistorial detalleHistorial, String medicamento, String dosis, String frecuencia, int duracionDias, String indicaciones, LocalDateTime fechaEmision) {
+    public Recetas(int idReceta, String medicamento, String dosis, String frecuencia, int duracionDias, String indicaciones, LocalDateTime fechaEmision) {
         this.idReceta = idReceta;
-        this.detalleHistorial = detalleHistorial;
         this.medicamento = medicamento;
         this.dosis = dosis;
         this.frecuencia = frecuencia;
@@ -53,14 +48,6 @@ public class Recetas {
 
     public void setIdReceta(int idReceta) {
         this.idReceta = idReceta;
-    }
-
-    public DetalleHistorial getDetalleHistorial() {
-        return detalleHistorial;
-    }
-
-    public void setDetalleHistorial(DetalleHistorial detalleHistorial) {
-        this.detalleHistorial = detalleHistorial;
     }
 
     public String getMedicamento() {

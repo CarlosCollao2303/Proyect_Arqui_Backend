@@ -11,10 +11,6 @@ public class Diagnostico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idDiagnostico;
 
-    @ManyToOne
-    @JoinColumn(name = "detalle_id", nullable = false)
-    private DetalleHistorial detalleHistorial;
-
     @Column(name = "codigo_cie10")
     private String codigoCie10;
 
@@ -27,9 +23,8 @@ public class Diagnostico {
     public Diagnostico() {
     }
 
-    public Diagnostico(int idDiagnostico, DetalleHistorial detalleHistorial, String codigoCie10, String descripcion, LocalDateTime fechaRegistro) {
+    public Diagnostico(int idDiagnostico, String codigoCie10, String descripcion, LocalDateTime fechaRegistro) {
         this.idDiagnostico = idDiagnostico;
-        this.detalleHistorial = detalleHistorial;
         this.codigoCie10 = codigoCie10;
         this.descripcion = descripcion;
         this.fechaRegistro = fechaRegistro;
@@ -41,14 +36,6 @@ public class Diagnostico {
 
     public void setIdDiagnostico(int idDiagnostico) {
         this.idDiagnostico = idDiagnostico;
-    }
-
-    public DetalleHistorial getDetalleHistorial() {
-        return detalleHistorial;
-    }
-
-    public void setDetalleHistorial(DetalleHistorial detalleHistorial) {
-        this.detalleHistorial = detalleHistorial;
     }
 
     public String getCodigoCie10() {

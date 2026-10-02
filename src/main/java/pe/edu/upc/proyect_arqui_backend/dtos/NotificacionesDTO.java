@@ -1,12 +1,22 @@
 package pe.edu.upc.proyect_arqui_backend.dtos;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 public class NotificacionesDTO {
     private int idNotificacion;
+
+    @NotNull(message = "El id del usuario es obligatorio")
     private Integer idUsuario;
+
+    @NotBlank(message = "El tipo de notificacion es obligatorio")
     private String tipo;
+
+    @NotBlank(message = "El mensaje es obligatorio")
     private String mensaje;
+
     private LocalDateTime fechaEnvio;
     private String estadoEnvio;
 
