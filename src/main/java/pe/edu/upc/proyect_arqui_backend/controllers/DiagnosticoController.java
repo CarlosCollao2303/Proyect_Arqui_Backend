@@ -122,7 +122,7 @@ public class DiagnosticoController {
         diagnostico.setFechaRegistro(dto.getFechaRegistro());
 
         dS.update(diagnostico);
-        dhS.findByDiagnosticoId(diagnostico.getIdDiagnostico()).ifPresent(anterior -> {
+        dhS.findAllByDiagnosticoId(diagnostico.getIdDiagnostico()).forEach(anterior -> {
             if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
                 anterior.setDiagnostico(null);
                 dhS.update(anterior);
@@ -146,7 +146,7 @@ public class DiagnosticoController {
                         )
                 );
 
-        dhS.findByDiagnosticoId(diagnostico.getIdDiagnostico()).ifPresent(detalle -> {
+        dhS.findAllByDiagnosticoId(diagnostico.getIdDiagnostico()).forEach(detalle -> {
             detalle.setDiagnostico(null);
             dhS.update(detalle);
         });
@@ -166,8 +166,9 @@ public class DiagnosticoController {
     private DiagnosticoDTO convertirADTO(Diagnostico diagnostico) {
         DiagnosticoDTO dto = new DiagnosticoDTO();
         dto.setIdDiagnostico(diagnostico.getIdDiagnostico());
-        dto.setIdDetalleHistorial(dhS.findByDiagnosticoId(diagnostico.getIdDiagnostico())
+        dto.setIdDetalleHistorial(dhS.findAllByDiagnosticoId(diagnostico.getIdDiagnostico()).stream()
                 .map(DetalleHistorial::getIdDetalleHistorial)
+                .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No existe el detalle de historial asociado al diagnostico con el id: " + diagnostico.getIdDiagnostico()
                 )));

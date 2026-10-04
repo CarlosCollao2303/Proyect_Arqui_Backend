@@ -127,7 +127,7 @@ public class TratamientosController {
         tratamiento.setEstado(dto.getEstado());
 
         tS.update(tratamiento);
-        dhS.findByTratamientoId(tratamiento.getIdTratamiento()).ifPresent(anterior -> {
+        dhS.findAllByTratamientoId(tratamiento.getIdTratamiento()).forEach(anterior -> {
             if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
                 anterior.setTratamiento(null);
                 dhS.update(anterior);
@@ -151,7 +151,7 @@ public class TratamientosController {
                         )
                 );
 
-        dhS.findByTratamientoId(tratamiento.getIdTratamiento()).ifPresent(detalle -> {
+        dhS.findAllByTratamientoId(tratamiento.getIdTratamiento()).forEach(detalle -> {
             detalle.setTratamiento(null);
             dhS.update(detalle);
         });
@@ -171,11 +171,11 @@ public class TratamientosController {
     private TratamientosDTO convertirADTO(Tratamientos tratamiento) {
         TratamientosDTO dto = new TratamientosDTO();
         dto.setIdTratamiento(tratamiento.getIdTratamiento());
-        dto.setIdDetalleHistorial(dhS.findByTratamientoId(tratamiento.getIdTratamiento())
+        Integer idDetalleHistorial = dhS.findAllByTratamientoId(tratamiento.getIdTratamiento()).stream()
                 .map(DetalleHistorial::getIdDetalleHistorial)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "No existe el detalle de historial asociado al tratamiento con el id: " + tratamiento.getIdTratamiento()
-                )));
+                .findFirst()
+                .orElse(null);
+        dto.setIdDetalleHistorial(idDetalleHistorial);
         dto.setDescripcion(tratamiento.getDescripcion());
         dto.setFechaInicio(tratamiento.getFechaInicio());
         dto.setFechaFin(tratamiento.getFechaFin());

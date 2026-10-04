@@ -131,7 +131,7 @@ public class RecetasController {
         receta.setFechaEmision(dto.getFechaEmision());
 
         rS.update(receta);
-        dhS.findByRecetaId(receta.getIdReceta()).ifPresent(anterior -> {
+        dhS.findAllByRecetaId(receta.getIdReceta()).forEach(anterior -> {
             if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
                 anterior.setReceta(null);
                 dhS.update(anterior);
@@ -155,7 +155,7 @@ public class RecetasController {
                         )
                 );
 
-        dhS.findByRecetaId(receta.getIdReceta()).ifPresent(detalle -> {
+        dhS.findAllByRecetaId(receta.getIdReceta()).forEach(detalle -> {
             detalle.setReceta(null);
             dhS.update(detalle);
         });
@@ -175,8 +175,9 @@ public class RecetasController {
     private RecetasDTO convertirADTO(Recetas receta) {
         RecetasDTO dto = new RecetasDTO();
         dto.setIdReceta(receta.getIdReceta());
-        dto.setIdDetalleHistorial(dhS.findByRecetaId(receta.getIdReceta())
+        dto.setIdDetalleHistorial(dhS.findAllByRecetaId(receta.getIdReceta()).stream()
                 .map(DetalleHistorial::getIdDetalleHistorial)
+                .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No existe el detalle de historial asociado a la receta con el id: " + receta.getIdReceta()
                 )));

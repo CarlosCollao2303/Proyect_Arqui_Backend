@@ -1,5 +1,12 @@
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\controllers\CitasControllerTest.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\controllers\DetalleHistorialControllerTest.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\controllers\EspecialidadesControllerTest.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\controllers\HistoriasClinicasControllerTest.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\controllers\TratamientosControllerTest.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\controllers\UsuariosRegistroValidationTest.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\ProyectArquiBackendApplicationTests.java
-C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\repositories\ConsultasRepositoryTest.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\repositories\ConsultasPorDominioRepositoryTest.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\repositories\ICitasRepositoryTest.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\repositories\IEspecialidadesRepositoryTest.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\CitasServiceImplementTest.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\test\java\pe\edu\upc\proyect_arqui_backend\servicesimplements\EspecialidadesServiceImplementTest.java

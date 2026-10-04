@@ -116,7 +116,7 @@ public class ExamenesController {
         examen.setFechaResultado(dto.getFechaResultado());
 
         eS.update(examen);
-        dhS.findByExamenId(examen.getIdExamen()).ifPresent(anterior -> {
+        dhS.findAllByExamenId(examen.getIdExamen()).forEach(anterior -> {
             if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
                 anterior.setExamen(null);
                 dhS.update(anterior);
@@ -140,7 +140,7 @@ public class ExamenesController {
                         )
                 );
 
-        dhS.findByExamenId(examen.getIdExamen()).ifPresent(detalle -> {
+        dhS.findAllByExamenId(examen.getIdExamen()).forEach(detalle -> {
             detalle.setExamen(null);
             dhS.update(detalle);
         });
@@ -160,8 +160,9 @@ public class ExamenesController {
     private ExamenesDTO convertirADTO(Examenes examen) {
         ExamenesDTO dto = new ExamenesDTO();
         dto.setIdExamen(examen.getIdExamen());
-        dto.setIdDetalleHistorial(dhS.findByExamenId(examen.getIdExamen())
+        dto.setIdDetalleHistorial(dhS.findAllByExamenId(examen.getIdExamen()).stream()
                 .map(DetalleHistorial::getIdDetalleHistorial)
+                .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No existe el detalle de historial asociado al examen con el id: " + examen.getIdExamen()
                 )));

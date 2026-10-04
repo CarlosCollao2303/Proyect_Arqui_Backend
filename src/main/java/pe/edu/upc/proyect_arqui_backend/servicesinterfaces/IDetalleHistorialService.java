@@ -11,8 +11,8 @@ public interface IDetalleHistorialService {
     public void update(DetalleHistorial d);
     public List<DetalleHistorial> list();
     public Optional<DetalleHistorial> listId(int id);
-    public Optional<DetalleHistorial> findByExamenId(int idExamen);
-    public Optional<DetalleHistorial> findByDiagnosticoId(int idDiagnostico);
-    public Optional<DetalleHistorial> findByTratamientoId(int idTratamiento);
-    public Optional<DetalleHistorial> findByRecetaId(int idReceta);
+    public List<DetalleHistorial> findAllByExamenId(int idExamen);
+    public List<DetalleHistorial> findAllByDiagnosticoId(int idDiagnostico);
+    public List<DetalleHistorial> findAllByTratamientoId(int idTratamiento);
+    public List<DetalleHistorial> findAllByRecetaId(int idReceta);
 }

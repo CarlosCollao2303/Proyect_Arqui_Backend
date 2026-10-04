@@ -5,6 +5,7 @@ import pe.edu.upc.proyect_arqui_backend.dtos.CantidadDiagnosticosDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.HistoriasClinicasDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.HistoriasClinicas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IHistoriasClinicasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
@@ -74,12 +75,7 @@ public class HistoriasClinicasController {
     }
     @PostMapping("/Registrar")
     public ResponseEntity<HistoriasClinicasDTO> registrar(@Valid @RequestBody HistoriasClinicasDTO dto) {
-        Usuarios paciente = uS.listId(dto.getIdPaciente())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "No existe el paciente con el id: " + dto.getIdPaciente()
-                        )
-                );
+        Usuarios paciente = obtenerPaciente(dto.getIdPaciente());
 
         HistoriasClinicas historiaClinica = new HistoriasClinicas();
         historiaClinica.setPaciente(paciente);
@@ -110,12 +106,7 @@ public class HistoriasClinicasController {
             );
         }
 
-        Usuarios paciente = uS.listId(dto.getIdPaciente())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "No existe el paciente con el id: " + dto.getIdPaciente()
-                        )
-                );
+        Usuarios paciente = obtenerPaciente(dto.getIdPaciente());
 
         HistoriasClinicas historiaClinica = existente.get();
         historiaClinica.setPaciente(paciente);
@@ -148,5 +139,22 @@ public class HistoriasClinicasController {
         dto.setIdPaciente(historiaClinica.getPaciente().getIdUsuario());
         dto.setFechaCreacion(historiaClinica.getFechaCreacion());
         return dto;
+    }
+
+    private Usuarios obtenerPaciente(Integer idPaciente) {
+        Usuarios paciente = uS.listId(idPaciente)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe el usuario con el id: " + idPaciente
+                        )
+                );
+
+        if (paciente.getRol() == null || !"PACIENTE".equalsIgnoreCase(paciente.getRol().getNombre())) {
+            throw new BadRequestException(
+                    "El usuario con id " + idPaciente + " no tiene el rol PACIENTE; solo los pacientes pueden tener historia clinica"
+            );
+        }
+
+        return paciente;
     }
 }
