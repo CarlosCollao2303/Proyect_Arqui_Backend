@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.DiagnosticoDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Diagnostico;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDiagnosticoService;
@@ -49,6 +50,32 @@ public class DiagnosticoController {
                 );
 
         return ResponseEntity.ok(convertirADTO(diagnostico));
+    }
+
+    @GetMapping("/BuscarPorCodigo")
+    public ResponseEntity<List<DiagnosticoDTO>> buscarPorCodigo(@RequestParam String codigoCie10) {
+        if (codigoCie10.isBlank()) {
+            throw new BadRequestException("El codigo CIE-10 no puede estar vacio");
+        }
+
+        List<DiagnosticoDTO> lista = dS.listByCodigoCie10(codigoCie10.trim())
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/BuscarPorDescripcion")
+    public ResponseEntity<List<DiagnosticoDTO>> buscarPorDescripcion(@RequestParam String descripcion) {
+        if (descripcion.isBlank()) {
+            throw new BadRequestException("La descripcion no puede estar vacia");
+        }
+
+        List<DiagnosticoDTO> lista = dS.listByDescripcion(descripcion.trim())
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+        return ResponseEntity.ok(lista);
     }
 
     @PostMapping("/Registrar")

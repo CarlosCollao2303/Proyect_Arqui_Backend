@@ -40,4 +40,15 @@ public class NotificacionesServiceImplement implements INotificacionesService {
     public Optional<Notificaciones> listId(int id) {
         return nR.findById(id);
     }
+
+    @Override
+    public List<Notificaciones> listByUsuarioId(int idUsuario) {
+        return nR.findByUsuario_IdUsuarioOrderByFechaEnvioDesc(idUsuario);
+    }
+
+    @Override
+    public List<Notificaciones> listByUsuarioIdAndEstadoEnvio(int idUsuario, String estadoEnvio) {
+        return nR.findByUsuario_IdUsuarioAndEstadoEnvioIgnoreCaseOrderByFechaEnvioDesc(
+                idUsuario, estadoEnvio);
+    }
 }

@@ -41,4 +41,14 @@ public class DiagnosticoServiceImplement implements IDiagnosticoService {
     public Optional<Diagnostico> listId(int id) {
         return dR.findById(id);
     }
+
+    @Override
+    public List<Diagnostico> listByCodigoCie10(String codigoCie10) {
+        return dR.findByCodigoCie10IgnoreCase(codigoCie10);
+    }
+
+    @Override
+    public List<Diagnostico> listByDescripcion(String descripcion) {
+        return dR.findByDescripcionContainingIgnoreCase(descripcion);
+    }
 }

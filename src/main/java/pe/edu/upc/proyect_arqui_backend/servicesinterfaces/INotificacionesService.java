@@ -11,4 +11,6 @@ public interface INotificacionesService {
     public void update(Notificaciones n);
     public List<Notificaciones> list();
     public Optional<Notificaciones> listId(int id);
+    public List<Notificaciones> listByUsuarioId(int idUsuario);
+    public List<Notificaciones> listByUsuarioIdAndEstadoEnvio(int idUsuario, String estadoEnvio);
 }

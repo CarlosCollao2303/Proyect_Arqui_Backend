@@ -2,6 +2,7 @@ package pe.edu.upc.proyect_arqui_backend.servicesinterfaces;
 
 import pe.edu.upc.proyect_arqui_backend.entities.Tratamientos;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,4 +12,6 @@ public interface ITratamientosService {
     public void update(Tratamientos t);
     public List<Tratamientos> list();
     public Optional<Tratamientos> listId(int id);
+    public List<Tratamientos> listByEstado(String estado);
+    public List<Tratamientos> listByFechaInicioBetween(LocalDate inicio, LocalDate fin);
 }

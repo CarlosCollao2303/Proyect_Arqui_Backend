@@ -11,4 +11,6 @@ public interface IDiagnosticoService {
     public void update(Diagnostico d);
     public List<Diagnostico> list();
     public Optional<Diagnostico> listId(int id);
+    public List<Diagnostico> listByCodigoCie10(String codigoCie10);
+    public List<Diagnostico> listByDescripcion(String descripcion);
 }

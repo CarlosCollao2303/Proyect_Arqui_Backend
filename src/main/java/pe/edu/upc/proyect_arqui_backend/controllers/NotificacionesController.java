@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.NotificacionesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Notificaciones;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.INotificacionesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
@@ -49,6 +50,30 @@ public class NotificacionesController {
                 );
 
         return ResponseEntity.ok(convertirADTO(notificacion));
+    }
+
+    @GetMapping("/PorUsuario/{idUsuario}")
+    public ResponseEntity<List<NotificacionesDTO>> listarPorUsuario(@PathVariable int idUsuario) {
+        List<NotificacionesDTO> lista = nS.listByUsuarioId(idUsuario)
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/PorUsuario/{idUsuario}/Estado")
+    public ResponseEntity<List<NotificacionesDTO>> listarPorUsuarioYEstado(
+            @PathVariable int idUsuario,
+            @RequestParam String estado) {
+        if (estado.isBlank()) {
+            throw new BadRequestException("El estado de envio no puede estar vacio");
+        }
+
+        List<NotificacionesDTO> lista = nS.listByUsuarioIdAndEstadoEnvio(idUsuario, estado.trim())
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+        return ResponseEntity.ok(lista);
     }
 
     @PostMapping
