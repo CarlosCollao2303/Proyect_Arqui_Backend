@@ -1,6 +1,7 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.ExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Examenes;
@@ -60,7 +61,15 @@ public class ExamenesController {
 
         return ResponseEntity.ok(lista);
     }
+    @GetMapping("/cantidad-por-paciente")
+    public ResponseEntity<List<CantidadExamenesDTO>> cantidadPorPaciente() {
+        return ResponseEntity.ok(eS.contarExamenesPorPaciente());
+    }
 
+    @GetMapping("/cantidad-por-paciente/{idPaciente}")
+    public ResponseEntity<CantidadExamenesDTO> cantidadDePaciente(@PathVariable int idPaciente) {
+        return ResponseEntity.ok(eS.contarExamenesDePaciente(idPaciente));
+    }
     @PostMapping("/Registrar")
     public ResponseEntity<ExamenesDTO> registrar(@Valid @RequestBody ExamenesDTO dto) {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
