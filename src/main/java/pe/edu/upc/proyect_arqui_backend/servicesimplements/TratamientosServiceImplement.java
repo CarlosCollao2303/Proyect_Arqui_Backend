@@ -5,6 +5,7 @@ import pe.edu.upc.proyect_arqui_backend.repositories.ITratamientosRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ITratamientosService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,5 +41,15 @@ public class TratamientosServiceImplement implements ITratamientosService {
     @Override
     public Optional<Tratamientos> listId(int id) {
         return tR.findById(id);
+    }
+
+    @Override
+    public List<Tratamientos> listByEstado(String estado) {
+        return tR.findByEstadoIgnoreCase(estado);
+    }
+
+    @Override
+    public List<Tratamientos> listByFechaInicioBetween(LocalDate inicio, LocalDate fin) {
+        return tR.findByFechaInicioBetween(inicio, fin);
     }
 }

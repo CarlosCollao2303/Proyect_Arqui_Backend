@@ -5,6 +5,7 @@ import pe.edu.upc.proyect_arqui_backend.repositories.IRecetasRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRecetasService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,5 +41,15 @@ public class RecetasServiceImplement implements IRecetasService {
     @Override
     public Optional<Recetas> listId(int id) {
         return rR.findById(id);
+    }
+
+    @Override
+    public List<Recetas> listByMedicamento(String medicamento) {
+        return rR.findByMedicamentoContainingIgnoreCase(medicamento);
+    }
+
+    @Override
+    public List<Recetas> listByFechaEmisionBetween(LocalDateTime inicio, LocalDateTime fin) {
+        return rR.findByFechaEmisionBetween(inicio, fin);
     }
 }

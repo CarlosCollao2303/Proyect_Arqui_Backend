@@ -68,9 +68,8 @@ public class UsuariosController {
         return ResponseEntity.ok(convertirADTO(usuario));
     }
 
-    // Endpoint publico (ver SecurityConfig). Si lo llama un ADMIN con su token puede
-    // elegir rol y especialidad; cualquier otro se registra siempre como PACIENTE,
-    // asi nadie puede auto-asignarse ADMIN o MEDICO mandando otro idRol.
+    // El registro publico siempre crea pacientes. Un ADMIN puede elegir el rol;
+    // las especialidades se asignan despues y solo a medicos.
     @PostMapping("/Registrar")
     public ResponseEntity<UsuariosDTO> registrar(@Valid @RequestBody UsuariosDTO dto, Authentication auth) {
         // La contrasena no lleva @NotBlank en el DTO (el PUT puede omitirla),
@@ -82,21 +81,18 @@ public class UsuariosController {
         boolean esAdmin = tieneRol(auth, "ADMIN");
 
         Roles rol;
-        Especialidades especialidad;
         if (esAdmin) {
             rol = obtenerRol(dto.getIdRol());
-            especialidad = obtenerEspecialidad(dto.getIdEspecialidad());
         } else {
             rol = rS.listByNombre("PACIENTE")
                     .orElseThrow(() ->
                             new ResourceNotFoundException("No existe el rol PACIENTE")
                     );
-            especialidad = null;
         }
 
         Usuarios usuario = new Usuarios();
         usuario.setRol(rol);
-        usuario.setEspecialidad(especialidad);
+        usuario.setEspecialidad(null);
         usuario.setNombres(dto.getNombres());
         usuario.setApellidos(dto.getApellidos());
         usuario.setDni(dto.getDni());

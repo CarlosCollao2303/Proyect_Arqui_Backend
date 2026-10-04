@@ -11,7 +11,7 @@ public class UsuariosDTO {
     // UsuariosController lo exige a mano cuando quien llama es ADMIN.
     private Integer idRol;
 
-    // Nullable: los pacientes no tienen especialidad, solo los medicos
+    // Se ignora al registrar: la especialidad se asigna despues solo a medicos.
     private Integer idEspecialidad;
 
     @NotBlank(message = "Los nombres son obligatorios")
@@ -20,7 +20,10 @@ public class UsuariosDTO {
     @NotBlank(message = "Los apellidos son obligatorios")
     private String apellidos;
 
+    @NotBlank(message = "El DNI es obligatorio")
     private String dni;
+
+    @NotBlank(message = "El telefono es obligatorio")
     private String telefono;
 
     @NotBlank(message = "El correo es obligatorio")

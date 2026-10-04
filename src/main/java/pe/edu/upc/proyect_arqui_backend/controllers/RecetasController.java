@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.RecetasDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Recetas;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRecetasService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +51,34 @@ public class RecetasController {
                 );
 
         return ResponseEntity.ok(convertirADTO(receta));
+    }
+
+    @GetMapping("/BuscarPorMedicamento")
+    public ResponseEntity<List<RecetasDTO>> buscarPorMedicamento(@RequestParam String medicamento) {
+        if (medicamento.isBlank()) {
+            throw new BadRequestException("El nombre del medicamento no puede estar vacio");
+        }
+
+        List<RecetasDTO> lista = rS.listByMedicamento(medicamento.trim())
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/BuscarPorFechaEmision")
+    public ResponseEntity<List<RecetasDTO>> buscarPorFechaEmision(
+            @RequestParam LocalDateTime inicio,
+            @RequestParam LocalDateTime fin) {
+        if (inicio.isAfter(fin)) {
+            throw new BadRequestException("La fecha inicial no puede ser posterior a la fecha final");
+        }
+
+        List<RecetasDTO> lista = rS.listByFechaEmisionBetween(inicio, fin)
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+        return ResponseEntity.ok(lista);
     }
 
     @PostMapping("/Registrar")
