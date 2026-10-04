@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesinterfaces;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Examenes;
 
 import java.util.List;
@@ -12,4 +13,6 @@ public interface IExamenesService {
     public List<Examenes> list();
     public Optional<Examenes> listId(int id);
     public List<Examenes> listByTipoExamen(String tipoExamen);
+    public List<CantidadExamenesDTO> contarExamenesPorPaciente();
+    public CantidadExamenesDTO contarExamenesDePaciente(int idPaciente);
 }

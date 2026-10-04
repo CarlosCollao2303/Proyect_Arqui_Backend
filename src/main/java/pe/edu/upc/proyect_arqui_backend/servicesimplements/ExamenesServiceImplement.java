@@ -1,6 +1,8 @@
 package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Examenes;
+import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.repositories.IExamenesRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IExamenesService;
 import org.springframework.stereotype.Service;
@@ -45,5 +47,20 @@ public class ExamenesServiceImplement implements IExamenesService {
     @Override
     public List<Examenes> listByTipoExamen(String tipoExamen) {
         return eR.findByTipoExamenContainingIgnoreCase(tipoExamen);
+    }
+
+    @Override
+    public List<CantidadExamenesDTO> contarExamenesPorPaciente() {
+        return eR.contarExamenesPorPaciente();
+    }
+
+    @Override
+    public CantidadExamenesDTO contarExamenesDePaciente(int idPaciente) {
+        return eR.contarExamenesDePaciente(idPaciente)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe un paciente con el id: " + idPaciente
+                        )
+                );
     }
 }
