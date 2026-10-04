@@ -1,6 +1,7 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import pe.edu.upc.proyect_arqui_backend.dtos.CantidadDiagnosticosDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.HistoriasClinicasDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.HistoriasClinicas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
@@ -62,7 +63,15 @@ public class HistoriasClinicasController {
 
         return ResponseEntity.ok(convertirADTO(historiaClinica));
     }
+    @GetMapping("/cantidad-diagnosticos")
+    public ResponseEntity<List<CantidadDiagnosticosDTO>> cantidadDiagnosticos() {
+        return ResponseEntity.ok(hS.contarDiagnosticosPorHistoria());
+    }
 
+    @GetMapping("/{idHistoria}/cantidad-diagnosticos")
+    public ResponseEntity<CantidadDiagnosticosDTO> cantidadDiagnosticosDeHistoria(@PathVariable int idHistoria) {
+        return ResponseEntity.ok(hS.contarDiagnosticosDeHistoria(idHistoria));
+    }
     @PostMapping("/Registrar")
     public ResponseEntity<HistoriasClinicasDTO> registrar(@Valid @RequestBody HistoriasClinicasDTO dto) {
         Usuarios paciente = uS.listId(dto.getIdPaciente())

@@ -1,6 +1,8 @@
 package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.CantidadDiagnosticosDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.HistoriasClinicas;
+import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.repositories.IHistoriasClinicasRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IHistoriasClinicasService;
 import org.springframework.stereotype.Service;
@@ -45,5 +47,19 @@ public class HistoriasClinicasServiceImplement implements IHistoriasClinicasServ
     @Override
     public Optional<HistoriasClinicas> listByPacienteId(int idPaciente) {
         return hR.findByPacienteIdNative(idPaciente);
+    }
+    @Override
+    public List<CantidadDiagnosticosDTO> contarDiagnosticosPorHistoria() {
+        return hR.contarDiagnosticosPorHistoria();
+    }
+
+    @Override
+    public CantidadDiagnosticosDTO contarDiagnosticosDeHistoria(int idHistoria) {
+        return hR.contarDiagnosticosDeHistoria(idHistoria)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una historia clinica con el id: " + idHistoria
+                        )
+                );
     }
 }
