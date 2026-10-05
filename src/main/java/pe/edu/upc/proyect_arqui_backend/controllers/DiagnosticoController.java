@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.util.List;
@@ -79,8 +80,10 @@ public class DiagnosticoController {
     }
 
     @PostMapping("/Registrar")
+    @Transactional
     public ResponseEntity<DiagnosticoDTO> registrar(@Valid @RequestBody DiagnosticoDTO dto) {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
+        validarDetalleDisponible(detalle, null);
 
         Diagnostico diagnostico = new Diagnostico();
         diagnostico.setCodigoCie10(dto.getCodigoCie10());
@@ -105,6 +108,7 @@ public class DiagnosticoController {
     }
 
     @PutMapping("/Actualizar")
+    @Transactional
     public ResponseEntity<DiagnosticoDTO> actualizar(@Valid @RequestBody DiagnosticoDTO dto) {
         Optional<Diagnostico> existente = dS.listId(dto.getIdDiagnostico());
 
@@ -117,17 +121,18 @@ public class DiagnosticoController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Diagnostico diagnostico = existente.get();
-        diagnostico.setCodigoCie10(dto.getCodigoCie10());
-        diagnostico.setDescripcion(dto.getDescripcion());
-        diagnostico.setFechaRegistro(dto.getFechaRegistro());
-
-        dS.update(diagnostico);
+        validarDetalleDisponible(detalle, diagnostico.getIdDiagnostico());
         dhS.findAllByDiagnosticoId(diagnostico.getIdDiagnostico()).forEach(anterior -> {
             if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
                 anterior.setDiagnostico(null);
                 dhS.update(anterior);
             }
         });
+        diagnostico.setCodigoCie10(dto.getCodigoCie10());
+        diagnostico.setDescripcion(dto.getDescripcion());
+        diagnostico.setFechaRegistro(dto.getFechaRegistro());
+
+        dS.update(diagnostico);
         detalle.setDiagnostico(diagnostico);
         dhS.update(detalle);
 
@@ -138,6 +143,7 @@ public class DiagnosticoController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Diagnostico diagnostico = dS.listId(id)
                 .orElseThrow(() ->
@@ -163,15 +169,25 @@ public class DiagnosticoController {
                 );
     }
 
+    private void validarDetalleDisponible(DetalleHistorial detalle, Integer idDiagnosticoActual) {
+        Diagnostico diagnosticoAsociado = detalle.getDiagnostico();
+        if (diagnosticoAsociado != null
+                && (idDiagnosticoActual == null
+                || diagnosticoAsociado.getIdDiagnostico() != idDiagnosticoActual)) {
+            throw new BadRequestException(
+                    "El detalle de historial con id " + detalle.getIdDetalleHistorial()
+                            + " ya tiene un diagnostico asociado"
+            );
+        }
+    }
+
     private DiagnosticoDTO convertirADTO(Diagnostico diagnostico) {
         DiagnosticoDTO dto = new DiagnosticoDTO();
         dto.setIdDiagnostico(diagnostico.getIdDiagnostico());
         dto.setIdDetalleHistorial(dhS.findAllByDiagnosticoId(diagnostico.getIdDiagnostico()).stream()
                 .map(DetalleHistorial::getIdDetalleHistorial)
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "No existe el detalle de historial asociado al diagnostico con el id: " + diagnostico.getIdDiagnostico()
-                )));
+                .orElse(null));
         dto.setCodigoCie10(diagnostico.getCodigoCie10());
         dto.setDescripcion(diagnostico.getDescripcion());
         dto.setFechaRegistro(diagnostico.getFechaRegistro());

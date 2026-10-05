@@ -12,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,13 +70,8 @@ public class RecetasController {
 
     @GetMapping("/BuscarPorFechaEmision")
     public ResponseEntity<List<RecetasDTO>> buscarPorFechaEmision(
-            @RequestParam LocalDateTime inicio,
-            @RequestParam LocalDateTime fin) {
-        if (inicio.isAfter(fin)) {
-            throw new BadRequestException("La fecha inicial no puede ser posterior a la fecha final");
-        }
-
-        List<RecetasDTO> lista = rS.listByFechaEmisionBetween(inicio, fin)
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        List<RecetasDTO> lista = rS.listByFechaEmision(fecha)
                 .stream()
                 .map(this::convertirADTO)
                 .toList();
@@ -82,8 +79,10 @@ public class RecetasController {
     }
 
     @PostMapping("/Registrar")
+    @Transactional
     public ResponseEntity<RecetasDTO> registrar(@Valid @RequestBody RecetasDTO dto) {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
+        validarDetalleDisponible(detalle, null);
 
         Recetas receta = new Recetas();
         receta.setMedicamento(dto.getMedicamento());
@@ -111,6 +110,7 @@ public class RecetasController {
     }
 
     @PutMapping("/Actualizar")
+    @Transactional
     public ResponseEntity<RecetasDTO> actualizar(@Valid @RequestBody RecetasDTO dto) {
         Optional<Recetas> existente = rS.listId(dto.getIdReceta());
 
@@ -123,6 +123,13 @@ public class RecetasController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Recetas receta = existente.get();
+        validarDetalleDisponible(detalle, receta.getIdReceta());
+        dhS.findAllByRecetaId(receta.getIdReceta()).forEach(anterior -> {
+            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
+                anterior.setReceta(null);
+                dhS.update(anterior);
+            }
+        });
         receta.setMedicamento(dto.getMedicamento());
         receta.setDosis(dto.getDosis());
         receta.setFrecuencia(dto.getFrecuencia());
@@ -131,12 +138,6 @@ public class RecetasController {
         receta.setFechaEmision(dto.getFechaEmision());
 
         rS.update(receta);
-        dhS.findAllByRecetaId(receta.getIdReceta()).forEach(anterior -> {
-            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
-                anterior.setReceta(null);
-                dhS.update(anterior);
-            }
-        });
         detalle.setReceta(receta);
         dhS.update(detalle);
 
@@ -147,6 +148,7 @@ public class RecetasController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Recetas receta = rS.listId(id)
                 .orElseThrow(() ->
@@ -172,15 +174,24 @@ public class RecetasController {
                 );
     }
 
+    private void validarDetalleDisponible(DetalleHistorial detalle, Integer idRecetaActual) {
+        Recetas recetaAsociada = detalle.getReceta();
+        if (recetaAsociada != null
+                && (idRecetaActual == null || recetaAsociada.getIdReceta() != idRecetaActual)) {
+            throw new BadRequestException(
+                    "El detalle de historial con id " + detalle.getIdDetalleHistorial()
+                            + " ya tiene una receta asociada"
+            );
+        }
+    }
+
     private RecetasDTO convertirADTO(Recetas receta) {
         RecetasDTO dto = new RecetasDTO();
         dto.setIdReceta(receta.getIdReceta());
         dto.setIdDetalleHistorial(dhS.findAllByRecetaId(receta.getIdReceta()).stream()
                 .map(DetalleHistorial::getIdDetalleHistorial)
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "No existe el detalle de historial asociado a la receta con el id: " + receta.getIdReceta()
-                )));
+                .orElse(null));
         dto.setMedicamento(receta.getMedicamento());
         dto.setDosis(receta.getDosis());
         dto.setFrecuencia(receta.getFrecuencia());

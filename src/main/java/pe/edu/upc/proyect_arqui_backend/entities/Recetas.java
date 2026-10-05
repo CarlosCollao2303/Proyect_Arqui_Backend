@@ -97,4 +97,5 @@ public class Recetas {
     public void setFechaEmision(LocalDateTime fechaEmision) {
         this.fechaEmision = fechaEmision;
     }
+
 }

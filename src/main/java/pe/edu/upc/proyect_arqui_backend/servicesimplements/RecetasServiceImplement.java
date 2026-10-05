@@ -5,6 +5,7 @@ import pe.edu.upc.proyect_arqui_backend.repositories.IRecetasRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRecetasService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +50,9 @@ public class RecetasServiceImplement implements IRecetasService {
     }
 
     @Override
-    public List<Recetas> listByFechaEmisionBetween(LocalDateTime inicio, LocalDateTime fin) {
-        return rR.findByFechaEmisionBetween(inicio, fin);
+    public List<Recetas> listByFechaEmision(LocalDate fecha) {
+        LocalDateTime inicio = fecha.atStartOfDay();
+        LocalDateTime fin = fecha.plusDays(1).atStartOfDay();
+        return rR.findByFechaEmisionGreaterThanEqualAndFechaEmisionLessThan(inicio, fin);
     }
 }

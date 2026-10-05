@@ -3,6 +3,8 @@ package pe.edu.upc.proyect_arqui_backend.entities;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "detalles_historial")
