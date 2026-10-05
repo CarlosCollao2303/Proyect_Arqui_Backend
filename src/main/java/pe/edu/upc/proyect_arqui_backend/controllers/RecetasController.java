@@ -79,11 +79,7 @@ public class RecetasController {
     }
 
     @PostMapping("/Registrar")
-    @Transactional
     public ResponseEntity<RecetasDTO> registrar(@Valid @RequestBody RecetasDTO dto) {
-        DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
-        validarDetalleDisponible(detalle, null);
-
         Recetas receta = new Recetas();
         receta.setMedicamento(dto.getMedicamento());
         receta.setDosis(dto.getDosis());
@@ -93,8 +89,6 @@ public class RecetasController {
         receta.setFechaEmision(dto.getFechaEmision());
 
         rS.insert(receta);
-        detalle.setReceta(receta);
-        dhS.update(detalle);
 
         RecetasDTO responseDTO = convertirADTO(receta);
 
@@ -110,7 +104,6 @@ public class RecetasController {
     }
 
     @PutMapping("/Actualizar")
-    @Transactional
     public ResponseEntity<RecetasDTO> actualizar(@Valid @RequestBody RecetasDTO dto) {
         Optional<Recetas> existente = rS.listId(dto.getIdReceta());
 
@@ -120,16 +113,7 @@ public class RecetasController {
             );
         }
 
-        DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
-
         Recetas receta = existente.get();
-        validarDetalleDisponible(detalle, receta.getIdReceta());
-        dhS.findAllByRecetaId(receta.getIdReceta()).forEach(anterior -> {
-            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
-                anterior.setReceta(null);
-                dhS.update(anterior);
-            }
-        });
         receta.setMedicamento(dto.getMedicamento());
         receta.setDosis(dto.getDosis());
         receta.setFrecuencia(dto.getFrecuencia());
@@ -138,8 +122,6 @@ public class RecetasController {
         receta.setFechaEmision(dto.getFechaEmision());
 
         rS.update(receta);
-        detalle.setReceta(receta);
-        dhS.update(detalle);
 
         RecetasDTO responseDTO = convertirADTO(receta);
 
@@ -165,33 +147,9 @@ public class RecetasController {
         return ResponseEntity.noContent().build();
     }
 
-    private DetalleHistorial obtenerDetalle(Integer idDetalleHistorial) {
-        return dhS.listId(idDetalleHistorial)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "No existe el detalle de historial con el id: " + idDetalleHistorial
-                        )
-                );
-    }
-
-    private void validarDetalleDisponible(DetalleHistorial detalle, Integer idRecetaActual) {
-        Recetas recetaAsociada = detalle.getReceta();
-        if (recetaAsociada != null
-                && (idRecetaActual == null || recetaAsociada.getIdReceta() != idRecetaActual)) {
-            throw new BadRequestException(
-                    "El detalle de historial con id " + detalle.getIdDetalleHistorial()
-                            + " ya tiene una receta asociada"
-            );
-        }
-    }
-
     private RecetasDTO convertirADTO(Recetas receta) {
         RecetasDTO dto = new RecetasDTO();
         dto.setIdReceta(receta.getIdReceta());
-        dto.setIdDetalleHistorial(dhS.findAllByRecetaId(receta.getIdReceta()).stream()
-                .map(DetalleHistorial::getIdDetalleHistorial)
-                .findFirst()
-                .orElse(null));
         dto.setMedicamento(receta.getMedicamento());
         dto.setDosis(receta.getDosis());
         dto.setFrecuencia(receta.getFrecuencia());

@@ -11,16 +11,16 @@ public class Tratamientos {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idTratamiento;
 
-    @Column(name = "descripcion", columnDefinition = "TEXT")
+    @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
     private String descripcion;
 
-    @Column(name = "fecha_inicio")
+    @Column(name = "fecha_inicio", nullable = false)
     private LocalDate fechaInicio;
 
-    @Column(name = "fecha_fin")
+    @Column(name = "fecha_fin", nullable = false)
     private LocalDate fechaFin;
 
-    @Column(name = "estado")
+    @Column(name = "estado", nullable = false)
     private String estado;
 
     public Tratamientos() {

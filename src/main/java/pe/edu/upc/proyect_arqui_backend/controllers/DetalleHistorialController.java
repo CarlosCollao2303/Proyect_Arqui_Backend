@@ -2,18 +2,27 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.DetalleHistorialDTO;
+import pe.edu.upc.proyect_arqui_backend.entities.Diagnostico;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
+import pe.edu.upc.proyect_arqui_backend.entities.Examenes;
 import pe.edu.upc.proyect_arqui_backend.entities.HistoriasClinicas;
+import pe.edu.upc.proyect_arqui_backend.entities.Recetas;
+import pe.edu.upc.proyect_arqui_backend.entities.Tratamientos;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
+import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDiagnosticoService;
+import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IExamenesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IHistoriasClinicasService;
+import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRecetasService;
+import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ITratamientosService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.util.List;
@@ -27,11 +36,22 @@ public class DetalleHistorialController {
     private final IDetalleHistorialService dhS;
     private final IHistoriasClinicasService hS;
     private final IUsuariosService uS;
+    private final IExamenesService eS;
+    private final IDiagnosticoService dS;
+    private final ITratamientosService tS;
+    private final IRecetasService rS;
 
-    public DetalleHistorialController(IDetalleHistorialService dhS, IHistoriasClinicasService hS, IUsuariosService uS) {
+    public DetalleHistorialController(IDetalleHistorialService dhS, IHistoriasClinicasService hS,
+                                      IUsuariosService uS, IExamenesService eS,
+                                      IDiagnosticoService dS, ITratamientosService tS,
+                                      IRecetasService rS) {
         this.dhS = dhS;
         this.hS = hS;
         this.uS = uS;
+        this.eS = eS;
+        this.dS = dS;
+        this.tS = tS;
+        this.rS = rS;
     }
 
     @GetMapping("/Listar")
@@ -89,6 +109,7 @@ public class DetalleHistorialController {
     }
 
     @PostMapping("/Registrar")
+    @Transactional
     public ResponseEntity<DetalleHistorialDTO> registrar(@Valid @RequestBody DetalleHistorialDTO dto) {
         HistoriasClinicas historiaClinica = hS.listId(dto.getIdHistoriaClinica())
                 .orElseThrow(() ->
@@ -105,6 +126,7 @@ public class DetalleHistorialController {
         detalle.setMotivoConsulta(dto.getMotivoConsulta());
         detalle.setCifradoDatos(dto.getCifradoDatos());
         detalle.setFechaRegistro(dto.getFechaRegistro());
+        asignarRelaciones(detalle, dto);
 
         dhS.insert(detalle);
 
@@ -122,6 +144,7 @@ public class DetalleHistorialController {
     }
 
     @PutMapping("/Actualizar")
+    @Transactional
     public ResponseEntity<DetalleHistorialDTO> actualizar(@Valid @RequestBody DetalleHistorialDTO dto) {
         Optional<DetalleHistorial> existente = dhS.listId(dto.getIdDetalleHistorial());
 
@@ -146,6 +169,7 @@ public class DetalleHistorialController {
         detalle.setMotivoConsulta(dto.getMotivoConsulta());
         detalle.setCifradoDatos(dto.getCifradoDatos());
         detalle.setFechaRegistro(dto.getFechaRegistro());
+        asignarRelaciones(detalle, dto);
 
         dhS.update(detalle);
 
@@ -173,10 +197,31 @@ public class DetalleHistorialController {
         dto.setIdDetalleHistorial(detalle.getIdDetalleHistorial());
         dto.setIdHistoriaClinica(detalle.getHistoriaClinica().getIdHistoriaClinica());
         dto.setIdMedico(detalle.getMedico().getIdUsuario());
+        dto.setIdExamen(detalle.getExamen() == null ? null : detalle.getExamen().getIdExamen());
+        dto.setIdDiagnostico(detalle.getDiagnostico() == null
+                ? null : detalle.getDiagnostico().getIdDiagnostico());
+        dto.setIdTratamiento(detalle.getTratamiento() == null
+                ? null : detalle.getTratamiento().getIdTratamiento());
+        dto.setIdReceta(detalle.getReceta() == null ? null : detalle.getReceta().getIdReceta());
         dto.setMotivoConsulta(detalle.getMotivoConsulta());
         dto.setCifradoDatos(detalle.getCifradoDatos());
         dto.setFechaRegistro(detalle.getFechaRegistro());
         return dto;
+    }
+
+    private void asignarRelaciones(DetalleHistorial detalle, DetalleHistorialDTO dto) {
+        detalle.setExamen(dto.getIdExamen() == null ? null : eS.listId(dto.getIdExamen())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe el examen con el id: " + dto.getIdExamen())));
+        detalle.setDiagnostico(dto.getIdDiagnostico() == null ? null : dS.listId(dto.getIdDiagnostico())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe el diagnostico con el id: " + dto.getIdDiagnostico())));
+        detalle.setTratamiento(dto.getIdTratamiento() == null ? null : tS.listId(dto.getIdTratamiento())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe el tratamiento con el id: " + dto.getIdTratamiento())));
+        detalle.setReceta(dto.getIdReceta() == null ? null : rS.listId(dto.getIdReceta())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe la receta con el id: " + dto.getIdReceta())));
     }
 
     private Usuarios obtenerMedico(Integer idMedico) {

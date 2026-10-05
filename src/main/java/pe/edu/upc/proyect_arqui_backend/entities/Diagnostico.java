@@ -11,13 +11,13 @@ public class Diagnostico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idDiagnostico;
 
-    @Column(name = "codigo_cie10")
+    @Column(name = "codigo_cie10", nullable = false)
     private String codigoCie10;
 
-    @Column(name = "descripcion", columnDefinition = "TEXT")
+    @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
     private String descripcion;
 
-    @Column(name = "fecha_registro")
+    @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
 
     public Diagnostico() {

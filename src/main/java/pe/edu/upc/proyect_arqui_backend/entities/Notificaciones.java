@@ -15,10 +15,10 @@ public class Notificaciones {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuarios usuario;
 
-    @Column(name = "tipo")
+    @Column(name = "tipo", nullable = false)
     private String tipo;
 
-    @Column(name = "mensaje", columnDefinition = "TEXT")
+    @Column(name = "mensaje", nullable = false, columnDefinition = "TEXT")
     private String mensaje;
 
     @Column(name = "fecha_envio")

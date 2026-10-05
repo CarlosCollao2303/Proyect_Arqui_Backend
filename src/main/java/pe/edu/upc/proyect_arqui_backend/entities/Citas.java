@@ -23,13 +23,13 @@ public class Citas {
     @JoinColumn(name = "medico_id", nullable = false)
     private Usuarios medico;
 
-    @Column(name = "fecha_hora_programada")
+    @Column(name = "fecha_hora_programada", nullable = false)
     private LocalDateTime fechaHoraProgramada;
 
     @Column(name = "tiempo_espera_minutos")
     private int tiempoEsperaMinutos;
 
-    @Column(name = "estado")
+    @Column(name = "estado", nullable = false)
     private String estado;
 
     public Citas() {
