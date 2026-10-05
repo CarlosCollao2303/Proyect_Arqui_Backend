@@ -20,6 +20,7 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,6 +102,12 @@ public class CitasController {
     @PreAuthorize("hasAnyAuthority('ADMIN','MEDICO','PACIENTE')")
     @PostMapping("/Registrar")
     public ResponseEntity<CitasDTO> registrar(@Valid @RequestBody CitasDTO dto, Authentication auth) {
+        // Solo al registrar: al actualizar, una cita que ya paso si puede tener fecha
+        // anterior (por ejemplo, para marcarla ATENDIDA).
+        if (dto.getFechaHoraProgramada().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("No se puede registrar una cita en una fecha y hora pasada");
+        }
+
         boolean esPaciente = !tieneRol(auth, "ADMIN") && !tieneRol(auth, "MEDICO");
 
         Usuarios paciente;
