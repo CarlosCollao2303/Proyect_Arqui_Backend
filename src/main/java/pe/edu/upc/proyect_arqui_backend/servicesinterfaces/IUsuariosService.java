@@ -13,4 +13,6 @@ public interface IUsuariosService {
     public Optional<Usuarios> listId(int id);
     public Optional<Usuarios> listByCorreo(String correo);
     public boolean existsByRol(int idRol);
+    public boolean existsByCorreo(String correo);
+    public boolean existsByCorreoEnOtroUsuario(String correo, int idUsuario);
 }
