@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.TratamientoPacienteDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Tratamientos;
 import pe.edu.upc.proyect_arqui_backend.repositories.ITratamientosRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ITratamientosService;
@@ -56,5 +57,10 @@ public class TratamientosServiceImplement implements ITratamientosService {
     @Override
     public List<Tratamientos> listarTratamientosVigentes(LocalDate fecha) {
         return tR.listarTratamientosVigentes(fecha);
+    }
+
+    @Override
+    public List<TratamientoPacienteDTO> listarTratamientosDePaciente(int idPaciente) {
+        return tR.listarTratamientosDePaciente(idPaciente);
     }
 }

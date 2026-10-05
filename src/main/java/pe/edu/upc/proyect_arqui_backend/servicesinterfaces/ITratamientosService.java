@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesinterfaces;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.TratamientoPacienteDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Tratamientos;
 
 import java.time.LocalDate;
@@ -15,4 +16,5 @@ public interface ITratamientosService {
     public List<Tratamientos> listByEstado(String estado);
     public List<Tratamientos> listByFechaInicio(LocalDate fechaInicio);
     public List<Tratamientos> listarTratamientosVigentes(LocalDate fecha);
+    public List<TratamientoPacienteDTO> listarTratamientosDePaciente(int idPaciente);
 }
