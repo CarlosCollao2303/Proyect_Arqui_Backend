@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -71,6 +72,18 @@ public class TratamientosController {
     public ResponseEntity<List<TratamientosDTO>> buscarPorFechaInicio(
             @RequestParam LocalDate fecha) {
         List<TratamientosDTO> lista = tS.listByFechaInicio(fecha)
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    // Si no se envia la fecha, se toman los tratamientos vigentes hoy.
+    @GetMapping("/ListarVigentes")
+    public ResponseEntity<List<TratamientosDTO>> listarVigentes(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        LocalDate dia = fecha != null ? fecha : LocalDate.now();
+        List<TratamientosDTO> lista = tS.listarTratamientosVigentes(dia)
                 .stream()
                 .map(this::convertirADTO)
                 .toList();
