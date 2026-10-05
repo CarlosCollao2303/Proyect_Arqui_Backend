@@ -77,7 +77,11 @@ public class UsuariosController {
         if (dto.getContrasenaHash() == null || dto.getContrasenaHash().isBlank()) {
             throw new BadRequestException("La contrasena es obligatoria para registrar un usuario");
         }
-
+        // HU-03 (T-04): no se permite registrar dos usuarios con el mismo correo.
+        String correo = dto.getCorreo().trim();
+        if (uS.existsByCorreo(correo)) {
+            throw new BadRequestException("Ya existe un usuario registrado con el correo: " + correo);
+        }
         boolean esAdmin = tieneRol(auth, "ADMIN");
 
         Roles rol;
@@ -97,7 +101,7 @@ public class UsuariosController {
         usuario.setApellidos(dto.getApellidos());
         usuario.setDni(dto.getDni());
         usuario.setTelefono(dto.getTelefono());
-        usuario.setCorreo(dto.getCorreo());
+        usuario.setCorreo(correo);
         usuario.setContrasenaHash(passwordEncoder.encode(dto.getContrasenaHash()));
         usuario.setColegiatura(dto.getColegiatura());
         usuario.setRegionUbicacion(dto.getRegionUbicacion());
@@ -143,12 +147,16 @@ public class UsuariosController {
             verificarQueEsElMismo(usuario, auth);
         }
 
+        // HU-03 (T-04): el correo no puede pertenecer a otro usuario.
+        String correo = dto.getCorreo().trim();
+        if (uS.existsByCorreoEnOtroUsuario(correo, usuario.getIdUsuario())) {
+            throw new BadRequestException("El correo " + correo + " ya esta en uso por otro usuario");
+        }
         usuario.setNombres(dto.getNombres());
         usuario.setApellidos(dto.getApellidos());
         usuario.setDni(dto.getDni());
         usuario.setTelefono(dto.getTelefono());
-        usuario.setCorreo(dto.getCorreo());
-
+        usuario.setCorreo(correo);
         // Solo se re-encripta si el cliente mando una contrasena nueva; si viene vacia
         // se conserva la que ya tenia. Sin esto, un PUT normal re-hashearia el hash.
         if (dto.getContrasenaHash() != null && !dto.getContrasenaHash().isBlank()) {

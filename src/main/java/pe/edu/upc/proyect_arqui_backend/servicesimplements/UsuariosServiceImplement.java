@@ -51,4 +51,13 @@ public class UsuariosServiceImplement implements IUsuariosService {
     public boolean existsByRol(int idRol) {
         return uR.existsByRolIdRol(idRol);
     }
+
+    @Override
+    public boolean existsByCorreo(String correo) {
+        return uR.existsByCorreoIgnoreCase(correo);    }
+
+    @Override
+    public boolean existsByCorreoEnOtroUsuario(String correo, int idUsuario) {
+        return uR.existsByCorreoIgnoreCaseAndIdUsuarioNot(correo, idUsuario);
+    }
 }
