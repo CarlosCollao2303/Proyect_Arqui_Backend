@@ -1,6 +1,7 @@
 package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 
 import pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.ExamenPendienteDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Examenes;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.repositories.IExamenesRepository;
@@ -62,5 +63,10 @@ public class ExamenesServiceImplement implements IExamenesService {
                                 "No existe un paciente con el id: " + idPaciente
                         )
                 );
+    }
+
+    @Override
+    public List<ExamenPendienteDTO> listarExamenesPendientes() {
+        return eR.listarExamenesPendientes();
     }
 }

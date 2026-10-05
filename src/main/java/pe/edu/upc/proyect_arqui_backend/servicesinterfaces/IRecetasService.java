@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesinterfaces;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.RecetaDetalleDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Recetas;
 
 import java.time.LocalDate;
@@ -15,4 +16,5 @@ public interface IRecetasService {
     public Optional<Recetas> listId(int id);
     public List<Recetas> listByMedicamento(String medicamento);
     public List<Recetas> listByFechaEmision(LocalDate fecha);
+    public List<RecetaDetalleDTO> listarRecetasConDetalle();
 }
