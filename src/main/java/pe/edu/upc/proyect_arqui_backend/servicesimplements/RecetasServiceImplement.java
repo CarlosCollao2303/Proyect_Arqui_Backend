@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.RecetaDetalleDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Recetas;
 import pe.edu.upc.proyect_arqui_backend.repositories.IRecetasRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRecetasService;
@@ -54,5 +55,10 @@ public class RecetasServiceImplement implements IRecetasService {
         LocalDateTime inicio = fecha.atStartOfDay();
         LocalDateTime fin = fecha.plusDays(1).atStartOfDay();
         return rR.findByFechaEmisionGreaterThanEqualAndFechaEmisionLessThan(inicio, fin);
+    }
+
+    @Override
+    public List<RecetaDetalleDTO> listarRecetasConDetalle() {
+        return rR.listarRecetasConDetalle();
     }
 }
