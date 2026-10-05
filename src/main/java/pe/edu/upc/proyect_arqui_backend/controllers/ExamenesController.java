@@ -2,6 +2,7 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.ExamenPendienteDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.ExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Examenes;
@@ -71,6 +72,12 @@ public class ExamenesController {
     public ResponseEntity<CantidadExamenesDTO> cantidadDePaciente(@PathVariable int idPaciente) {
         return ResponseEntity.ok(eS.contarExamenesDePaciente(idPaciente));
     }
+
+    @GetMapping("/pendientes")
+    public ResponseEntity<List<ExamenPendienteDTO>> pendientes() {
+        return ResponseEntity.ok(eS.listarExamenesPendientes());
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<ExamenesDTO> registrar(@Valid @RequestBody ExamenesDTO dto) {
         Examenes examen = new Examenes();
