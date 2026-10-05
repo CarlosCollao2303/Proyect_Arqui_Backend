@@ -189,17 +189,25 @@ public class CitasController {
         return ResponseEntity.noContent().build();
     }
 
+    // Igual que con el medico: ademas de existir, el usuario tiene que tener rol
+    // PACIENTE. Si no, se podria agendar una cita donde el "paciente" es un medico o un admin.
     private Usuarios obtenerPaciente(Integer idPaciente) {
         if (idPaciente == null) {
             throw new BadRequestException("El id del paciente es obligatorio");
         }
 
-        return uS.listId(idPaciente)
+        Usuarios paciente = uS.listId(idPaciente)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "No existe el paciente con el id: " + idPaciente
                         )
                 );
+
+        if (!"PACIENTE".equals(paciente.getRol().getNombre())) {
+            throw new BadRequestException("El usuario con id " + idPaciente + " no es paciente");
+        }
+
+        return paciente;
     }
 
     // Ademas de existir, el usuario tiene que tener rol MEDICO: si no, se podria
