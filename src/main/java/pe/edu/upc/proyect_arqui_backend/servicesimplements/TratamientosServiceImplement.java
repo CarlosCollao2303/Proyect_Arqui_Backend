@@ -49,7 +49,7 @@ public class TratamientosServiceImplement implements ITratamientosService {
     }
 
     @Override
-    public List<Tratamientos> listByFechaInicioBetween(LocalDate inicio, LocalDate fin) {
-        return tR.findByFechaInicioBetween(inicio, fin);
+    public List<Tratamientos> listByFechaInicio(LocalDate fechaInicio) {
+        return tR.findByFechaInicio(fechaInicio);
     }
 }

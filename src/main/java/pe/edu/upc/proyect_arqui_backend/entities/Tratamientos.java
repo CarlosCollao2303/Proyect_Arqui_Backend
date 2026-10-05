@@ -73,4 +73,5 @@ public class Tratamientos {
     public void setEstado(String estado) {
         this.estado = estado;
     }
+
 }

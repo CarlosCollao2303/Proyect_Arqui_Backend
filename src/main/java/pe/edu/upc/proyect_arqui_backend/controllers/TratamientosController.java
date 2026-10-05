@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -68,13 +69,8 @@ public class TratamientosController {
 
     @GetMapping("/BuscarPorFechaInicio")
     public ResponseEntity<List<TratamientosDTO>> buscarPorFechaInicio(
-            @RequestParam LocalDate inicio,
-            @RequestParam LocalDate fin) {
-        if (inicio.isAfter(fin)) {
-            throw new BadRequestException("La fecha de inicio no puede ser posterior a la fecha de fin");
-        }
-
-        List<TratamientosDTO> lista = tS.listByFechaInicioBetween(inicio, fin)
+            @RequestParam LocalDate fecha) {
+        List<TratamientosDTO> lista = tS.listByFechaInicio(fecha)
                 .stream()
                 .map(this::convertirADTO)
                 .toList();
@@ -82,8 +78,10 @@ public class TratamientosController {
     }
 
     @PostMapping("/Registrar")
+    @Transactional
     public ResponseEntity<TratamientosDTO> registrar(@Valid @RequestBody TratamientosDTO dto) {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
+        validarDetalleDisponible(detalle, null);
 
         Tratamientos tratamiento = new Tratamientos();
         tratamiento.setDescripcion(dto.getDescripcion());
@@ -109,6 +107,7 @@ public class TratamientosController {
     }
 
     @PutMapping("/Actualizar")
+    @Transactional
     public ResponseEntity<TratamientosDTO> actualizar(@Valid @RequestBody TratamientosDTO dto) {
         Optional<Tratamientos> existente = tS.listId(dto.getIdTratamiento());
 
@@ -121,18 +120,19 @@ public class TratamientosController {
         DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
 
         Tratamientos tratamiento = existente.get();
+        validarDetalleDisponible(detalle, tratamiento.getIdTratamiento());
+        dhS.findAllByTratamientoId(tratamiento.getIdTratamiento()).forEach(anterior -> {
+            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
+                anterior.setTratamiento(null);
+                dhS.update(anterior);
+            }
+        });
         tratamiento.setDescripcion(dto.getDescripcion());
         tratamiento.setFechaInicio(dto.getFechaInicio());
         tratamiento.setFechaFin(dto.getFechaFin());
         tratamiento.setEstado(dto.getEstado());
 
         tS.update(tratamiento);
-        dhS.findByTratamientoId(tratamiento.getIdTratamiento()).ifPresent(anterior -> {
-            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
-                anterior.setTratamiento(null);
-                dhS.update(anterior);
-            }
-        });
         detalle.setTratamiento(tratamiento);
         dhS.update(detalle);
 
@@ -143,6 +143,7 @@ public class TratamientosController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Tratamientos tratamiento = tS.listId(id)
                 .orElseThrow(() ->
@@ -151,7 +152,7 @@ public class TratamientosController {
                         )
                 );
 
-        dhS.findByTratamientoId(tratamiento.getIdTratamiento()).ifPresent(detalle -> {
+        dhS.findAllByTratamientoId(tratamiento.getIdTratamiento()).forEach(detalle -> {
             detalle.setTratamiento(null);
             dhS.update(detalle);
         });
@@ -168,14 +169,25 @@ public class TratamientosController {
                 );
     }
 
+    private void validarDetalleDisponible(DetalleHistorial detalle, Integer idTratamientoActual) {
+        Tratamientos tratamientoAsociado = detalle.getTratamiento();
+        if (tratamientoAsociado != null
+                && (idTratamientoActual == null
+                || tratamientoAsociado.getIdTratamiento() != idTratamientoActual)) {
+            throw new BadRequestException(
+                    "El detalle de historial con id " + detalle.getIdDetalleHistorial()
+                            + " ya tiene un tratamiento asociado"
+            );
+        }
+    }
+
     private TratamientosDTO convertirADTO(Tratamientos tratamiento) {
         TratamientosDTO dto = new TratamientosDTO();
         dto.setIdTratamiento(tratamiento.getIdTratamiento());
-        dto.setIdDetalleHistorial(dhS.findByTratamientoId(tratamiento.getIdTratamiento())
+        dto.setIdDetalleHistorial(dhS.findAllByTratamientoId(tratamiento.getIdTratamiento()).stream()
                 .map(DetalleHistorial::getIdDetalleHistorial)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "No existe el detalle de historial asociado al tratamiento con el id: " + tratamiento.getIdTratamiento()
-                )));
+                .findFirst()
+                .orElse(null));
         dto.setDescripcion(tratamiento.getDescripcion());
         dto.setFechaInicio(tratamiento.getFechaInicio());
         dto.setFechaFin(tratamiento.getFechaFin());

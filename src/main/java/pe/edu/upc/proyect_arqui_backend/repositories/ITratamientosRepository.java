@@ -9,5 +9,5 @@ import java.util.List;
 public interface ITratamientosRepository extends JpaRepository<Tratamientos, Integer> {
     List<Tratamientos> findByEstadoIgnoreCase(String estado);
 
-    List<Tratamientos> findByFechaInicioBetween(LocalDate inicio, LocalDate fin);
+    List<Tratamientos> findByFechaInicio(LocalDate fechaInicio);
 }

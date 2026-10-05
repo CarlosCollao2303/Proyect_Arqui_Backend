@@ -1,4 +1,5 @@
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\configs\DataInitializer.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\configs\DetalleHistorialRelationsMigration.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\configs\ModelMapperConfig.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\CitasController.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\DetalleHistorialController.java
@@ -12,7 +13,11 @@ C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\RolesController.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\TratamientosController.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\controllers\UsuariosController.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\CantidadDiagnosticosDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\CantidadExamenesDTO.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\CitaEstadoDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\CitaMedicoDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\CitaPacienteDTO.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\CitasDTO.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\DetalleHistorialDTO.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\DiagnosticoDTO.java
@@ -22,6 +27,7 @@ C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\HistoriasClinicasDTO.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\LoginRequestDTO.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\LoginResponseDTO.java
+C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\MedicoPorEspecialidadDTO.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\NotificacionesDTO.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\RecetasDTO.java
 C:\Users\Carlos\OneDrive\Desktop\Proyect_Arqui_Backend\src\main\java\pe\edu\upc\proyect_arqui_backend\dtos\RolesDTO.java

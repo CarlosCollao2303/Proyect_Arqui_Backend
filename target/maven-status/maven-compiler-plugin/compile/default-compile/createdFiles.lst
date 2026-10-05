@@ -7,6 +7,7 @@ pe\edu\upc\proyect_arqui_backend\dtos\CitaEstadoDTO.class
 pe\edu\upc\proyect_arqui_backend\entities\HistoriasClinicas.class
 pe\edu\upc\proyect_arqui_backend\entities\Usuarios.class
 pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IExamenesService.class
+pe\edu\upc\proyect_arqui_backend\dtos\CantidadDiagnosticosDTO.class
 pe\edu\upc\proyect_arqui_backend\dtos\CitasDTO.class
 pe\edu\upc\proyect_arqui_backend\dtos\EspecialidadesDTO.class
 pe\edu\upc\proyect_arqui_backend\dtos\HistoriasClinicasDTO.class
@@ -37,14 +38,17 @@ pe\edu\upc\proyect_arqui_backend\servicesimplements\ExamenesServiceImplement.cla
 pe\edu\upc\proyect_arqui_backend\controllers\HistoriasClinicasController.class
 pe\edu\upc\proyect_arqui_backend\entities\DetalleHistorial.class
 pe\edu\upc\proyect_arqui_backend\dtos\ErrorResponse.class
+pe\edu\upc\proyect_arqui_backend\dtos\CitaPacienteDTO.class
 pe\edu\upc\proyect_arqui_backend\repositories\IExamenesRepository.class
 pe\edu\upc\proyect_arqui_backend\servicesimplements\HistoriasClinicasServiceImplement.class
+pe\edu\upc\proyect_arqui_backend\dtos\CitaMedicoDTO.class
 pe\edu\upc\proyect_arqui_backend\servicesimplements\NotificacionesServiceImplement.class
 pe\edu\upc\proyect_arqui_backend\controllers\CitasController.class
 pe\edu\upc\proyect_arqui_backend\controllers\RolesController.class
 pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IEspecialidadesService.class
 pe\edu\upc\proyect_arqui_backend\dtos\RolesDTO.class
 pe\edu\upc\proyect_arqui_backend\servicesimplements\RolesServiceImplement.class
+pe\edu\upc\proyect_arqui_backend\dtos\MedicoPorEspecialidadDTO.class
 pe\edu\upc\proyect_arqui_backend\controllers\UsuariosController.class
 pe\edu\upc\proyect_arqui_backend\servicesimplements\RecetasServiceImplement.class
 pe\edu\upc\proyect_arqui_backend\entities\Tratamientos.class
@@ -77,6 +81,7 @@ pe\edu\upc\proyect_arqui_backend\servicesinterfaces\IDetalleHistorialService.cla
 pe\edu\upc\proyect_arqui_backend\repositories\IDiagnosticoRepository.class
 pe\edu\upc\proyect_arqui_backend\controllers\DetalleHistorialController.class
 pe\edu\upc\proyect_arqui_backend\entities\Notificaciones.class
+pe\edu\upc\proyect_arqui_backend\dtos\CantidadExamenesDTO.class
 pe\edu\upc\proyect_arqui_backend\dtos\DiagnosticoDTO.class
 pe\edu\upc\proyect_arqui_backend\repositories\IRecetasRepository.class
 pe\edu\upc\proyect_arqui_backend\servicesimplements\EspecialidadesServiceImplement.class

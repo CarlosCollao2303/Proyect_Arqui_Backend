@@ -5,6 +5,7 @@ import pe.edu.upc.proyect_arqui_backend.dtos.DetalleHistorialDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.HistoriasClinicas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IHistoriasClinicasService;
@@ -55,6 +56,38 @@ public class DetalleHistorialController {
         return ResponseEntity.ok(convertirADTO(detalle));
     }
 
+    @GetMapping("/BuscarPorExamen/{idExamen}")
+    public ResponseEntity<List<DetalleHistorialDTO>> buscarPorExamen(@PathVariable int idExamen) {
+        return ResponseEntity.ok(dhS.findAllByExamenId(idExamen)
+                .stream()
+                .map(this::convertirADTO)
+                .toList());
+    }
+
+    @GetMapping("/BuscarPorDiagnostico/{idDiagnostico}")
+    public ResponseEntity<List<DetalleHistorialDTO>> buscarPorDiagnostico(@PathVariable int idDiagnostico) {
+        return ResponseEntity.ok(dhS.findAllByDiagnosticoId(idDiagnostico)
+                .stream()
+                .map(this::convertirADTO)
+                .toList());
+    }
+
+    @GetMapping("/BuscarPorTratamiento/{idTratamiento}")
+    public ResponseEntity<List<DetalleHistorialDTO>> buscarPorTratamiento(@PathVariable int idTratamiento) {
+        return ResponseEntity.ok(dhS.findAllByTratamientoId(idTratamiento)
+                .stream()
+                .map(this::convertirADTO)
+                .toList());
+    }
+
+    @GetMapping("/BuscarPorReceta/{idReceta}")
+    public ResponseEntity<List<DetalleHistorialDTO>> buscarPorReceta(@PathVariable int idReceta) {
+        return ResponseEntity.ok(dhS.findAllByRecetaId(idReceta)
+                .stream()
+                .map(this::convertirADTO)
+                .toList());
+    }
+
     @PostMapping("/Registrar")
     public ResponseEntity<DetalleHistorialDTO> registrar(@Valid @RequestBody DetalleHistorialDTO dto) {
         HistoriasClinicas historiaClinica = hS.listId(dto.getIdHistoriaClinica())
@@ -64,12 +97,7 @@ public class DetalleHistorialController {
                         )
                 );
 
-        Usuarios medico = uS.listId(dto.getIdMedico())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "No existe el medico con el id: " + dto.getIdMedico()
-                        )
-                );
+        Usuarios medico = obtenerMedico(dto.getIdMedico());
 
         DetalleHistorial detalle = new DetalleHistorial();
         detalle.setHistoriaClinica(historiaClinica);
@@ -110,12 +138,7 @@ public class DetalleHistorialController {
                         )
                 );
 
-        Usuarios medico = uS.listId(dto.getIdMedico())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "No existe el medico con el id: " + dto.getIdMedico()
-                        )
-                );
+        Usuarios medico = obtenerMedico(dto.getIdMedico());
 
         DetalleHistorial detalle = existente.get();
         detalle.setHistoriaClinica(historiaClinica);
@@ -154,5 +177,22 @@ public class DetalleHistorialController {
         dto.setCifradoDatos(detalle.getCifradoDatos());
         dto.setFechaRegistro(detalle.getFechaRegistro());
         return dto;
+    }
+
+    private Usuarios obtenerMedico(Integer idMedico) {
+        Usuarios medico = uS.listId(idMedico)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe el usuario con el id: " + idMedico
+                        )
+                );
+
+        if (medico.getRol() == null || !"MEDICO".equalsIgnoreCase(medico.getRol().getNombre())) {
+            throw new BadRequestException(
+                    "El usuario con id " + idMedico + " no tiene el rol MEDICO; solo los medicos pueden registrar detalles de historia clinica"
+            );
+        }
+
+        return medico;
     }
 }
