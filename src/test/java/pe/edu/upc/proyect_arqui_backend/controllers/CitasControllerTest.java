@@ -232,10 +232,23 @@ class CitasControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    private final Usuarios ana = new Usuarios(1, new Roles(3, "PACIENTE"), null, "Ana", "Torres", "12345678",
+            "999999999", "ana@mail.com", "hash", null, null, true);
+    private final Usuarios luis = new Usuarios(2, new Roles(2, "MEDICO"), null, "Luis", "Rojas", "87654321",
+            "988888888", "luis@clinica.pe", "hash", null, null, true);
+
     private static String cita(LocalDateTime fechaHora) {
         return """
                 {"idMedico": 2, "fechaHoraProgramada": "%s"}
                 """.formatted(fechaHora.withNano(0));
+    }
+
+    // Cita la proxima semana, como la registraria un ADMIN o MEDICO (que si mandan idPaciente).
+    private static String citaConPaciente(int idPaciente, int tiempoEsperaMinutos) {
+        return """
+                {"idPaciente": %d, "idMedico": 2, "fechaHoraProgramada": "%s",
+                 "tiempoEsperaMinutos": %d}
+                """.formatted(idPaciente, LocalDateTime.now().plusDays(7).withNano(0), tiempoEsperaMinutos);
     }
 
     @Test
@@ -251,10 +264,6 @@ class CitasControllerTest {
 
     @Test
     void paciente_registraCitaFutura_201() throws Exception {
-        Usuarios ana = new Usuarios(1, new Roles(3, "PACIENTE"), null, "Ana", "Torres", "12345678",
-                "999999999", "ana@mail.com", "hash", null, null, true);
-        Usuarios luis = new Usuarios(2, new Roles(2, "MEDICO"), null, "Luis", "Rojas", "87654321",
-                "988888888", "luis@clinica.pe", "hash", null, null, true);
         when(uS.listByCorreo("ana@mail.com")).thenReturn(Optional.of(ana));
         when(uS.listId(2)).thenReturn(Optional.of(luis));
 
@@ -264,6 +273,37 @@ class CitasControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.idPaciente").value(1))
                 .andExpect(jsonPath("$.estado").value("PENDIENTE"));
+
+        verify(cS).insert(any());
+    }
+
+    @Test
+    void admin_registraCitaConUnMedicoComoPaciente_400() throws Exception {
+        Usuarios otroMedico = new Usuarios(5, new Roles(2, "MEDICO"), null, "Eva", "Diaz", "11223344",
+                "977777777", "eva@clinica.pe", "hash", null, null, true);
+        when(uS.listId(5)).thenReturn(Optional.of(otroMedico));
+        when(uS.listId(2)).thenReturn(Optional.of(luis));
+
+        mockMvc.perform(post("/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaConPaciente(5, 0)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("El usuario con id 5 no es paciente"));
+
+        verify(cS, never()).insert(any());
+    }
+
+    @Test
+    void admin_registraCitaConPaciente_201() throws Exception {
+        when(uS.listId(1)).thenReturn(Optional.of(ana));
+        when(uS.listId(2)).thenReturn(Optional.of(luis));
+
+        mockMvc.perform(post("/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaConPaciente(1, 15)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.idPaciente").value(1))
+                .andExpect(jsonPath("$.tiempoEsperaMinutos").value(15));
 
         verify(cS).insert(any());
     }
