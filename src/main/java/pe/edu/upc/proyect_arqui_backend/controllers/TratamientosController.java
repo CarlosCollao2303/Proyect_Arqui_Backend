@@ -79,6 +79,8 @@ public class TratamientosController {
 
     @PostMapping("/Registrar")
     public ResponseEntity<TratamientosDTO> registrar(@Valid @RequestBody TratamientosDTO dto) {
+        validarFechas(dto);
+
         Tratamientos tratamiento = new Tratamientos();
         tratamiento.setDescripcion(dto.getDescripcion());
         tratamiento.setFechaInicio(dto.getFechaInicio());
@@ -102,6 +104,8 @@ public class TratamientosController {
 
     @PutMapping("/Actualizar")
     public ResponseEntity<TratamientosDTO> actualizar(@Valid @RequestBody TratamientosDTO dto) {
+        validarFechas(dto);
+
         Optional<Tratamientos> existente = tS.listId(dto.getIdTratamiento());
 
         if (existente.isEmpty()) {
@@ -140,6 +144,13 @@ public class TratamientosController {
         });
         tS.delete(tratamiento.getIdTratamiento());
         return ResponseEntity.noContent().build();
+    }
+
+    // Las dos fechas ya vienen con @NotNull; aqui solo se valida el orden.
+    private void validarFechas(TratamientosDTO dto) {
+        if (dto.getFechaFin().isBefore(dto.getFechaInicio())) {
+            throw new BadRequestException("La fecha de fin no puede ser anterior a la fecha de inicio");
+        }
     }
 
     private TratamientosDTO convertirADTO(Tratamientos tratamiento) {
