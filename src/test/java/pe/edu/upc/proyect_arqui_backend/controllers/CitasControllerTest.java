@@ -307,4 +307,15 @@ class CitasControllerTest {
 
         verify(cS).insert(any());
     }
+
+    @Test
+    void registrar_tiempoDeEsperaNegativo_400() throws Exception {
+        mockMvc.perform(post("/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaConPaciente(1, -30)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("tiempoEsperaMinutos: El tiempo de espera no puede ser negativo"));
+
+        verify(cS, never()).insert(any());
+    }
 }
