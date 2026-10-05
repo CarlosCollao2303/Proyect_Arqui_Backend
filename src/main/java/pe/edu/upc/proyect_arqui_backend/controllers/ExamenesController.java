@@ -6,6 +6,7 @@ import pe.edu.upc.proyect_arqui_backend.dtos.ExamenPendienteDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.ExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Examenes;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IExamenesService;
@@ -80,6 +81,8 @@ public class ExamenesController {
 
     @PostMapping("/Registrar")
     public ResponseEntity<ExamenesDTO> registrar(@Valid @RequestBody ExamenesDTO dto) {
+        validarFechas(dto);
+
         Examenes examen = new Examenes();
         examen.setTipoExamen(dto.getTipoExamen());
         examen.setResultado(dto.getResultado());
@@ -103,6 +106,8 @@ public class ExamenesController {
 
     @PutMapping("/Actualizar")
     public ResponseEntity<ExamenesDTO> actualizar(@Valid @RequestBody ExamenesDTO dto) {
+        validarFechas(dto);
+
         Optional<Examenes> existente = eS.listId(dto.getIdExamen());
 
         if (existente.isEmpty()) {
@@ -141,6 +146,14 @@ public class ExamenesController {
         });
         eS.delete(examen.getIdExamen());
         return ResponseEntity.noContent().build();
+    }
+
+    // fechaResultado es opcional (null = examen pendiente); si viene, no puede ser
+    // anterior a la solicitud.
+    private void validarFechas(ExamenesDTO dto) {
+        if (dto.getFechaResultado() != null && dto.getFechaResultado().isBefore(dto.getFechaSolicitud())) {
+            throw new BadRequestException("La fecha de resultado no puede ser anterior a la fecha de solicitud");
+        }
     }
 
     private ExamenesDTO convertirADTO(Examenes examen) {
