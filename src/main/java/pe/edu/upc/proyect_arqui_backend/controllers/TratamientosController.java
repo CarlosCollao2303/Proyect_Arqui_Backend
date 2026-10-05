@@ -1,6 +1,7 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import pe.edu.upc.proyect_arqui_backend.dtos.TratamientoPacienteDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.TratamientosDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Tratamientos;
@@ -13,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -75,6 +77,23 @@ public class TratamientosController {
                 .map(this::convertirADTO)
                 .toList();
         return ResponseEntity.ok(lista);
+    }
+
+    // Si no se envia la fecha, se toman los tratamientos vigentes hoy.
+    @GetMapping("/ListarVigentes")
+    public ResponseEntity<List<TratamientosDTO>> listarVigentes(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        LocalDate dia = fecha != null ? fecha : LocalDate.now();
+        List<TratamientosDTO> lista = tS.listarTratamientosVigentes(dia)
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/ListarPorPaciente/{idPaciente}")
+    public ResponseEntity<List<TratamientoPacienteDTO>> listarPorPaciente(@PathVariable int idPaciente) {
+        return ResponseEntity.ok(tS.listarTratamientosDePaciente(idPaciente));
     }
 
     @PostMapping("/Registrar")
