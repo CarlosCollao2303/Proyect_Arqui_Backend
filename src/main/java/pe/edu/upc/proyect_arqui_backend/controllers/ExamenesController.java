@@ -5,7 +5,6 @@ import pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.ExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Examenes;
-import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IExamenesService;
@@ -73,11 +72,7 @@ public class ExamenesController {
         return ResponseEntity.ok(eS.contarExamenesDePaciente(idPaciente));
     }
     @PostMapping("/Registrar")
-    @Transactional
     public ResponseEntity<ExamenesDTO> registrar(@Valid @RequestBody ExamenesDTO dto) {
-        DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
-        validarDetalleDisponible(detalle, null);
-
         Examenes examen = new Examenes();
         examen.setTipoExamen(dto.getTipoExamen());
         examen.setResultado(dto.getResultado());
@@ -85,8 +80,6 @@ public class ExamenesController {
         examen.setFechaResultado(dto.getFechaResultado());
 
         eS.insert(examen);
-        detalle.setExamen(examen);
-        dhS.update(detalle);
 
         ExamenesDTO responseDTO = convertirADTO(examen);
 
@@ -102,7 +95,6 @@ public class ExamenesController {
     }
 
     @PutMapping("/Actualizar")
-    @Transactional
     public ResponseEntity<ExamenesDTO> actualizar(@Valid @RequestBody ExamenesDTO dto) {
         Optional<Examenes> existente = eS.listId(dto.getIdExamen());
 
@@ -112,24 +104,13 @@ public class ExamenesController {
             );
         }
 
-        DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
-
         Examenes examen = existente.get();
-        validarDetalleDisponible(detalle, examen.getIdExamen());
-        dhS.findAllByExamenId(examen.getIdExamen()).forEach(anterior -> {
-            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
-                anterior.setExamen(null);
-                dhS.update(anterior);
-            }
-        });
         examen.setTipoExamen(dto.getTipoExamen());
         examen.setResultado(dto.getResultado());
         examen.setFechaSolicitud(dto.getFechaSolicitud());
         examen.setFechaResultado(dto.getFechaResultado());
 
         eS.update(examen);
-        detalle.setExamen(examen);
-        dhS.update(detalle);
 
         ExamenesDTO responseDTO = convertirADTO(examen);
 
@@ -155,33 +136,9 @@ public class ExamenesController {
         return ResponseEntity.noContent().build();
     }
 
-    private DetalleHistorial obtenerDetalle(Integer idDetalleHistorial) {
-        return dhS.listId(idDetalleHistorial)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "No existe el detalle de historial con el id: " + idDetalleHistorial
-                        )
-                );
-    }
-
-    private void validarDetalleDisponible(DetalleHistorial detalle, Integer idExamenActual) {
-        Examenes examenAsociado = detalle.getExamen();
-        if (examenAsociado != null
-                && (idExamenActual == null || examenAsociado.getIdExamen() != idExamenActual)) {
-            throw new BadRequestException(
-                    "El detalle de historial con id " + detalle.getIdDetalleHistorial()
-                            + " ya tiene un examen asociado"
-            );
-        }
-    }
-
     private ExamenesDTO convertirADTO(Examenes examen) {
         ExamenesDTO dto = new ExamenesDTO();
         dto.setIdExamen(examen.getIdExamen());
-        dto.setIdDetalleHistorial(dhS.findAllByExamenId(examen.getIdExamen()).stream()
-                .map(DetalleHistorial::getIdDetalleHistorial)
-                .findFirst()
-                .orElse(null));
         dto.setTipoExamen(examen.getTipoExamen());
         dto.setResultado(examen.getResultado());
         dto.setFechaSolicitud(examen.getFechaSolicitud());

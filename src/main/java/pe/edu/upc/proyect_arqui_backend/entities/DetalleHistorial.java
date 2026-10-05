@@ -37,7 +37,7 @@ public class DetalleHistorial {
     @JoinColumn(name = "receta_id")
     private Recetas receta;
 
-    @Column(name = "motivo_consulta")
+    @Column(name = "motivo_consulta", nullable = false)
     private String motivoConsulta;
 
     @Column(name = "cifrado_datos", columnDefinition = "TEXT")

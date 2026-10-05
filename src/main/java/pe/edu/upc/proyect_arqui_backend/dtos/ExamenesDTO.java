@@ -8,14 +8,14 @@ import java.time.LocalDateTime;
 public class ExamenesDTO {
     private int idExamen;
 
-    @NotNull(message = "El id del detalle de historial es obligatorio")
-    private Integer idDetalleHistorial;
-
     @NotBlank(message = "El tipo de examen es obligatorio")
     private String tipoExamen;
 
     private String resultado;
+
+    @NotNull(message = "La fecha de solicitud es obligatoria")
     private LocalDateTime fechaSolicitud;
+
     private LocalDateTime fechaResultado;
 
     public int getIdExamen() {
@@ -24,14 +24,6 @@ public class ExamenesDTO {
 
     public void setIdExamen(int idExamen) {
         this.idExamen = idExamen;
-    }
-
-    public Integer getIdDetalleHistorial() {
-        return idDetalleHistorial;
-    }
-
-    public void setIdDetalleHistorial(Integer idDetalleHistorial) {
-        this.idDetalleHistorial = idDetalleHistorial;
     }
 
     public String getTipoExamen() {

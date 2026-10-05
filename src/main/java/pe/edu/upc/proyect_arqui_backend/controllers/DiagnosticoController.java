@@ -80,19 +80,13 @@ public class DiagnosticoController {
     }
 
     @PostMapping("/Registrar")
-    @Transactional
     public ResponseEntity<DiagnosticoDTO> registrar(@Valid @RequestBody DiagnosticoDTO dto) {
-        DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
-        validarDetalleDisponible(detalle, null);
-
         Diagnostico diagnostico = new Diagnostico();
         diagnostico.setCodigoCie10(dto.getCodigoCie10());
         diagnostico.setDescripcion(dto.getDescripcion());
         diagnostico.setFechaRegistro(dto.getFechaRegistro());
 
         dS.insert(diagnostico);
-        detalle.setDiagnostico(diagnostico);
-        dhS.update(detalle);
 
         DiagnosticoDTO responseDTO = convertirADTO(diagnostico);
 
@@ -108,7 +102,6 @@ public class DiagnosticoController {
     }
 
     @PutMapping("/Actualizar")
-    @Transactional
     public ResponseEntity<DiagnosticoDTO> actualizar(@Valid @RequestBody DiagnosticoDTO dto) {
         Optional<Diagnostico> existente = dS.listId(dto.getIdDiagnostico());
 
@@ -118,23 +111,12 @@ public class DiagnosticoController {
             );
         }
 
-        DetalleHistorial detalle = obtenerDetalle(dto.getIdDetalleHistorial());
-
         Diagnostico diagnostico = existente.get();
-        validarDetalleDisponible(detalle, diagnostico.getIdDiagnostico());
-        dhS.findAllByDiagnosticoId(diagnostico.getIdDiagnostico()).forEach(anterior -> {
-            if (anterior.getIdDetalleHistorial() != detalle.getIdDetalleHistorial()) {
-                anterior.setDiagnostico(null);
-                dhS.update(anterior);
-            }
-        });
         diagnostico.setCodigoCie10(dto.getCodigoCie10());
         diagnostico.setDescripcion(dto.getDescripcion());
         diagnostico.setFechaRegistro(dto.getFechaRegistro());
 
         dS.update(diagnostico);
-        detalle.setDiagnostico(diagnostico);
-        dhS.update(detalle);
 
         DiagnosticoDTO responseDTO = convertirADTO(diagnostico);
 
@@ -160,34 +142,9 @@ public class DiagnosticoController {
         return ResponseEntity.noContent().build();
     }
 
-    private DetalleHistorial obtenerDetalle(Integer idDetalleHistorial) {
-        return dhS.listId(idDetalleHistorial)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "No existe el detalle de historial con el id: " + idDetalleHistorial
-                        )
-                );
-    }
-
-    private void validarDetalleDisponible(DetalleHistorial detalle, Integer idDiagnosticoActual) {
-        Diagnostico diagnosticoAsociado = detalle.getDiagnostico();
-        if (diagnosticoAsociado != null
-                && (idDiagnosticoActual == null
-                || diagnosticoAsociado.getIdDiagnostico() != idDiagnosticoActual)) {
-            throw new BadRequestException(
-                    "El detalle de historial con id " + detalle.getIdDetalleHistorial()
-                            + " ya tiene un diagnostico asociado"
-            );
-        }
-    }
-
     private DiagnosticoDTO convertirADTO(Diagnostico diagnostico) {
         DiagnosticoDTO dto = new DiagnosticoDTO();
         dto.setIdDiagnostico(diagnostico.getIdDiagnostico());
-        dto.setIdDetalleHistorial(dhS.findAllByDiagnosticoId(diagnostico.getIdDiagnostico()).stream()
-                .map(DetalleHistorial::getIdDetalleHistorial)
-                .findFirst()
-                .orElse(null));
         dto.setCodigoCie10(diagnostico.getCodigoCie10());
         dto.setDescripcion(diagnostico.getDescripcion());
         dto.setFechaRegistro(diagnostico.getFechaRegistro());

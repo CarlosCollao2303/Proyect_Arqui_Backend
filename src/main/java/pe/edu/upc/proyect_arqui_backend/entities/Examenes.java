@@ -11,13 +11,13 @@ public class Examenes {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idExamen;
 
-    @Column(name = "tipo_examen")
+    @Column(name = "tipo_examen", nullable = false)
     private String tipoExamen;
 
     @Column(name = "resultado", columnDefinition = "TEXT")
     private String resultado;
 
-    @Column(name = "fecha_solicitud")
+    @Column(name = "fecha_solicitud", nullable = false)
     private LocalDateTime fechaSolicitud;
 
     @Column(name = "fecha_resultado")

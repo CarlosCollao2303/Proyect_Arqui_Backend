@@ -2,6 +2,7 @@ package pe.edu.upc.proyect_arqui_backend.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +14,18 @@ public class DetalleHistorialDTO {
 
     @NotNull(message = "El id del medico es obligatorio")
     private Integer idMedico;
+
+    @Positive(message = "El id del examen debe ser positivo")
+    private Integer idExamen;
+
+    @Positive(message = "El id del diagnostico debe ser positivo")
+    private Integer idDiagnostico;
+
+    @Positive(message = "El id del tratamiento debe ser positivo")
+    private Integer idTratamiento;
+
+    @Positive(message = "El id de la receta debe ser positivo")
+    private Integer idReceta;
 
     @NotBlank(message = "El motivo de consulta es obligatorio")
     private String motivoConsulta;
@@ -42,6 +55,38 @@ public class DetalleHistorialDTO {
 
     public void setIdMedico(Integer idMedico) {
         this.idMedico = idMedico;
+    }
+
+    public Integer getIdExamen() {
+        return idExamen;
+    }
+
+    public void setIdExamen(Integer idExamen) {
+        this.idExamen = idExamen;
+    }
+
+    public Integer getIdDiagnostico() {
+        return idDiagnostico;
+    }
+
+    public void setIdDiagnostico(Integer idDiagnostico) {
+        this.idDiagnostico = idDiagnostico;
+    }
+
+    public Integer getIdTratamiento() {
+        return idTratamiento;
+    }
+
+    public void setIdTratamiento(Integer idTratamiento) {
+        this.idTratamiento = idTratamiento;
+    }
+
+    public Integer getIdReceta() {
+        return idReceta;
+    }
+
+    public void setIdReceta(Integer idReceta) {
+        this.idReceta = idReceta;
     }
 
     public String getMotivoConsulta() {

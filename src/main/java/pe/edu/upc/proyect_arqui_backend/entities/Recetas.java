@@ -11,22 +11,22 @@ public class Recetas {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idReceta;
 
-    @Column(name = "medicamento")
+    @Column(name = "medicamento", nullable = false)
     private String medicamento;
 
-    @Column(name = "dosis")
+    @Column(name = "dosis", nullable = false)
     private String dosis;
 
-    @Column(name = "frecuencia")
+    @Column(name = "frecuencia", nullable = false)
     private String frecuencia;
 
-    @Column(name = "duracion_dias")
+    @Column(name = "duracion_dias", nullable = false)
     private int duracionDias;
 
     @Column(name = "indicaciones", columnDefinition = "TEXT")
     private String indicaciones;
 
-    @Column(name = "fecha_emision")
+    @Column(name = "fecha_emision", nullable = false)
     private LocalDateTime fechaEmision;
 
     public Recetas() {
