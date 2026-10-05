@@ -52,4 +52,9 @@ public class TratamientosServiceImplement implements ITratamientosService {
     public List<Tratamientos> listByFechaInicio(LocalDate fechaInicio) {
         return tR.findByFechaInicio(fechaInicio);
     }
+
+    @Override
+    public List<Tratamientos> listarTratamientosVigentes(LocalDate fecha) {
+        return tR.listarTratamientosVigentes(fecha);
+    }
 }

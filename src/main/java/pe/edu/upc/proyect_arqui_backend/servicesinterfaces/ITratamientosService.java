@@ -14,4 +14,5 @@ public interface ITratamientosService {
     public Optional<Tratamientos> listId(int id);
     public List<Tratamientos> listByEstado(String estado);
     public List<Tratamientos> listByFechaInicio(LocalDate fechaInicio);
+    public List<Tratamientos> listarTratamientosVigentes(LocalDate fecha);
 }
