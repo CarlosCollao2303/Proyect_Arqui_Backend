@@ -1,6 +1,7 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import pe.edu.upc.proyect_arqui_backend.dtos.TratamientoPacienteDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.TratamientosDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Tratamientos;
@@ -88,6 +89,11 @@ public class TratamientosController {
                 .map(this::convertirADTO)
                 .toList();
         return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/ListarPorPaciente/{idPaciente}")
+    public ResponseEntity<List<TratamientoPacienteDTO>> listarPorPaciente(@PathVariable int idPaciente) {
+        return ResponseEntity.ok(tS.listarTratamientosDePaciente(idPaciente));
     }
 
     @PostMapping("/Registrar")
