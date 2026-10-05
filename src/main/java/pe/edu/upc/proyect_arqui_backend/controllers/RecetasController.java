@@ -1,6 +1,7 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import pe.edu.upc.proyect_arqui_backend.dtos.RecetaDetalleDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.RecetasDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Recetas;
@@ -76,6 +77,11 @@ public class RecetasController {
                 .map(this::convertirADTO)
                 .toList();
         return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/ListarConDetalle")
+    public ResponseEntity<List<RecetaDetalleDTO>> listarConDetalle() {
+        return ResponseEntity.ok(rS.listarRecetasConDetalle());
     }
 
     @PostMapping("/Registrar")
