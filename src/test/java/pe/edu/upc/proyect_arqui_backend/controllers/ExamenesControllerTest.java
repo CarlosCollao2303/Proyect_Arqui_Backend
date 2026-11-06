@@ -58,7 +58,7 @@ class ExamenesControllerTest {
 
     @Test
     void registrar_resultadoAntesDeLaSolicitud_400() throws Exception {
-        mockMvc.perform(post("/examenes/Registrar").with(medico())
+        mockMvc.perform(post("/examenes/Registrar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(examen("2026-10-10T09:00:00", "2026-10-09T09:00:00")))
                 .andExpect(status().isBadRequest())
@@ -69,7 +69,7 @@ class ExamenesControllerTest {
 
     @Test
     void registrar_sinResultadoQuedaPendiente_201() throws Exception {
-        mockMvc.perform(post("/examenes/Registrar").with(medico())
+        mockMvc.perform(post("/examenes/Registrar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(examen("2026-10-10T09:00:00", null)))
                 .andExpect(status().isCreated());
@@ -79,7 +79,7 @@ class ExamenesControllerTest {
 
     @Test
     void actualizar_resultadoAntesDeLaSolicitud_400() throws Exception {
-        mockMvc.perform(put("/examenes/Actualizar").with(medico())
+        mockMvc.perform(put("/examenes/Actualizar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(examen("2026-10-10T09:00:00", "2026-10-09T09:00:00")))
                 .andExpect(status().isBadRequest());

@@ -3,7 +3,6 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -25,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@PreAuthorize("hasAnyAuthority('ADMIN','MEDICO')")
 @RequestMapping("/citas")
 public class CitasController {
 
@@ -46,19 +44,20 @@ public class CitasController {
 
         return ResponseEntity.ok(lista);
     }
-    @PreAuthorize("hasAuthority('PACIENTE')")
     @GetMapping("/paciente/mis-citas")
     public ResponseEntity<List<CitaPacienteDTO>> misCitasPorFecha(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
             Authentication auth) {
-        return ResponseEntity.ok(cS.listarCitasDelPacientePorFecha(auth.getName(), fecha));
+        if (tieneRol(auth, "ADMIN")) {
+            return ResponseEntity.ok(cS.listarTodasLasCitasPorFecha(fecha));
+        }
+        return ResponseEntity.ok(cS.listarCitasDelPacientePorFecha(correo(auth), fecha));
     }
     // Las citas del usuario logueado: como paciente o como medico. El correo sale
     // del token (subject del JWT), no del request, asi nadie puede pedir las de otro.
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/mis-citas")
     public ResponseEntity<List<CitasDTO>> misCitas(Authentication auth) {
-        List<CitasDTO> lista = cS.listByParticipanteCorreo(auth.getName())
+        List<CitasDTO> lista = cS.listByParticipanteCorreo(correo(auth))
                 .stream()
                 .map(this::convertirADTO)
                 .toList();
@@ -78,28 +77,25 @@ public class CitasController {
         return ResponseEntity.ok(convertirADTO(cita));
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN','MEDICO','PACIENTE')")
     @GetMapping("/{idCita}/estado")
     public ResponseEntity<CitaEstadoDTO> consultarEstado(@PathVariable int idCita, Authentication auth) {
-        boolean puedeVerTodas = tieneRol(auth, "ADMIN") || tieneRol(auth, "MEDICO");
+        boolean puedeVerTodas = auth == null || tieneRol(auth, "ADMIN") || tieneRol(auth, "MEDICO");
 
-        return ResponseEntity.ok(cS.consultarEstado(idCita, auth.getName(), puedeVerTodas));
+        return ResponseEntity.ok(cS.consultarEstado(idCita, correo(auth), puedeVerTodas));
     }
 
-    @PreAuthorize("hasAuthority('MEDICO')")
     @GetMapping("/medico/mis-citas")
     public ResponseEntity<List<CitaMedicoDTO>> misCitasComoMedico(
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin,
             Authentication auth) {
-        return ResponseEntity.ok(cS.listarCitasDelMedico(auth.getName(), estado, inicio, fin));
+        return ResponseEntity.ok(cS.listarCitasDelMedico(correo(auth), estado, inicio, fin));
     }
 
     // Un PACIENTE solo reserva para si mismo: el paciente sale del token y se ignora
     // el idPaciente del body. Ademas la cita nace PENDIENTE y sin tiempo de espera;
     // esos campos los maneja el personal. ADMIN y MEDICO pueden registrar para cualquiera.
-    @PreAuthorize("hasAnyAuthority('ADMIN','MEDICO','PACIENTE')")
     @PostMapping("/Registrar")
     public ResponseEntity<CitasDTO> registrar(@Valid @RequestBody CitasDTO dto, Authentication auth) {
         // Solo al registrar: al actualizar, una cita que ya paso si puede tener fecha
@@ -108,14 +104,14 @@ public class CitasController {
             throw new BadRequestException("No se puede registrar una cita en una fecha y hora pasada");
         }
 
-        boolean esPaciente = !tieneRol(auth, "ADMIN") && !tieneRol(auth, "MEDICO");
+        boolean esPaciente = auth != null && !tieneRol(auth, "ADMIN") && !tieneRol(auth, "MEDICO");
 
         Usuarios paciente;
         if (esPaciente) {
-            paciente = uS.listByCorreo(auth.getName())
+            paciente = uS.listByCorreo(correo(auth))
                     .orElseThrow(() ->
                             new ResourceNotFoundException(
-                                    "No existe el usuario con el correo: " + auth.getName()
+                                    "No existe el usuario con el correo: " + correo(auth)
                             )
                     );
         } else {
@@ -175,7 +171,6 @@ public class CitasController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Citas cita = cS.listId(id)
@@ -238,9 +233,13 @@ public class CitasController {
     }
 
     private boolean tieneRol(Authentication auth, String rol) {
-        return auth.getAuthorities()
+        return auth != null && auth.getAuthorities()
                 .stream()
                 .anyMatch(a -> a.getAuthority().equals(rol));
+    }
+
+    private String correo(Authentication auth) {
+        return auth == null ? null : auth.getName();
     }
 
     private CitasDTO convertirADTO(Citas cita) {

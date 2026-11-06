@@ -12,7 +12,6 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRolesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +38,6 @@ public class UsuariosController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN','MEDICO')")
     @GetMapping("/Listar")
     public ResponseEntity<List<UsuariosDTO>> listar() {
         List<UsuariosDTO> lista = uS.list()
@@ -51,7 +49,6 @@ public class UsuariosController {
     }
 
     // ADMIN y MEDICO ven a cualquiera; un PACIENTE solo a si mismo.
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<UsuariosDTO> listarPorId(@PathVariable int id, Authentication auth) {
         Usuarios usuario = uS.listId(id)
@@ -61,7 +58,7 @@ public class UsuariosController {
                         )
                 );
 
-        if (!tieneRol(auth, "ADMIN") && !tieneRol(auth, "MEDICO")) {
+        if (auth != null && !tieneRol(auth, "ADMIN") && !tieneRol(auth, "MEDICO")) {
             verificarQueEsElMismo(usuario, auth);
         }
 
@@ -125,7 +122,6 @@ public class UsuariosController {
 
     // ADMIN edita a cualquiera. Los demas solo su propio usuario, y sin poder
     // cambiarse rol, especialidad ni estado.
-    @PreAuthorize("isAuthenticated()")
     @PutMapping("/Actualizar")
     public ResponseEntity<UsuariosDTO> actualizar(@Valid @RequestBody UsuariosDTO dto, Authentication auth) {
         Optional<Usuarios> existente = uS.listId(dto.getIdUsuario());
@@ -143,7 +139,7 @@ public class UsuariosController {
             usuario.setRol(obtenerRol(dto.getIdRol()));
             usuario.setEspecialidad(obtenerEspecialidad(dto.getIdEspecialidad()));
             usuario.setEstado(dto.isEstado());
-        } else {
+        } else if (auth != null) {
             verificarQueEsElMismo(usuario, auth);
         }
 
@@ -175,7 +171,6 @@ public class UsuariosController {
 
     // Cambia solo el rol de un usuario, sin tener que mandar todos sus datos como en
     // /Actualizar. Un ADMIN no puede cambiarse su propio rol para no quitarse el acceso.
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/AsignarRol/{idUsuario}/{idRol}")
     public ResponseEntity<UsuariosDTO> asignarRol(@PathVariable int idUsuario, @PathVariable int idRol,
                                                   Authentication auth) {
@@ -186,7 +181,7 @@ public class UsuariosController {
                         )
                 );
 
-        if (usuario.getCorreo().equals(auth.getName())) {
+        if (auth != null && usuario.getCorreo().equals(auth.getName())) {
             throw new BadRequestException("No puedes cambiar tu propio rol");
         }
 
@@ -197,7 +192,6 @@ public class UsuariosController {
         return ResponseEntity.ok(convertirADTO(usuario));
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/AsignarEspecialidad/{idUsuario}/{idEspecialidad}")
     public ResponseEntity<UsuariosDTO> asignarEspecialidad(
             @PathVariable int idUsuario,
@@ -219,7 +213,6 @@ public class UsuariosController {
         return ResponseEntity.ok(convertirADTO(usuario));
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Usuarios usuario = uS.listId(id)

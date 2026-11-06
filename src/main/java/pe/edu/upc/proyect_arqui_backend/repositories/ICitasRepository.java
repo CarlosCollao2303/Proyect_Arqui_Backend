@@ -51,6 +51,22 @@ public interface ICitasRepository extends JpaRepository<Citas, Integer> {
     List<CitaPacienteDTO> findCitasDelPacienteEntre(@Param("correo") String correo,
                                                     @Param("inicio") LocalDateTime inicio,
                                                     @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT new pe.edu.upc.proyect_arqui_backend.dtos.CitaPacienteDTO(" +
+            "c.idCita, c.fechaHoraProgramada, c.estado, " +
+            "CONCAT(p.nombres, ' ', p.apellidos), " +
+            "CONCAT(m.nombres, ' ', m.apellidos), " +
+            "e.nombre) " +
+            "FROM Citas c " +
+            "JOIN c.paciente p " +
+            "JOIN c.medico m " +
+            "LEFT JOIN m.especialidad e " +
+            "WHERE c.fechaHoraProgramada >= :inicio " +
+            "AND c.fechaHoraProgramada < :fin " +
+            "ORDER BY c.fechaHoraProgramada ASC")
+    List<CitaPacienteDTO> findTodasLasCitasEntre(@Param("inicio") LocalDateTime inicio,
+                                                 @Param("fin") LocalDateTime fin);
+
     boolean existsByIdCitaAndPacienteCorreo(int idCita, String correo);
 
     @Query("SELECT new pe.edu.upc.proyect_arqui_backend.dtos.CitaMedicoDTO(" +
