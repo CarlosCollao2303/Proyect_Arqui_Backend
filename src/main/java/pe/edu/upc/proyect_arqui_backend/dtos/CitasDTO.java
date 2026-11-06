@@ -3,7 +3,7 @@ package pe.edu.upc.proyect_arqui_backend.dtos;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class CitasDTO {
     private int idCita;
@@ -16,7 +16,7 @@ public class CitasDTO {
     private Integer idMedico;
 
     @NotNull(message = "La fecha y hora programada es obligatoria")
-    private LocalDateTime fechaHoraProgramada;
+    private LocalDate fechaHoraProgramada;
 
     @PositiveOrZero(message = "El tiempo de espera no puede ser negativo")
     private int tiempoEsperaMinutos;
@@ -47,11 +47,11 @@ public class CitasDTO {
         this.idMedico = idMedico;
     }
 
-    public LocalDateTime getFechaHoraProgramada() {
+    public LocalDate getFechaHoraProgramada() {
         return fechaHoraProgramada;
     }
 
-    public void setFechaHoraProgramada(LocalDateTime fechaHoraProgramada) {
+    public void setFechaHoraProgramada(LocalDate fechaHoraProgramada) {
         this.fechaHoraProgramada = fechaHoraProgramada;
     }
 

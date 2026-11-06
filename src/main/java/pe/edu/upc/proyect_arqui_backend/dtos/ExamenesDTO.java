@@ -3,7 +3,7 @@ package pe.edu.upc.proyect_arqui_backend.dtos;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class ExamenesDTO {
     private int idExamen;
@@ -14,9 +14,9 @@ public class ExamenesDTO {
     private String resultado;
 
     @NotNull(message = "La fecha de solicitud es obligatoria")
-    private LocalDateTime fechaSolicitud;
+    private LocalDate fechaSolicitud;
 
-    private LocalDateTime fechaResultado;
+    private LocalDate fechaResultado;
 
     public int getIdExamen() {
         return idExamen;
@@ -42,19 +42,19 @@ public class ExamenesDTO {
         this.resultado = resultado;
     }
 
-    public LocalDateTime getFechaSolicitud() {
+    public LocalDate getFechaSolicitud() {
         return fechaSolicitud;
     }
 
-    public void setFechaSolicitud(LocalDateTime fechaSolicitud) {
+    public void setFechaSolicitud(LocalDate fechaSolicitud) {
         this.fechaSolicitud = fechaSolicitud;
     }
 
-    public LocalDateTime getFechaResultado() {
+    public LocalDate getFechaResultado() {
         return fechaResultado;
     }
 
-    public void setFechaResultado(LocalDateTime fechaResultado) {
+    public void setFechaResultado(LocalDate fechaResultado) {
         this.fechaResultado = fechaResultado;
     }
 }

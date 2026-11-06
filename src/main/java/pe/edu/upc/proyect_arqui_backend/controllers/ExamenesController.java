@@ -16,13 +16,13 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/examenes")
+@RequestMapping("/api/examenes")
 public class ExamenesController {
-
     private final IExamenesService eS;
     private final IDetalleHistorialService dhS;
 
@@ -84,8 +84,9 @@ public class ExamenesController {
         Examenes examen = new Examenes();
         examen.setTipoExamen(dto.getTipoExamen());
         examen.setResultado(dto.getResultado());
-        examen.setFechaSolicitud(dto.getFechaSolicitud());
-        examen.setFechaResultado(dto.getFechaResultado());
+        examen.setFechaSolicitud(dto.getFechaSolicitud().atStartOfDay());
+        examen.setFechaResultado(dto.getFechaResultado() == null
+                ? null : dto.getFechaResultado().atStartOfDay());
 
         eS.insert(examen);
 
@@ -117,8 +118,9 @@ public class ExamenesController {
         Examenes examen = existente.get();
         examen.setTipoExamen(dto.getTipoExamen());
         examen.setResultado(dto.getResultado());
-        examen.setFechaSolicitud(dto.getFechaSolicitud());
-        examen.setFechaResultado(dto.getFechaResultado());
+        examen.setFechaSolicitud(dto.getFechaSolicitud().atStartOfDay());
+        examen.setFechaResultado(dto.getFechaResultado() == null
+                ? null : dto.getFechaResultado().atStartOfDay());
 
         eS.update(examen);
 
@@ -148,7 +150,10 @@ public class ExamenesController {
     // fechaResultado es opcional (null = examen pendiente); si viene, no puede ser
     // anterior a la solicitud.
     private void validarFechas(ExamenesDTO dto) {
-        if (dto.getFechaResultado() != null && dto.getFechaResultado().isBefore(dto.getFechaSolicitud())) {
+        LocalDateTime fechaSolicitud = dto.getFechaSolicitud().atStartOfDay();
+        LocalDateTime fechaResultado = dto.getFechaResultado() == null
+                ? null : dto.getFechaResultado().atStartOfDay();
+        if (fechaResultado != null && fechaResultado.isBefore(fechaSolicitud)) {
             throw new BadRequestException("La fecha de resultado no puede ser anterior a la fecha de solicitud");
         }
     }
@@ -158,8 +163,9 @@ public class ExamenesController {
         dto.setIdExamen(examen.getIdExamen());
         dto.setTipoExamen(examen.getTipoExamen());
         dto.setResultado(examen.getResultado());
-        dto.setFechaSolicitud(examen.getFechaSolicitud());
-        dto.setFechaResultado(examen.getFechaResultado());
+        dto.setFechaSolicitud(examen.getFechaSolicitud().toLocalDate());
+        dto.setFechaResultado(examen.getFechaResultado() == null
+                ? null : examen.getFechaResultado().toLocalDate());
         return dto;
     }
 }

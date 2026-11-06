@@ -21,9 +21,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/recetas")
+@RequestMapping("/api/recetas")
 public class RecetasController {
-
     private final IRecetasService rS;
     private final IDetalleHistorialService dhS;
 
@@ -42,7 +41,7 @@ public class RecetasController {
         return ResponseEntity.ok(lista);
     }
 
-    @GetMapping("/ListarPorId/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<RecetasDTO> listarPorId(@PathVariable int id) {
         Recetas receta = rS.listId(id)
                 .orElseThrow(() ->
@@ -90,7 +89,7 @@ public class RecetasController {
         receta.setFrecuencia(dto.getFrecuencia());
         receta.setDuracionDias(dto.getDuracionDias());
         receta.setIndicaciones(dto.getIndicaciones());
-        receta.setFechaEmision(dto.getFechaEmision());
+        receta.setFechaEmision(dto.getFechaEmision().atStartOfDay());
 
         rS.insert(receta);
 
@@ -123,7 +122,7 @@ public class RecetasController {
         receta.setFrecuencia(dto.getFrecuencia());
         receta.setDuracionDias(dto.getDuracionDias());
         receta.setIndicaciones(dto.getIndicaciones());
-        receta.setFechaEmision(dto.getFechaEmision());
+        receta.setFechaEmision(dto.getFechaEmision().atStartOfDay());
 
         rS.update(receta);
 
@@ -158,7 +157,7 @@ public class RecetasController {
         dto.setFrecuencia(receta.getFrecuencia());
         dto.setDuracionDias(receta.getDuracionDias());
         dto.setIndicaciones(receta.getIndicaciones());
-        dto.setFechaEmision(receta.getFechaEmision());
+        dto.setFechaEmision(receta.getFechaEmision().toLocalDate());
         return dto;
     }
 }

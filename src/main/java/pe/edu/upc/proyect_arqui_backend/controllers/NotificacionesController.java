@@ -17,9 +17,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/notificaciones")
+@RequestMapping("/api/notificaciones")
 public class NotificacionesController {
-
     private final INotificacionesService nS;
     private final IUsuariosService uS;
 
@@ -87,7 +86,8 @@ public class NotificacionesController {
         notificacion.setUsuario(usuario);
         notificacion.setTipo(dto.getTipo());
         notificacion.setMensaje(dto.getMensaje());
-        notificacion.setFechaEnvio(dto.getFechaEnvio());
+        notificacion.setFechaEnvio(dto.getFechaEnvio() == null
+                ? null : dto.getFechaEnvio().atStartOfDay());
         notificacion.setEstadoEnvio(dto.getEstadoEnvio());
 
         nS.insert(notificacion);
@@ -126,7 +126,8 @@ public class NotificacionesController {
         notificacion.setUsuario(usuario);
         notificacion.setTipo(dto.getTipo());
         notificacion.setMensaje(dto.getMensaje());
-        notificacion.setFechaEnvio(dto.getFechaEnvio());
+        notificacion.setFechaEnvio(dto.getFechaEnvio() == null
+                ? null : dto.getFechaEnvio().atStartOfDay());
         notificacion.setEstadoEnvio(dto.getEstadoEnvio());
 
         nS.update(notificacion);
@@ -155,8 +156,10 @@ public class NotificacionesController {
         dto.setIdUsuario(notificacion.getUsuario().getIdUsuario());
         dto.setTipo(notificacion.getTipo());
         dto.setMensaje(notificacion.getMensaje());
-        dto.setFechaEnvio(notificacion.getFechaEnvio());
+        dto.setFechaEnvio(notificacion.getFechaEnvio() == null
+                ? null : notificacion.getFechaEnvio().toLocalDate());
         dto.setEstadoEnvio(notificacion.getEstadoEnvio());
         return dto;
     }
+
 }

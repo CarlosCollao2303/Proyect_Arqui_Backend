@@ -19,14 +19,12 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/citas")
+@RequestMapping("/api/citas")
 public class CitasController {
-
     private final ICitasService cS;
     private final IUsuariosService uS;
 
@@ -65,7 +63,7 @@ public class CitasController {
         return ResponseEntity.ok(lista);
     }
 
-    @GetMapping("/ListarPorId/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CitasDTO> listarPorId(@PathVariable int id) {
         Citas cita = cS.listId(id)
                 .orElseThrow(() ->
@@ -100,7 +98,7 @@ public class CitasController {
     public ResponseEntity<CitasDTO> registrar(@Valid @RequestBody CitasDTO dto, Authentication auth) {
         // Solo al registrar: al actualizar, una cita que ya paso si puede tener fecha
         // anterior (por ejemplo, para marcarla ATENDIDA).
-        if (dto.getFechaHoraProgramada().isBefore(LocalDateTime.now())) {
+        if (dto.getFechaHoraProgramada().isBefore(LocalDate.now())) {
             throw new BadRequestException("No se puede registrar una cita en una fecha y hora pasada");
         }
 
@@ -123,7 +121,7 @@ public class CitasController {
         Citas cita = new Citas();
         cita.setPaciente(paciente);
         cita.setMedico(medico);
-        cita.setFechaHoraProgramada(dto.getFechaHoraProgramada());
+        cita.setFechaHoraProgramada(dto.getFechaHoraProgramada().atStartOfDay());
         cita.setTiempoEsperaMinutos(esPaciente ? 0 : dto.getTiempoEsperaMinutos());
         cita.setEstado(esPaciente || dto.getEstado() == null
                 ? Citas.ESTADO_PENDIENTE
@@ -160,7 +158,7 @@ public class CitasController {
         Citas cita = existente.get();
         cita.setPaciente(paciente);
         cita.setMedico(medico);
-        cita.setFechaHoraProgramada(dto.getFechaHoraProgramada());
+        cita.setFechaHoraProgramada(dto.getFechaHoraProgramada().atStartOfDay());
         cita.setTiempoEsperaMinutos(dto.getTiempoEsperaMinutos());
         cita.setEstado(validarEstado(dto.getEstado()));
 
@@ -247,9 +245,10 @@ public class CitasController {
         dto.setIdCita(cita.getIdCita());
         dto.setIdPaciente(cita.getPaciente().getIdUsuario());
         dto.setIdMedico(cita.getMedico().getIdUsuario());
-        dto.setFechaHoraProgramada(cita.getFechaHoraProgramada());
+        dto.setFechaHoraProgramada(cita.getFechaHoraProgramada().toLocalDate());
         dto.setTiempoEsperaMinutos(cita.getTiempoEsperaMinutos());
         dto.setEstado(cita.getEstado());
         return dto;
     }
+
 }

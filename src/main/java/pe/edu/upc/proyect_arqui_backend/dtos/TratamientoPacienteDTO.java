@@ -10,5 +10,4 @@ public record TratamientoPacienteDTO(
         String estado,
         String medico,
         String motivoConsulta
-) {
-}
+) {}

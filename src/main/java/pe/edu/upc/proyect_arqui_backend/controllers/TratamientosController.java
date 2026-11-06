@@ -23,7 +23,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/tratamientos")
 public class TratamientosController {
-
     private final ITratamientosService tS;
     private final IDetalleHistorialService dhS;
 
@@ -42,7 +41,7 @@ public class TratamientosController {
         return ResponseEntity.ok(lista);
     }
 
-    @GetMapping("/ListarPorId/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<TratamientosDTO> listarPorId(@PathVariable int id) {
         Tratamientos tratamiento = tS.listId(id)
                 .orElseThrow(() ->
@@ -69,7 +68,7 @@ public class TratamientosController {
 
     @GetMapping("/BuscarPorFechaInicio")
     public ResponseEntity<List<TratamientosDTO>> buscarPorFechaInicio(
-            @RequestParam LocalDate fecha) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
         List<TratamientosDTO> lista = tS.listByFechaInicio(fecha)
                 .stream()
                 .map(this::convertirADTO)
