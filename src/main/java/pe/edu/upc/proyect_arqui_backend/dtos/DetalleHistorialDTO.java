@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class DetalleHistorialDTO {
     private int idDetalleHistorial;
@@ -31,7 +31,7 @@ public class DetalleHistorialDTO {
     private String motivoConsulta;
 
     private String cifradoDatos;
-    private LocalDateTime fechaRegistro;
+    private LocalDate fechaRegistro;
 
     public int getIdDetalleHistorial() {
         return idDetalleHistorial;
@@ -105,11 +105,11 @@ public class DetalleHistorialDTO {
         this.cifradoDatos = cifradoDatos;
     }
 
-    public LocalDateTime getFechaRegistro() {
+    public LocalDate getFechaRegistro() {
         return fechaRegistro;
     }
 
-    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+    public void setFechaRegistro(LocalDate fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
     }
 }

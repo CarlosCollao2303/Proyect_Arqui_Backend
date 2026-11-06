@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class RecetasDTO {
     private int idReceta;
@@ -24,7 +24,7 @@ public class RecetasDTO {
     private String indicaciones;
 
     @NotNull(message = "La fecha de emisión es obligatoria")
-    private LocalDateTime fechaEmision;
+    private LocalDate fechaEmision;
 
     public int getIdReceta() {
         return idReceta;
@@ -74,11 +74,11 @@ public class RecetasDTO {
         this.indicaciones = indicaciones;
     }
 
-    public LocalDateTime getFechaEmision() {
+    public LocalDate getFechaEmision() {
         return fechaEmision;
     }
 
-    public void setFechaEmision(LocalDateTime fechaEmision) {
+    public void setFechaEmision(LocalDate fechaEmision) {
         this.fechaEmision = fechaEmision;
     }
 }

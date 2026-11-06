@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/especialidades")
+@RequestMapping("/api/especialidades")
 public class EspecialidadesController {
 
     private final IEspecialidadesService eS;

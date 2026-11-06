@@ -3,7 +3,7 @@ package pe.edu.upc.proyect_arqui_backend.dtos;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class DiagnosticoDTO {
     private int idDiagnostico;
@@ -15,7 +15,7 @@ public class DiagnosticoDTO {
     private String descripcion;
 
     @NotNull(message = "La fecha de registro es obligatoria")
-    private LocalDateTime fechaRegistro;
+    private LocalDate fechaRegistro;
 
     public int getIdDiagnostico() {
         return idDiagnostico;
@@ -41,11 +41,11 @@ public class DiagnosticoDTO {
         this.descripcion = descripcion;
     }
 
-    public LocalDateTime getFechaRegistro() {
+    public LocalDate getFechaRegistro() {
         return fechaRegistro;
     }
 
-    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+    public void setFechaRegistro(LocalDate fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
     }
 }

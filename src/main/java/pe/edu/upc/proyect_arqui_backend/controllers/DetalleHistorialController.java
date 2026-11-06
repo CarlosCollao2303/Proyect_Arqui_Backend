@@ -28,9 +28,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/detallehistorial")
+@RequestMapping("/api/detallehistorial")
 public class DetalleHistorialController {
-
     private final IDetalleHistorialService dhS;
     private final IHistoriasClinicasService hS;
     private final IUsuariosService uS;
@@ -123,7 +122,8 @@ public class DetalleHistorialController {
         detalle.setMedico(medico);
         detalle.setMotivoConsulta(dto.getMotivoConsulta());
         detalle.setCifradoDatos(dto.getCifradoDatos());
-        detalle.setFechaRegistro(dto.getFechaRegistro());
+        detalle.setFechaRegistro(dto.getFechaRegistro() == null
+                ? null : dto.getFechaRegistro().atStartOfDay());
         asignarRelaciones(detalle, dto);
 
         dhS.insert(detalle);
@@ -166,7 +166,8 @@ public class DetalleHistorialController {
         detalle.setMedico(medico);
         detalle.setMotivoConsulta(dto.getMotivoConsulta());
         detalle.setCifradoDatos(dto.getCifradoDatos());
-        detalle.setFechaRegistro(dto.getFechaRegistro());
+        detalle.setFechaRegistro(dto.getFechaRegistro() == null
+                ? null : dto.getFechaRegistro().atStartOfDay());
         asignarRelaciones(detalle, dto);
 
         dhS.update(detalle);
@@ -202,7 +203,8 @@ public class DetalleHistorialController {
         dto.setIdReceta(detalle.getReceta() == null ? null : detalle.getReceta().getIdReceta());
         dto.setMotivoConsulta(detalle.getMotivoConsulta());
         dto.setCifradoDatos(detalle.getCifradoDatos());
-        dto.setFechaRegistro(detalle.getFechaRegistro());
+        dto.setFechaRegistro(detalle.getFechaRegistro() == null
+                ? null : detalle.getFechaRegistro().toLocalDate());
         return dto;
     }
 

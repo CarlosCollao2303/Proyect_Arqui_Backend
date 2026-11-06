@@ -18,9 +18,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/historiasclinicas")
+@RequestMapping("/api/historiasclinicas")
 public class HistoriasClinicasController {
-
     private final IHistoriasClinicasService hS;
     private final IUsuariosService uS;
 
@@ -77,7 +76,8 @@ public class HistoriasClinicasController {
 
         HistoriasClinicas historiaClinica = new HistoriasClinicas();
         historiaClinica.setPaciente(paciente);
-        historiaClinica.setFechaCreacion(dto.getFechaCreacion());
+        historiaClinica.setFechaCreacion(dto.getFechaCreacion() == null
+                ? null : dto.getFechaCreacion().atStartOfDay());
 
         hS.insert(historiaClinica);
 
@@ -108,7 +108,8 @@ public class HistoriasClinicasController {
 
         HistoriasClinicas historiaClinica = existente.get();
         historiaClinica.setPaciente(paciente);
-        historiaClinica.setFechaCreacion(dto.getFechaCreacion());
+        historiaClinica.setFechaCreacion(dto.getFechaCreacion() == null
+                ? null : dto.getFechaCreacion().atStartOfDay());
 
         hS.update(historiaClinica);
 
@@ -134,7 +135,8 @@ public class HistoriasClinicasController {
         HistoriasClinicasDTO dto = new HistoriasClinicasDTO();
         dto.setIdHistoriaClinica(historiaClinica.getIdHistoriaClinica());
         dto.setIdPaciente(historiaClinica.getPaciente().getIdUsuario());
-        dto.setFechaCreacion(historiaClinica.getFechaCreacion());
+        dto.setFechaCreacion(historiaClinica.getFechaCreacion() == null
+                ? null : historiaClinica.getFechaCreacion().toLocalDate());
         return dto;
     }
 

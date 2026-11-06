@@ -3,7 +3,7 @@ package pe.edu.upc.proyect_arqui_backend.dtos;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class NotificacionesDTO {
     private int idNotificacion;
@@ -17,7 +17,7 @@ public class NotificacionesDTO {
     @NotBlank(message = "El mensaje es obligatorio")
     private String mensaje;
 
-    private LocalDateTime fechaEnvio;
+    private LocalDate fechaEnvio;
     private String estadoEnvio;
 
     public int getIdNotificacion() {
@@ -52,11 +52,11 @@ public class NotificacionesDTO {
         this.mensaje = mensaje;
     }
 
-    public LocalDateTime getFechaEnvio() {
+    public LocalDate getFechaEnvio() {
         return fechaEnvio;
     }
 
-    public void setFechaEnvio(LocalDateTime fechaEnvio) {
+    public void setFechaEnvio(LocalDate fechaEnvio) {
         this.fechaEnvio = fechaEnvio;
     }
 

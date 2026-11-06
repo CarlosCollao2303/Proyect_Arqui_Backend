@@ -2,7 +2,7 @@ package pe.edu.upc.proyect_arqui_backend.dtos;
 
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class HistoriasClinicasDTO {
     private int idHistoriaClinica;
@@ -10,7 +10,7 @@ public class HistoriasClinicasDTO {
     @NotNull(message = "El id del paciente es obligatorio")
     private Integer idPaciente;
 
-    private LocalDateTime fechaCreacion;
+    private LocalDate fechaCreacion;
 
     public int getIdHistoriaClinica() {
         return idHistoriaClinica;
@@ -28,11 +28,11 @@ public class HistoriasClinicasDTO {
         this.idPaciente = idPaciente;
     }
 
-    public LocalDateTime getFechaCreacion() {
+    public LocalDate getFechaCreacion() {
         return fechaCreacion;
     }
 
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+    public void setFechaCreacion(LocalDate fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
 }

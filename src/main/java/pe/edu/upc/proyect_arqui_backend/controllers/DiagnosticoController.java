@@ -18,9 +18,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/diagnosticos")
+@RequestMapping("/api/diagnosticos")
 public class DiagnosticoController {
-
     private final IDiagnosticoService dS;
     private final IDetalleHistorialService dhS;
 
@@ -39,7 +38,7 @@ public class DiagnosticoController {
         return ResponseEntity.ok(lista);
     }
 
-    @GetMapping("/ListarPorId/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<DiagnosticoDTO> listarPorId(@PathVariable int id) {
         Diagnostico diagnostico = dS.listId(id)
                 .orElseThrow(() ->
@@ -82,7 +81,7 @@ public class DiagnosticoController {
         Diagnostico diagnostico = new Diagnostico();
         diagnostico.setCodigoCie10(dto.getCodigoCie10());
         diagnostico.setDescripcion(dto.getDescripcion());
-        diagnostico.setFechaRegistro(dto.getFechaRegistro());
+        diagnostico.setFechaRegistro(dto.getFechaRegistro().atStartOfDay());
 
         dS.insert(diagnostico);
 
@@ -112,7 +111,7 @@ public class DiagnosticoController {
         Diagnostico diagnostico = existente.get();
         diagnostico.setCodigoCie10(dto.getCodigoCie10());
         diagnostico.setDescripcion(dto.getDescripcion());
-        diagnostico.setFechaRegistro(dto.getFechaRegistro());
+        diagnostico.setFechaRegistro(dto.getFechaRegistro().atStartOfDay());
 
         dS.update(diagnostico);
 
@@ -144,7 +143,7 @@ public class DiagnosticoController {
         dto.setIdDiagnostico(diagnostico.getIdDiagnostico());
         dto.setCodigoCie10(diagnostico.getCodigoCie10());
         dto.setDescripcion(diagnostico.getDescripcion());
-        dto.setFechaRegistro(diagnostico.getFechaRegistro());
+        dto.setFechaRegistro(diagnostico.getFechaRegistro().toLocalDate());
         return dto;
     }
 }
