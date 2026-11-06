@@ -162,6 +162,32 @@ class ICitasRepositoryTest {
         assertTrue(cR.findCitasDelMedico(medico.getIdUsuario(), "PENDIENTE", null, null).isEmpty());
     }
 
+    @Test
+    void findTodasLasCitasEntre_filtraDiaYDevuelvePacienteYMedicoOrdenados() {
+        Especialidades cardio = new Especialidades();
+        cardio.setNombre("Cardiologia");
+        em.persist(cardio);
+        Usuarios medico = em.persist(usuario(rolMedico, cardio, "Luis", "Rojas", "luis@clinica.pe"));
+        Citas tarde = em.persist(new Citas(0, paciente, medico,
+                LocalDateTime.of(2026, 10, 5, 15, 0), 0, "PENDIENTE"));
+        Citas temprano = em.persist(new Citas(0, paciente, medico,
+                LocalDateTime.of(2026, 10, 5, 9, 30), 0, "ATENDIDA"));
+        em.persist(new Citas(0, paciente, medico,
+                LocalDateTime.of(2026, 10, 6, 0, 0), 0, "PENDIENTE"));
+        em.flush();
+
+        List<pe.edu.upc.proyect_arqui_backend.dtos.CitaPacienteDTO> citas =
+                cR.findTodasLasCitasEntre(LocalDate.of(2026, 10, 5).atStartOfDay(),
+                        LocalDate.of(2026, 10, 6).atStartOfDay());
+
+        assertEquals(2, citas.size());
+        assertEquals(temprano.getIdCita(), citas.get(0).getIdCita());
+        assertEquals(tarde.getIdCita(), citas.get(1).getIdCita());
+        assertEquals("Ana Torres", citas.get(0).getPaciente());
+        assertEquals("Luis Rojas", citas.get(0).getMedico());
+        assertEquals("Cardiologia", citas.get(0).getEspecialidad());
+    }
+
     private Usuarios usuario(Roles rol, Especialidades especialidad, String nombres,
                              String apellidos, String correo) {
         return new Usuarios(0, rol, especialidad, nombres, apellidos, "12345678",

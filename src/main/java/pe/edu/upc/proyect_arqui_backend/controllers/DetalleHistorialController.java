@@ -19,7 +19,6 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRecetasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ITratamientosService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@PreAuthorize("hasAnyAuthority('ADMIN','MEDICO')")
 @RequestMapping("/detallehistorial")
 public class DetalleHistorialController {
 
@@ -178,7 +176,6 @@ public class DetalleHistorialController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         DetalleHistorial detalle = dhS.listId(id)

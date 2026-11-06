@@ -63,6 +63,13 @@ public class CitasServiceImplement implements ICitasService {
     }
 
     @Override
+    public List<CitaPacienteDTO> listarTodasLasCitasPorFecha(LocalDate fecha) {
+        LocalDateTime inicio = fecha.atStartOfDay();
+        LocalDateTime fin = fecha.plusDays(1).atStartOfDay();
+        return cR.findTodasLasCitasEntre(inicio, fin);
+    }
+
+    @Override
     public List<Citas> listByParticipanteCorreo(String correo) {
         return cR.findByParticipanteCorreo(correo);
     }

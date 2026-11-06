@@ -9,6 +9,7 @@ public class CitaPacienteDTO {
     private LocalDate fecha;
     private LocalTime hora;
     private String estado;
+    private String paciente;
     private String medico;
     private String especialidad;
 
@@ -23,6 +24,12 @@ public class CitaPacienteDTO {
         this.estado = estado;
         this.medico = medico;
         this.especialidad = especialidad;
+    }
+
+    public CitaPacienteDTO(int idCita, LocalDateTime fechaHoraProgramada, String estado,
+                           String paciente, String medico, String especialidad) {
+        this(idCita, fechaHoraProgramada, estado, medico, especialidad);
+        this.paciente = paciente;
     }
 
     public int getIdCita() {
@@ -55,6 +62,14 @@ public class CitaPacienteDTO {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public String getPaciente() {
+        return paciente;
+    }
+
+    public void setPaciente(String paciente) {
+        this.paciente = paciente;
     }
 
     public String getMedico() {
