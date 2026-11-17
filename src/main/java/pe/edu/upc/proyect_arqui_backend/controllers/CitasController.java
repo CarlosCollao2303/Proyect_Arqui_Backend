@@ -1,8 +1,10 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -10,6 +12,7 @@ import pe.edu.upc.proyect_arqui_backend.dtos.CitaEstadoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaMedicoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaPacienteDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitasDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.VideollamadaDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
@@ -28,6 +31,10 @@ import java.util.UUID;
 public class CitasController {
     private final ICitasService cS;
     private final IUsuariosService uS;
+
+    // Servidor de Jitsi Meet donde se crean las salas (por defecto el publico).
+    @Value("${jitsi.dominio:meet.jit.si}")
+    private String dominioJitsi;
 
     public CitasController(ICitasService cS, IUsuariosService uS) {
         this.cS = cS;
@@ -81,6 +88,36 @@ public class CitasController {
         boolean puedeVerTodas = auth == null || tieneRol(auth, "ADMIN") || tieneRol(auth, "MEDICO");
 
         return ResponseEntity.ok(cS.consultarEstado(idCita, correo(auth), puedeVerTodas));
+    }
+
+    // Datos para entrar a la videollamada (Jitsi Meet) de la cita. Si hay token, solo
+    // el paciente o el medico de la cita (o un ADMIN) pueden pedirlos.
+    @GetMapping("/{id}/videollamada")
+    public ResponseEntity<VideollamadaDTO> videollamada(@PathVariable int id, Authentication auth) {
+        Citas cita = cS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una cita con el id: " + id
+                        )
+                );
+
+        if (auth != null && !tieneRol(auth, "ADMIN")
+                && !cita.getPaciente().getCorreo().equals(correo(auth))
+                && !cita.getMedico().getCorreo().equals(correo(auth))) {
+            throw new AccessDeniedException("Solo el paciente o el medico de la cita pueden ingresar a la videollamada");
+        }
+
+        if ("CANCELADA".equals(cita.getEstado())) {
+            throw new BadRequestException("La cita fue cancelada, no tiene videollamada");
+        }
+
+        // Las citas registradas antes de esta funcionalidad no tienen sala: se crea al pedirla.
+        if (cita.getSalaVideollamada() == null || cita.getSalaVideollamada().isBlank()) {
+            cita.setSalaVideollamada(generarSalaVideollamada());
+            cS.update(cita);
+        }
+
+        return ResponseEntity.ok(convertirAVideollamadaDTO(cita));
     }
 
     @GetMapping("/medico/mis-citas")
@@ -235,6 +272,23 @@ public class CitasController {
     // Sala unica de Jitsi Meet: el UUID evita que se pueda adivinar la de otra cita.
     private String generarSalaVideollamada() {
         return "SaludCerca-" + UUID.randomUUID().toString().replace("-", "");
+    }
+
+    private String enlaceVideollamada(Citas cita) {
+        return "https://" + dominioJitsi + "/" + cita.getSalaVideollamada();
+    }
+
+    private VideollamadaDTO convertirAVideollamadaDTO(Citas cita) {
+        return new VideollamadaDTO(
+                cita.getIdCita(),
+                dominioJitsi,
+                cita.getSalaVideollamada(),
+                enlaceVideollamada(cita),
+                cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos(),
+                cita.getMedico().getNombres() + " " + cita.getMedico().getApellidos(),
+                cita.getFechaHoraProgramada().toLocalDate(),
+                cita.getEstado()
+        );
     }
 
     private boolean tieneRol(Authentication auth, String rol) {
