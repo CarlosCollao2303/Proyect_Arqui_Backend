@@ -58,9 +58,9 @@ class ExamenesControllerTest {
 
     @Test
     void registrar_resultadoAntesDeLaSolicitud_400() throws Exception {
-        mockMvc.perform(post("/examenes/Registrar")
+        mockMvc.perform(post("/api/examenes/Registrar")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(examen("2026-10-10T09:00:00", "2026-10-09T09:00:00")))
+                        .content(examen("2026-10-10", "2026-10-09")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("La fecha de resultado no puede ser anterior a la fecha de solicitud"));
 
@@ -69,9 +69,9 @@ class ExamenesControllerTest {
 
     @Test
     void registrar_sinResultadoQuedaPendiente_201() throws Exception {
-        mockMvc.perform(post("/examenes/Registrar")
+        mockMvc.perform(post("/api/examenes/Registrar")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(examen("2026-10-10T09:00:00", null)))
+                        .content(examen("2026-10-10", null)))
                 .andExpect(status().isCreated());
 
         verify(eS).insert(any());
@@ -79,9 +79,9 @@ class ExamenesControllerTest {
 
     @Test
     void actualizar_resultadoAntesDeLaSolicitud_400() throws Exception {
-        mockMvc.perform(put("/examenes/Actualizar")
+        mockMvc.perform(put("/api/examenes/Actualizar")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(examen("2026-10-10T09:00:00", "2026-10-09T09:00:00")))
+                        .content(examen("2026-10-10", "2026-10-09")))
                 .andExpect(status().isBadRequest());
 
         verify(eS, never()).listId(anyInt());

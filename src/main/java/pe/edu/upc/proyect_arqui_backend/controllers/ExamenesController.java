@@ -41,7 +41,7 @@ public class ExamenesController {
         return ResponseEntity.ok(lista);
     }
 
-    @GetMapping("/ListarPorId/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ExamenesDTO> listarPorId(@PathVariable int id) {
         Examenes examen = eS.listId(id)
                 .orElseThrow(() ->
@@ -83,7 +83,7 @@ public class ExamenesController {
 
         Examenes examen = new Examenes();
         examen.setTipoExamen(dto.getTipoExamen());
-        examen.setResultado(dto.getResultado());
+        examen.setDescripcion(dto.getDescripcion());
         examen.setFechaSolicitud(dto.getFechaSolicitud().atStartOfDay());
         examen.setFechaResultado(dto.getFechaResultado() == null
                 ? null : dto.getFechaResultado().atStartOfDay());
@@ -117,7 +117,7 @@ public class ExamenesController {
 
         Examenes examen = existente.get();
         examen.setTipoExamen(dto.getTipoExamen());
-        examen.setResultado(dto.getResultado());
+        examen.setDescripcion(dto.getDescripcion());
         examen.setFechaSolicitud(dto.getFechaSolicitud().atStartOfDay());
         examen.setFechaResultado(dto.getFechaResultado() == null
                 ? null : dto.getFechaResultado().atStartOfDay());
@@ -162,7 +162,7 @@ public class ExamenesController {
         ExamenesDTO dto = new ExamenesDTO();
         dto.setIdExamen(examen.getIdExamen());
         dto.setTipoExamen(examen.getTipoExamen());
-        dto.setResultado(examen.getResultado());
+        dto.setDescripcion(examen.getDescripcion());
         dto.setFechaSolicitud(examen.getFechaSolicitud().toLocalDate());
         dto.setFechaResultado(examen.getFechaResultado() == null
                 ? null : examen.getFechaResultado().toLocalDate());

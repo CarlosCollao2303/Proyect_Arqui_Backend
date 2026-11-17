@@ -15,7 +15,7 @@ public class Examenes {
     private String tipoExamen;
 
     @Column(name = "resultado", columnDefinition = "TEXT")
-    private String resultado;
+    private String descripcion;
 
     @Column(name = "fecha_solicitud", nullable = false)
     private LocalDateTime fechaSolicitud;
@@ -26,10 +26,10 @@ public class Examenes {
     public Examenes() {
     }
 
-    public Examenes(int idExamen, String tipoExamen, String resultado, LocalDateTime fechaSolicitud, LocalDateTime fechaResultado) {
+    public Examenes(int idExamen, String tipoExamen, String descripcion, LocalDateTime fechaSolicitud, LocalDateTime fechaResultado) {
         this.idExamen = idExamen;
         this.tipoExamen = tipoExamen;
-        this.resultado = resultado;
+        this.descripcion = descripcion;
         this.fechaSolicitud = fechaSolicitud;
         this.fechaResultado = fechaResultado;
     }
@@ -50,12 +50,12 @@ public class Examenes {
         this.tipoExamen = tipoExamen;
     }
 
-    public String getResultado() {
-        return resultado;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setResultado(String resultado) {
-        this.resultado = resultado;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public LocalDateTime getFechaSolicitud() {
