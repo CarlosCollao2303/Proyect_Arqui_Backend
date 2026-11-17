@@ -1,6 +1,8 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +18,15 @@ import pe.edu.upc.proyect_arqui_backend.dtos.VideollamadaDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
+import pe.edu.upc.proyect_arqui_backend.exceptions.CorreoException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICitasService;
+import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.INotificacionesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,16 +34,21 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/citas")
 public class CitasController {
+    private static final Logger log = LoggerFactory.getLogger(CitasController.class);
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     private final ICitasService cS;
     private final IUsuariosService uS;
+    private final INotificacionesService nS;
 
     // Servidor de Jitsi Meet donde se crean las salas (por defecto el publico).
     @Value("${jitsi.dominio:meet.jit.si}")
     private String dominioJitsi;
 
-    public CitasController(ICitasService cS, IUsuariosService uS) {
+    public CitasController(ICitasService cS, IUsuariosService uS, INotificacionesService nS) {
         this.cS = cS;
         this.uS = uS;
+        this.nS = nS;
     }
 
     @GetMapping("/Listar")
@@ -167,6 +177,7 @@ public class CitasController {
         cita.setSalaVideollamada(generarSalaVideollamada());
 
         cS.insert(cita);
+        notificarCitaRegistrada(cita);
 
         CitasDTO responseDTO = convertirADTO(cita);
 
@@ -272,6 +283,24 @@ public class CitasController {
     // Sala unica de Jitsi Meet: el UUID evita que se pueda adivinar la de otra cita.
     private String generarSalaVideollamada() {
         return "SaludCerca-" + UUID.randomUUID().toString().replace("-", "");
+    }
+
+    // Avisa al paciente por correo (Resend) con el enlace a la videollamada. La cita
+    // ya quedo registrada, asi que si el correo falla no se revierte: la notificacion
+    // queda guardada como FALLIDO y solo se deja constancia en el log.
+    private void notificarCitaRegistrada(Citas cita) {
+        Usuarios medico = cita.getMedico();
+        String mensaje = "Tu cita con " + medico.getNombres() + " " + medico.getApellidos()
+                + " quedo registrada para el "
+                + cita.getFechaHoraProgramada().toLocalDate().format(FORMATO_FECHA) + ".\n"
+                + "Ese dia puedes ingresar a la consulta por videollamada desde el siguiente boton.";
+
+        try {
+            nS.enviarPorCorreo(cita.getPaciente(), "CITA_REGISTRADA",
+                    "SaludCerca: tu cita fue registrada", mensaje, enlaceVideollamada(cita));
+        } catch (CorreoException e) {
+            log.warn("No se pudo notificar la cita {} por correo: {}", cita.getIdCita(), e.getMessage());
+        }
     }
 
     private String enlaceVideollamada(Citas cita) {

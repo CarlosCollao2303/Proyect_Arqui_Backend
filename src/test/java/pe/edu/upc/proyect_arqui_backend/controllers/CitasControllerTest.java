@@ -20,6 +20,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.securities.SecurityConfig;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICitasService;
+import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.INotificacionesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 
 import java.time.LocalDate;
@@ -52,6 +53,9 @@ class CitasControllerTest {
 
     @MockitoBean
     private IUsuariosService uS;
+
+    @MockitoBean
+    private INotificacionesService nS;
 
     @MockitoBean
     private UserDetailsService userDetailsService;
