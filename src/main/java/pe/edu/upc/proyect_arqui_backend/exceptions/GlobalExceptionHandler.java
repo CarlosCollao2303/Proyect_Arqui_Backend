@@ -71,6 +71,24 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    // El correo depende de un servicio externo (Resend): si falla se responde
+    // 502 para distinguirlo de un error en los datos que envio el cliente.
+    @ExceptionHandler(CorreoException.class)
+    public ResponseEntity<ErrorResponse> handleCorreo(
+            CorreoException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_GATEWAY.value(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(error);
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(
             MethodArgumentTypeMismatchException ex,

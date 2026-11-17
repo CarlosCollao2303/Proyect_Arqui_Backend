@@ -105,6 +105,37 @@ public class NotificacionesController {
                 .body(responseDTO);
     }
 
+    // Envia la notificacion al correo del usuario con Resend. La fecha y el estado
+    // de envio los pone el servidor; si Resend falla se responde 502 y la
+    // notificacion queda guardada como FALLIDO.
+    @PostMapping("/EnviarCorreo")
+    public ResponseEntity<NotificacionesDTO> enviarCorreo(@Valid @RequestBody NotificacionesDTO dto) {
+        Usuarios usuario = uS.listId(dto.getIdUsuario())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe el usuario con el id: " + dto.getIdUsuario()
+                        )
+                );
+
+        String tipo = dto.getTipo().trim().toUpperCase();
+        String asunto = "SaludCerca: " + tipo.replace('_', ' ').toLowerCase();
+
+        Notificaciones notificacion = nS.enviarPorCorreo(
+                usuario, tipo, asunto, dto.getMensaje().trim(), null);
+
+        NotificacionesDTO responseDTO = convertirADTO(notificacion);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/api/notificaciones/ListarPorId/{id}")
+                .buildAndExpand(notificacion.getIdNotificacion())
+                .toUri();
+
+        return ResponseEntity
+                .created(location)
+                .body(responseDTO);
+    }
+
     @PutMapping
     public ResponseEntity<NotificacionesDTO> actualizar(@Valid @RequestBody NotificacionesDTO dto) {
         Optional<Notificaciones> existente = nS.listId(dto.getIdNotificacion());
