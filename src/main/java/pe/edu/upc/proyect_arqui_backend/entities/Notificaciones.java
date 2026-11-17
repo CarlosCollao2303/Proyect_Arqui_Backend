@@ -7,6 +7,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "notificaciones")
 public class Notificaciones {
+    // Estados que se guardan al enviar una notificacion por correo.
+    public static final String ESTADO_ENVIADO = "ENVIADO";
+    public static final String ESTADO_FALLIDO = "FALLIDO";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idNotificacion;
