@@ -11,7 +11,7 @@ public class ExamenesDTO {
     @NotBlank(message = "El tipo de examen es obligatorio")
     private String tipoExamen;
 
-    private String resultado;
+    private String descripcion;
 
     @NotNull(message = "La fecha de solicitud es obligatoria")
     private LocalDate fechaSolicitud;
@@ -34,12 +34,12 @@ public class ExamenesDTO {
         this.tipoExamen = tipoExamen;
     }
 
-    public String getResultado() {
-        return resultado;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setResultado(String resultado) {
-        this.resultado = resultado;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public LocalDate getFechaSolicitud() {
