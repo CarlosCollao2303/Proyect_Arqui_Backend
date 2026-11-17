@@ -14,9 +14,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaEstadoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaMedicoDTO;
+import org.mockito.ArgumentCaptor;
+import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Roles;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
+import pe.edu.upc.proyect_arqui_backend.exceptions.CorreoException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.securities.SecurityConfig;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICitasService;
@@ -32,6 +35,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -338,5 +343,109 @@ class CitasControllerTest {
                 .andExpect(jsonPath("$.message").value("tiempoEsperaMinutos: El tiempo de espera no puede ser negativo"));
 
         verify(cS, never()).insert(any());
+    }
+
+    // ---- Videollamada (Jitsi) y correo al registrar (Resend) ----
+
+    private Citas citaConSala(String estado, String sala) {
+        Citas cita = new Citas(1, ana, luis, LocalDateTime.of(2026, 12, 1, 0, 0), 0, estado);
+        cita.setSalaVideollamada(sala);
+        return cita;
+    }
+
+    @Test
+    void registrar_creaSalaDeVideollamadaYNotificaAlPaciente() throws Exception {
+        when(uS.listId(1)).thenReturn(Optional.of(ana));
+        when(uS.listId(2)).thenReturn(Optional.of(luis));
+
+        mockMvc.perform(post("/api/citas/Registrar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaConPaciente(1, 0)))
+                .andExpect(status().isCreated());
+
+        ArgumentCaptor<Citas> guardada = ArgumentCaptor.forClass(Citas.class);
+        verify(cS).insert(guardada.capture());
+        String sala = guardada.getValue().getSalaVideollamada();
+        assertTrue(sala.matches("SaludCerca-[0-9a-f]{32}"));
+
+        verify(nS).enviarPorCorreo(eq(ana), eq("CITA_REGISTRADA"), anyString(), anyString(),
+                eq("https://meet.jit.si/" + sala));
+    }
+
+    @Test
+    void registrar_siFallaElCorreoLaCitaIgualSeRegistra_201() throws Exception {
+        when(uS.listId(1)).thenReturn(Optional.of(ana));
+        when(uS.listId(2)).thenReturn(Optional.of(luis));
+        when(nS.enviarPorCorreo(any(), anyString(), anyString(), anyString(), anyString()))
+                .thenThrow(new CorreoException("No se pudo enviar el correo"));
+
+        mockMvc.perform(post("/api/citas/Registrar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaConPaciente(1, 0)))
+                .andExpect(status().isCreated());
+
+        verify(cS).insert(any());
+    }
+
+    @Test
+    void videollamada_devuelveDominioSalaYEnlace_200() throws Exception {
+        when(cS.listId(1)).thenReturn(Optional.of(citaConSala("PENDIENTE", "SaludCerca-abc123")));
+
+        mockMvc.perform(get("/api/citas/1/videollamada"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idCita").value(1))
+                .andExpect(jsonPath("$.dominio").value("meet.jit.si"))
+                .andExpect(jsonPath("$.sala").value("SaludCerca-abc123"))
+                .andExpect(jsonPath("$.enlace").value("https://meet.jit.si/SaludCerca-abc123"))
+                .andExpect(jsonPath("$.paciente").value("Ana Torres"))
+                .andExpect(jsonPath("$.medico").value("Luis Rojas"))
+                .andExpect(jsonPath("$.fecha").value("2026-12-01"));
+
+        verify(cS, never()).update(any());
+    }
+
+    @Test
+    void videollamada_citaAntiguaSinSala_seLeCreaUna() throws Exception {
+        Citas cita = citaConSala("PENDIENTE", null);
+        when(cS.listId(1)).thenReturn(Optional.of(cita));
+
+        mockMvc.perform(get("/api/citas/1/videollamada"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sala").value(org.hamcrest.Matchers.startsWith("SaludCerca-")));
+
+        verify(cS).update(cita);
+    }
+
+    @Test
+    void videollamada_citaCancelada_400() throws Exception {
+        when(cS.listId(1)).thenReturn(Optional.of(citaConSala("CANCELADA", "SaludCerca-abc123")));
+
+        mockMvc.perform(get("/api/citas/1/videollamada"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("La cita fue cancelada, no tiene videollamada"));
+    }
+
+    @Test
+    void videollamada_pacienteDeOtraCita_403() throws Exception {
+        when(cS.listId(1)).thenReturn(Optional.of(citaConSala("PENDIENTE", "SaludCerca-abc123")));
+
+        mockMvc.perform(get("/api/citas/1/videollamada").with(token("otro@mail.com", "PACIENTE")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void videollamada_medicoDeLaCita_200() throws Exception {
+        when(cS.listId(1)).thenReturn(Optional.of(citaConSala("PENDIENTE", "SaludCerca-abc123")));
+
+        mockMvc.perform(get("/api/citas/1/videollamada").with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void videollamada_citaInexistente_404() throws Exception {
+        when(cS.listId(99)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/citas/99/videollamada"))
+                .andExpect(status().isNotFound());
     }
 }
