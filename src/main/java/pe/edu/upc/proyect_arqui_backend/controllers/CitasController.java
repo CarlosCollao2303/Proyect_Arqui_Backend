@@ -21,6 +21,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/citas")
@@ -126,6 +127,7 @@ public class CitasController {
         cita.setEstado(esPaciente || dto.getEstado() == null
                 ? Citas.ESTADO_PENDIENTE
                 : validarEstado(dto.getEstado()));
+        cita.setSalaVideollamada(generarSalaVideollamada());
 
         cS.insert(cita);
 
@@ -228,6 +230,11 @@ public class CitasController {
         }
 
         return normalizado;
+    }
+
+    // Sala unica de Jitsi Meet: el UUID evita que se pueda adivinar la de otra cita.
+    private String generarSalaVideollamada() {
+        return "SaludCerca-" + UUID.randomUUID().toString().replace("-", "");
     }
 
     private boolean tieneRol(Authentication auth, String rol) {

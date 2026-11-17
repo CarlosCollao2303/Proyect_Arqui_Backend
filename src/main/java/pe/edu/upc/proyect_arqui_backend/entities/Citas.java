@@ -32,6 +32,11 @@ public class Citas {
     @Column(name = "estado", nullable = false)
     private String estado;
 
+    // Nombre de la sala de Jitsi Meet de la cita. Es aleatorio para que nadie
+    // pueda adivinarlo y entrar a una consulta ajena.
+    @Column(name = "sala_videollamada", unique = true)
+    private String salaVideollamada;
+
     public Citas() {
     }
 
@@ -90,5 +95,13 @@ public class Citas {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public String getSalaVideollamada() {
+        return salaVideollamada;
+    }
+
+    public void setSalaVideollamada(String salaVideollamada) {
+        this.salaVideollamada = salaVideollamada;
     }
 }
