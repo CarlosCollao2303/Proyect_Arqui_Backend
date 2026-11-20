@@ -120,4 +120,9 @@ public class CitasServiceImplement implements ICitasService {
         }
         return citas;
     }
+
+    @Override
+    public List<Object[]> contarCitasPorEspecialidadYEstado() {
+        return cR.contarCitasPorEspecialidadYEstado();
+    }
 }
