@@ -188,6 +188,63 @@ class ICitasRepositoryTest {
         assertEquals("Cardiologia", citas.get(0).getEspecialidad());
     }
 
+    @Test
+    void contarCitasPorEspecialidadYEstado_separaPorEstadoYOrdenaPorTotal() {
+        Especialidades cardio = especialidad("Cardiologia");
+        Especialidades pediatria = especialidad("Pediatria");
+        Usuarios cardiologo = em.persist(usuario(rolMedico, cardio, "Luis", "Rojas", "luis@clinica.pe"));
+        Usuarios pediatra = em.persist(usuario(rolMedico, pediatria, "Rosa", "Diaz", "rosa@clinica.pe"));
+        cita(cardiologo, "ATENDIDA");
+        cita(cardiologo, "ATENDIDA");
+        cita(cardiologo, "PENDIENTE");
+        cita(cardiologo, "CANCELADA");
+        cita(pediatra, "PENDIENTE");
+        em.flush();
+
+        List<Object[]> filas = cR.contarCitasPorEspecialidadYEstado();
+
+        assertEquals(2, filas.size());
+        // Primero la especialidad con mas citas
+        assertFila(filas.get(0), "Cardiologia", 2, 1, 1, 4);
+        assertFila(filas.get(1), "Pediatria", 0, 1, 0, 1);
+    }
+
+    @Test
+    void contarCitasPorEspecialidadYEstado_medicoSinEspecialidadSeAgrupaAparte() {
+        Usuarios medico = em.persist(usuario(rolMedico, null, "Luis", "Rojas", "luis@clinica.pe"));
+        cita(medico, "CANCELADA");
+        em.flush();
+
+        List<Object[]> filas = cR.contarCitasPorEspecialidadYEstado();
+
+        assertEquals(1, filas.size());
+        assertFila(filas.get(0), "Sin especialidad", 0, 0, 1, 1);
+    }
+
+    @Test
+    void contarCitasPorEspecialidadYEstado_sinCitasDevuelveListaVacia() {
+        assertTrue(cR.contarCitasPorEspecialidadYEstado().isEmpty());
+    }
+
+    private Especialidades especialidad(String nombre) {
+        Especialidades especialidad = new Especialidades();
+        especialidad.setNombre(nombre);
+        return em.persist(especialidad);
+    }
+
+    private void cita(Usuarios medico, String estado) {
+        em.persist(new Citas(0, paciente, medico, LocalDateTime.of(2026, 10, 5, 9, 30), 0, estado));
+    }
+
+    private void assertFila(Object[] fila, String especialidad, long atendidas, long pendientes,
+                            long canceladas, long total) {
+        assertEquals(especialidad, fila[0]);
+        assertEquals(atendidas, ((Number) fila[1]).longValue());
+        assertEquals(pendientes, ((Number) fila[2]).longValue());
+        assertEquals(canceladas, ((Number) fila[3]).longValue());
+        assertEquals(total, ((Number) fila[4]).longValue());
+    }
+
     private Usuarios usuario(Roles rol, Especialidades especialidad, String nombres,
                              String apellidos, String correo) {
         return new Usuarios(0, rol, especialidad, nombres, apellidos, "12345678",
