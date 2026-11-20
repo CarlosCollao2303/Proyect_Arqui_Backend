@@ -487,4 +487,31 @@ class CitasControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
+
+    @Test
+    void esperaPorMedico_convierteCadaFilaEnDTO() throws Exception {
+        // El promedio llega como BigDecimal (ROUND de PostgreSQL) y el maximo como Integer
+        when(cS.obtenerEsperaPromedioPorMedico()).thenReturn(List.<Object[]>of(
+                new Object[]{"Jorge Salazar", "Cardiologia", 6L, new java.math.BigDecimal("24.5"), 40},
+                new Object[]{"Lucia Fernandez", "Pediatria", 9L, new java.math.BigDecimal("8.3"), 15}));
+
+        mockMvc.perform(get("/api/citas/espera-por-medico"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].medico").value("Jorge Salazar"))
+                .andExpect(jsonPath("$[0].especialidad").value("Cardiologia"))
+                .andExpect(jsonPath("$[0].citasAtendidas").value(6))
+                .andExpect(jsonPath("$[0].esperaPromedio").value(24.5))
+                .andExpect(jsonPath("$[0].esperaMaxima").value(40))
+                .andExpect(jsonPath("$[1].esperaPromedio").value(8.3));
+    }
+
+    @Test
+    void esperaPorMedico_sinCitasAtendidasDevuelveListaVacia() throws Exception {
+        when(cS.obtenerEsperaPromedioPorMedico()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/citas/espera-por-medico"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
 }
