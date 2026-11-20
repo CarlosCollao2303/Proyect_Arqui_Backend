@@ -86,4 +86,19 @@ public interface ICitasRepository extends JpaRepository<Citas, Integer> {
                                            @Param("estado") String estado,
                                            @Param("inicio") LocalDateTime inicio,
                                            @Param("fin") LocalDateTime fin);
+
+    // Reporte: citas de cada especialidad separadas por estado. La especialidad sale del
+    // medico de la cita; si el medico no tiene una, se agrupa como "Sin especialidad".
+    // Cada fila: [especialidad, atendidas, pendientes, canceladas, total]
+    @Query(value = "SELECT COALESCE(e.nombre, 'Sin especialidad') AS especialidad, " +
+            " SUM(CASE WHEN c.estado = 'ATENDIDA' THEN 1 ELSE 0 END) AS atendidas, " +
+            " SUM(CASE WHEN c.estado = 'PENDIENTE' THEN 1 ELSE 0 END) AS pendientes, " +
+            " SUM(CASE WHEN c.estado = 'CANCELADA' THEN 1 ELSE 0 END) AS canceladas, " +
+            " COUNT(*) AS total " +
+            " FROM citas c " +
+            " INNER JOIN usuarios m ON m.id_usuario = c.medico_id " +
+            " LEFT JOIN especialidades e ON e.id_especialidad = m.especialidad_id " +
+            " GROUP BY COALESCE(e.nombre, 'Sin especialidad') " +
+            " ORDER BY total DESC, especialidad ASC", nativeQuery = true)
+    List<Object[]> contarCitasPorEspecialidadYEstado();
 }
