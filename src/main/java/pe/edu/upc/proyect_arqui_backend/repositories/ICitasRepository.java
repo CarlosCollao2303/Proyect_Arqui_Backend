@@ -101,4 +101,21 @@ public interface ICitasRepository extends JpaRepository<Citas, Integer> {
             " GROUP BY COALESCE(e.nombre, 'Sin especialidad') " +
             " ORDER BY total DESC, especialidad ASC", nativeQuery = true)
     List<Object[]> contarCitasPorEspecialidadYEstado();
+
+    // Reporte: tiempo de espera de los pacientes de cada medico. Solo cuenta citas ATENDIDAS,
+    // porque las pendientes y canceladas todavia no tienen un tiempo de espera real.
+    // El CAST a NUMERIC evita que el promedio de enteros se redondee a entero.
+    // Cada fila: [medico, especialidad, citas atendidas, espera promedio, espera maxima]
+    @Query(value = "SELECT CONCAT(m.nombres, ' ', m.apellidos) AS medico, " +
+            " COALESCE(e.nombre, 'Sin especialidad') AS especialidad, " +
+            " COUNT(c.id_cita) AS atendidas, " +
+            " ROUND(AVG(CAST(c.tiempo_espera_minutos AS NUMERIC)), 1) AS espera_promedio, " +
+            " MAX(c.tiempo_espera_minutos) AS espera_maxima " +
+            " FROM citas c " +
+            " INNER JOIN usuarios m ON m.id_usuario = c.medico_id " +
+            " LEFT JOIN especialidades e ON e.id_especialidad = m.especialidad_id " +
+            " WHERE c.estado = 'ATENDIDA' " +
+            " GROUP BY m.id_usuario, m.nombres, m.apellidos, e.nombre " +
+            " ORDER BY espera_promedio DESC, medico ASC", nativeQuery = true)
+    List<Object[]> obtenerEsperaPromedioPorMedico();
 }
