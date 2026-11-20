@@ -14,6 +14,7 @@ import pe.edu.upc.proyect_arqui_backend.dtos.CitaEstadoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaMedicoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaPacienteDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitasDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.CitasEspecialidadDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.VideollamadaDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
@@ -128,6 +129,27 @@ public class CitasController {
         }
 
         return ResponseEntity.ok(convertirAVideollamadaDTO(cita));
+    }
+
+    // Reporte para el grafico de barras apiladas: citas de cada especialidad por estado.
+    @GetMapping("/estado-por-especialidad")
+    public ResponseEntity<List<CitasEspecialidadDTO>> citasPorEspecialidad() {
+        List<CitasEspecialidadDTO> lista = cS.contarCitasPorEspecialidadYEstado()
+                .stream()
+                .map(item -> {
+                    CitasEspecialidadDTO dto = new CitasEspecialidadDTO();
+
+                    dto.setEspecialidad((String) item[0]);
+                    dto.setAtendidas(((Number) item[1]).longValue());
+                    dto.setPendientes(((Number) item[2]).longValue());
+                    dto.setCanceladas(((Number) item[3]).longValue());
+                    dto.setTotal(((Number) item[4]).longValue());
+
+                    return dto;
+                })
+                .toList();
+
+        return ResponseEntity.ok(lista);
     }
 
     @GetMapping("/medico/mis-citas")
