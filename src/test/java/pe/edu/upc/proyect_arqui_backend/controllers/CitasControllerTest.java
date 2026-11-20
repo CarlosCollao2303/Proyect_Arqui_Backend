@@ -448,4 +448,43 @@ class CitasControllerTest {
         mockMvc.perform(get("/api/citas/99/videollamada"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void estadoPorEspecialidad_convierteCadaFilaEnDTO() throws Exception {
+        // Las filas llegan como Object[] desde la query nativa (Long en PostgreSQL)
+        when(cS.contarCitasPorEspecialidadYEstado()).thenReturn(List.of(
+                new Object[]{"Cardiologia", 2L, 1L, 1L, 4L},
+                new Object[]{"Sin especialidad", 0L, 0L, 1L, 1L}));
+
+        mockMvc.perform(get("/api/citas/estado-por-especialidad"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].especialidad").value("Cardiologia"))
+                .andExpect(jsonPath("$[0].atendidas").value(2))
+                .andExpect(jsonPath("$[0].pendientes").value(1))
+                .andExpect(jsonPath("$[0].canceladas").value(1))
+                .andExpect(jsonPath("$[0].total").value(4))
+                .andExpect(jsonPath("$[1].especialidad").value("Sin especialidad"));
+    }
+
+    @Test
+    void estadoPorEspecialidad_aceptaSumasComoBigDecimal() throws Exception {
+        // Algunas bases devuelven SUM como BigDecimal: igual se convierte a numero entero
+        when(cS.contarCitasPorEspecialidadYEstado()).thenReturn(List.<Object[]>of(
+                new Object[]{"Pediatria", new java.math.BigDecimal("3"), 0, 2, 5L}));
+
+        mockMvc.perform(get("/api/citas/estado-por-especialidad"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].atendidas").value(3))
+                .andExpect(jsonPath("$[0].canceladas").value(2));
+    }
+
+    @Test
+    void estadoPorEspecialidad_sinCitasDevuelveListaVacia() throws Exception {
+        when(cS.contarCitasPorEspecialidadYEstado()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/citas/estado-por-especialidad"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
 }
