@@ -226,6 +226,45 @@ class ICitasRepositoryTest {
         assertTrue(cR.contarCitasPorEspecialidadYEstado().isEmpty());
     }
 
+    @Test
+    void obtenerEsperaPromedioPorMedico_soloCuentaAtendidasYOrdenaPorEspera() {
+        Especialidades cardio = especialidad("Cardiologia");
+        Usuarios cardiologo = em.persist(usuario(rolMedico, cardio, "Luis", "Rojas", "luis@clinica.pe"));
+        Usuarios general = em.persist(usuario(rolMedico, null, "Rosa", "Diaz", "rosa@clinica.pe"));
+        cita(cardiologo, "ATENDIDA", 10);
+        cita(cardiologo, "ATENDIDA", 15);
+        // Las pendientes y canceladas no deben mover el promedio
+        cita(cardiologo, "PENDIENTE", 99);
+        cita(cardiologo, "CANCELADA", 99);
+        cita(general, "ATENDIDA", 30);
+        em.flush();
+
+        List<Object[]> filas = cR.obtenerEsperaPromedioPorMedico();
+
+        assertEquals(2, filas.size());
+        // Primero el medico con mas espera
+        assertEquals("Rosa Diaz", filas.get(0)[0]);
+        assertEquals("Sin especialidad", filas.get(0)[1]);
+        assertEquals(1L, ((Number) filas.get(0)[2]).longValue());
+        assertEquals(30.0, ((Number) filas.get(0)[3]).doubleValue());
+
+        assertEquals("Luis Rojas", filas.get(1)[0]);
+        assertEquals("Cardiologia", filas.get(1)[1]);
+        assertEquals(2L, ((Number) filas.get(1)[2]).longValue());
+        // (10 + 15) / 2 = 12.5: el promedio conserva el decimal
+        assertEquals(12.5, ((Number) filas.get(1)[3]).doubleValue());
+        assertEquals(15, ((Number) filas.get(1)[4]).intValue());
+    }
+
+    @Test
+    void obtenerEsperaPromedioPorMedico_medicoSinCitasAtendidasNoAparece() {
+        Usuarios medico = em.persist(usuario(rolMedico, null, "Luis", "Rojas", "luis@clinica.pe"));
+        cita(medico, "PENDIENTE", 20);
+        em.flush();
+
+        assertTrue(cR.obtenerEsperaPromedioPorMedico().isEmpty());
+    }
+
     private Especialidades especialidad(String nombre) {
         Especialidades especialidad = new Especialidades();
         especialidad.setNombre(nombre);
@@ -233,7 +272,11 @@ class ICitasRepositoryTest {
     }
 
     private void cita(Usuarios medico, String estado) {
-        em.persist(new Citas(0, paciente, medico, LocalDateTime.of(2026, 10, 5, 9, 30), 0, estado));
+        cita(medico, estado, 0);
+    }
+
+    private void cita(Usuarios medico, String estado, int minutosEspera) {
+        em.persist(new Citas(0, paciente, medico, LocalDateTime.of(2026, 10, 5, 9, 30), minutosEspera, estado));
     }
 
     private void assertFila(Object[] fila, String especialidad, long atendidas, long pendientes,
