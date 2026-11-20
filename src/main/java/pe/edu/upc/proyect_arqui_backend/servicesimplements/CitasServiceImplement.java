@@ -125,4 +125,9 @@ public class CitasServiceImplement implements ICitasService {
     public List<Object[]> contarCitasPorEspecialidadYEstado() {
         return cR.contarCitasPorEspecialidadYEstado();
     }
+
+    @Override
+    public List<Object[]> obtenerEsperaPromedioPorMedico() {
+        return cR.obtenerEsperaPromedioPorMedico();
+    }
 }
