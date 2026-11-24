@@ -9,6 +9,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.INotificacionesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -27,6 +28,7 @@ public class NotificacionesController {
         this.uS = uS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping
     public ResponseEntity<List<NotificacionesDTO>> listar() {
         List<NotificacionesDTO> lista = nS.list()
@@ -37,6 +39,7 @@ public class NotificacionesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<NotificacionesDTO> listarPorId(@PathVariable int id) {
         Notificaciones notificacion = nS.listId(id)
@@ -49,6 +52,7 @@ public class NotificacionesController {
         return ResponseEntity.ok(convertirADTO(notificacion));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/PorUsuario/{idUsuario}")
     public ResponseEntity<List<NotificacionesDTO>> listarPorUsuario(@PathVariable int idUsuario) {
         List<NotificacionesDTO> lista = nS.listByUsuarioId(idUsuario)
@@ -58,6 +62,7 @@ public class NotificacionesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/PorUsuario/{idUsuario}/Estado")
     public ResponseEntity<List<NotificacionesDTO>> listarPorUsuarioYEstado(
             @PathVariable int idUsuario,
@@ -73,6 +78,7 @@ public class NotificacionesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PostMapping
     public ResponseEntity<NotificacionesDTO> registrar(@Valid @RequestBody NotificacionesDTO dto) {
         Usuarios usuario = uS.listId(dto.getIdUsuario())
@@ -108,6 +114,7 @@ public class NotificacionesController {
     // Envia la notificacion al correo del usuario con Resend. La fecha y el estado
     // de envio los pone el servidor; si Resend falla se responde 502 y la
     // notificacion queda guardada como FALLIDO.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PostMapping("/EnviarCorreo")
     public ResponseEntity<NotificacionesDTO> enviarCorreo(@Valid @RequestBody NotificacionesDTO dto) {
         Usuarios usuario = uS.listId(dto.getIdUsuario())
@@ -136,6 +143,7 @@ public class NotificacionesController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping
     public ResponseEntity<NotificacionesDTO> actualizar(@Valid @RequestBody NotificacionesDTO dto) {
         Optional<Notificaciones> existente = nS.listId(dto.getIdNotificacion());
@@ -168,6 +176,7 @@ public class NotificacionesController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Notificaciones notificacion = nS.listId(id)
