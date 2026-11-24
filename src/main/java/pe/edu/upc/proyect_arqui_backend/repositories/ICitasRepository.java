@@ -69,6 +69,9 @@ public interface ICitasRepository extends JpaRepository<Citas, Integer> {
 
     boolean existsByIdCitaAndPacienteCorreo(int idCita, String correo);
 
+    // Cada filtro en null no filtra. El CAST en ":param IS NULL" es necesario en
+    // PostgreSQL: sin el, no puede deducir el tipo del parametro y la consulta falla con
+    // "could not determine data type of parameter" (H2, la base de los tests, si lo deduce).
     @Query("SELECT new pe.edu.upc.proyect_arqui_backend.dtos.CitaMedicoDTO(" +
             "c.idCita, c.fechaHoraProgramada, c.estado, " +
             "CONCAT(p.nombres, ' ', p.apellidos), " +
@@ -78,9 +81,9 @@ public interface ICitasRepository extends JpaRepository<Citas, Integer> {
             "JOIN c.medico m " +
             "LEFT JOIN m.especialidad e " +
             "WHERE m.idUsuario = :idMedico " +
-            "AND (:estado IS NULL OR c.estado = :estado) " +
-            "AND (:inicio IS NULL OR c.fechaHoraProgramada >= :inicio) " +
-            "AND (:fin IS NULL OR c.fechaHoraProgramada < :fin) " +
+            "AND (CAST(:estado AS String) IS NULL OR c.estado = :estado) " +
+            "AND (CAST(:inicio AS LocalDateTime) IS NULL OR c.fechaHoraProgramada >= :inicio) " +
+            "AND (CAST(:fin AS LocalDateTime) IS NULL OR c.fechaHoraProgramada < :fin) " +
             "ORDER BY c.fechaHoraProgramada ASC")
     List<CitaMedicoDTO> findCitasDelMedico(@Param("idMedico") int idMedico,
                                            @Param("estado") String estado,
