@@ -233,19 +233,15 @@ public class CitasController {
 
         boolean esPaciente = auth != null && !tieneRol(auth, "ADMIN") && !tieneRol(auth, "MEDICO");
 
-        Usuarios paciente;
-        if (esPaciente) {
-            paciente = uS.listByCorreo(correo(auth))
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException(
-                                    "No existe el usuario con el correo: " + correo(auth)
-                            )
-                    );
-        } else {
-            paciente = obtenerPaciente(dto.getIdPaciente());
-        }
+        Usuarios paciente = esPaciente
+                ? usuarioLogueado(auth)
+                : obtenerPaciente(dto.getIdPaciente());
 
-        Usuarios medico = obtenerMedico(dto.getIdMedico());
+        // Un MEDICO registra las citas a su nombre: queda guardado quien la registro
+        // y no tiene que buscarse a si mismo en una lista.
+        Usuarios medico = esMedico(auth)
+                ? usuarioLogueado(auth)
+                : obtenerMedico(dto.getIdMedico());
 
         Citas cita = new Citas();
         cita.setPaciente(paciente);
@@ -275,7 +271,7 @@ public class CitasController {
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
-    public ResponseEntity<CitasDTO> actualizar(@Valid @RequestBody CitasDTO dto) {
+    public ResponseEntity<CitasDTO> actualizar(@Valid @RequestBody CitasDTO dto, Authentication auth) {
         Optional<Citas> existente = cS.listId(dto.getIdCita());
 
         if (existente.isEmpty()) {
@@ -285,7 +281,10 @@ public class CitasController {
         }
 
         Usuarios paciente = obtenerPaciente(dto.getIdPaciente());
-        Usuarios medico = obtenerMedico(dto.getIdMedico());
+        // Si edita un MEDICO, la cita conserva su medico: solo el ADMIN puede reasignarla.
+        Usuarios medico = esMedico(auth)
+                ? existente.get().getMedico()
+                : obtenerMedico(dto.getIdMedico());
 
         Citas cita = existente.get();
         cita.setPaciente(paciente);
@@ -339,6 +338,10 @@ public class CitasController {
     // Ademas de existir, el usuario tiene que tener rol MEDICO: si no, se podria
     // agendar una cita "con" un paciente o un admin.
     private Usuarios obtenerMedico(Integer idMedico) {
+        if (idMedico == null) {
+            throw new BadRequestException("El id del medico es obligatorio");
+        }
+
         Usuarios medico = uS.listId(idMedico)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -401,6 +404,21 @@ public class CitasController {
                 cita.getFechaHoraProgramada().toLocalDate(),
                 cita.getEstado()
         );
+    }
+
+    // El usuario dueno del token (el subject del JWT es su correo).
+    private Usuarios usuarioLogueado(Authentication auth) {
+        return uS.listByCorreo(correo(auth))
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe el usuario con el correo: " + correo(auth)
+                        )
+                );
+    }
+
+    // MEDICO sin ser ADMIN: lo que registra queda a su nombre.
+    private boolean esMedico(Authentication auth) {
+        return tieneRol(auth, "MEDICO") && !tieneRol(auth, "ADMIN");
     }
 
     private boolean tieneRol(Authentication auth, String rol) {
