@@ -28,6 +28,7 @@ public class RolesController {
         this.uS = uS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/Listar")
     public ResponseEntity<List<RolesDTO>> listar() {
         List<RolesDTO> lista = rS.list()
@@ -38,6 +39,7 @@ public class RolesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<RolesDTO> listarPorId(@PathVariable int id) {
         Roles rol = rS.listId(id)
