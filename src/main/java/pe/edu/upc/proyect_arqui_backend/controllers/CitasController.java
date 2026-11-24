@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaEstadoDTO;
@@ -53,6 +54,7 @@ public class CitasController {
         this.nS = nS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/Listar")
     public ResponseEntity<List<CitasDTO>> listar() {
         List<CitasDTO> lista = cS.list()
@@ -62,6 +64,7 @@ public class CitasController {
 
         return ResponseEntity.ok(lista);
     }
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('PACIENTE')")
     @GetMapping("/paciente/mis-citas")
     public ResponseEntity<List<CitaPacienteDTO>> misCitasPorFecha(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
@@ -83,6 +86,7 @@ public class CitasController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/{id}")
     public ResponseEntity<CitasDTO> listarPorId(@PathVariable int id) {
         Citas cita = cS.listId(id)
@@ -95,6 +99,7 @@ public class CitasController {
         return ResponseEntity.ok(convertirADTO(cita));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/{idCita}/estado")
     public ResponseEntity<CitaEstadoDTO> consultarEstado(@PathVariable int idCita, Authentication auth) {
         boolean puedeVerTodas = auth == null || tieneRol(auth, "ADMIN") || tieneRol(auth, "MEDICO");
@@ -104,6 +109,7 @@ public class CitasController {
 
     // Datos para entrar a la videollamada (Jitsi Meet) de la cita. Si hay token, solo
     // el paciente o el medico de la cita (o un ADMIN) pueden pedirlos.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/{id}/videollamada")
     public ResponseEntity<VideollamadaDTO> videollamada(@PathVariable int id, Authentication auth) {
         Citas cita = cS.listId(id)
@@ -133,6 +139,7 @@ public class CitasController {
     }
 
     // Reporte para el grafico de barras apiladas: citas de cada especialidad por estado.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/estado-por-especialidad")
     public ResponseEntity<List<CitasEspecialidadDTO>> citasPorEspecialidad() {
         List<CitasEspecialidadDTO> lista = cS.contarCitasPorEspecialidadYEstado()
@@ -154,6 +161,7 @@ public class CitasController {
     }
 
     // Reporte para el grafico combinado: citas atendidas (barras) y espera promedio (linea).
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/espera-por-medico")
     public ResponseEntity<List<EsperaMedicoDTO>> esperaPorMedico() {
         List<EsperaMedicoDTO> lista = cS.obtenerEsperaPromedioPorMedico()
@@ -174,6 +182,7 @@ public class CitasController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('MEDICO')")
     @GetMapping("/medico/mis-citas")
     public ResponseEntity<List<CitaMedicoDTO>> misCitasComoMedico(
             @RequestParam(required = false) String estado,
@@ -186,6 +195,7 @@ public class CitasController {
     // Un PACIENTE solo reserva para si mismo: el paciente sale del token y se ignora
     // el idPaciente del body. Ademas la cita nace PENDIENTE y sin tiempo de espera;
     // esos campos los maneja el personal. ADMIN y MEDICO pueden registrar para cualquiera.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @PostMapping("/Registrar")
     public ResponseEntity<CitasDTO> registrar(@Valid @RequestBody CitasDTO dto, Authentication auth) {
         // Solo al registrar: al actualizar, una cita que ya paso si puede tener fecha
@@ -236,6 +246,7 @@ public class CitasController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
     public ResponseEntity<CitasDTO> actualizar(@Valid @RequestBody CitasDTO dto) {
         Optional<Citas> existente = cS.listId(dto.getIdCita());
@@ -263,6 +274,7 @@ public class CitasController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Citas cita = cS.listId(id)
