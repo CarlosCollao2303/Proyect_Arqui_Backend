@@ -14,24 +14,19 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
-public class SecurityConfig implements WebMvcConfigurer {
+public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
-    }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("http://localhost:4200")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                .allowedHeaders("*");
     }
 
     @Bean
@@ -56,6 +51,44 @@ public class SecurityConfig implements WebMvcConfigurer {
             throws Exception {
 
         return configuration.getAuthenticationManager();
+    }
+
+    // Configuración CORS
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Origen permitido: aplicación Angular
+        configuration.setAllowedOrigins(
+                List.of("http://localhost:4200")
+        );
+
+        // Métodos HTTP permitidos
+        configuration.setAllowedMethods(
+                List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+        );
+
+        // Cabeceras HTTP permitidas
+        configuration.setAllowedHeaders(
+                List.of("*")
+        );
+
+        // Cabeceras que Angular puede leer en la respuesta
+        configuration.setExposedHeaders(
+                List.of("Authorization")
+        );
+
+        // No se utilizan cookies de autenticación (el token viaja en la cabecera)
+        configuration.setAllowCredentials(false);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        // Aplicar CORS a todos los endpoints
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 
     @Bean
