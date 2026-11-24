@@ -62,4 +62,14 @@ public class EspecialidadesServiceImplement implements IEspecialidadesService {
         }
         return eR.findMedicosByEspecialidadId(idEspecialidad);
     }
+
+    @Override
+    public List<MedicoPorEspecialidadDTO> listTodosLosMedicos() {
+        return eR.findTodosLosMedicos();
+    }
+
+    @Override
+    public List<Especialidades> listEspecialidadesConMedicos() {
+        return eR.findEspecialidadesConMedicos();
+    }
 }
