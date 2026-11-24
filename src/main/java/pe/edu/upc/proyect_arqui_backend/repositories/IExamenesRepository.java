@@ -35,6 +35,21 @@ public interface IExamenesRepository extends JpaRepository<Examenes, Integer> {
             "GROUP BY u.idUsuario, u.nombres, u.apellidos, u.dni")
     Optional<CantidadExamenesDTO> contarExamenesDePaciente(@Param("idPaciente") int idPaciente);
 
+    // Igual que contarExamenesPorPaciente, pero solo los pacientes cuyo nombre completo
+    // contiene el texto buscado (sin importar mayusculas).
+    @Query("SELECT new pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO(" +
+            "u.idUsuario, CONCAT(u.nombres, ' ', u.apellidos), u.dni, COUNT(e.idExamen)) " +
+            "FROM Usuarios u " +
+            "JOIN u.rol r " +
+            "LEFT JOIN HistoriasClinicas h ON h.paciente = u " +
+            "LEFT JOIN DetalleHistorial d ON d.historiaClinica = h " +
+            "LEFT JOIN d.examen e " +
+            "WHERE r.nombre = 'PACIENTE' " +
+            "AND LOWER(CONCAT(u.nombres, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
+            "GROUP BY u.idUsuario, u.nombres, u.apellidos, u.dni " +
+            "ORDER BY COUNT(e.idExamen) DESC")
+    List<CantidadExamenesDTO> contarExamenesPorNombreDePaciente(@Param("nombre") String nombre);
+
     // Examenes que aun no tienen resultado, del mas antiguo al mas reciente.
     @Query("SELECT new pe.edu.upc.proyect_arqui_backend.dtos.ExamenPendienteDTO(" +
             "e.idExamen, e.tipoExamen, e.fechaSolicitud) " +
