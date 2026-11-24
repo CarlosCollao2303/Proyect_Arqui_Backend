@@ -43,6 +43,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -551,5 +552,209 @@ class CitasControllerTest {
                 .andExpect(status().isForbidden());
 
         verify(cS, never()).obtenerEsperaPromedioPorMedico();
+    }
+
+    // ---- Estado de las citas sin escribir el id ----
+
+    @Test
+    void estadosMias_paciente_soloLasDelToken_200() throws Exception {
+        when(cS.listarEstadosDelPaciente("ana@mail.com")).thenReturn(List.of(estado));
+
+        mockMvc.perform(get("/api/citas/estados/mias").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].paciente").value("Ana Torres"))
+                .andExpect(jsonPath("$[0].estado").value("PENDIENTE"));
+
+        verify(cS).listarEstadosDelPaciente("ana@mail.com");
+    }
+
+    @Test
+    void estadosMias_medico_403() throws Exception {
+        mockMvc.perform(get("/api/citas/estados/mias").with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isForbidden());
+
+        verify(cS, never()).listarEstadosDelPaciente(any());
+    }
+
+    @Test
+    void estadosDePaciente_medicoEligePacientePorNombre_200() throws Exception {
+        when(uS.listId(1)).thenReturn(Optional.of(ana));
+        when(cS.listarEstadosDelPacientePorId(1)).thenReturn(List.of(estado));
+
+        mockMvc.perform(get("/api/citas/estados/paciente/1").with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idCita").value(1));
+    }
+
+    @Test
+    void estadosDePaciente_usuarioQueNoEsPaciente_400() throws Exception {
+        when(uS.listId(2)).thenReturn(Optional.of(luis));
+
+        mockMvc.perform(get("/api/citas/estados/paciente/2").with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("El usuario con id 2 no es paciente"));
+    }
+
+    @Test
+    void estadosDePaciente_paciente_403() throws Exception {
+        mockMvc.perform(get("/api/citas/estados/paciente/1").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void estados_admin_veTodasLasCitas() throws Exception {
+        when(cS.listarEstadosDeCitas(null)).thenReturn(List.of(estado));
+
+        mockMvc.perform(get("/api/citas/estados").with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+
+        verify(cS).listarEstadosDeCitas(null);
+    }
+
+    @Test
+    void estados_medico_soloLasQueAtiende() throws Exception {
+        when(cS.listarEstadosDeCitas("luis@clinica.pe")).thenReturn(List.of(estado));
+
+        mockMvc.perform(get("/api/citas/estados").with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isOk());
+
+        verify(cS).listarEstadosDeCitas("luis@clinica.pe");
+    }
+
+    // ---- El medico que registra queda guardado como medico de la cita ----
+
+    @Test
+    void medico_registraCita_quedaComoSuMedicoAunqueMandeOtroId() throws Exception {
+        when(uS.listId(1)).thenReturn(Optional.of(ana));
+        when(uS.listByCorreo("luis@clinica.pe")).thenReturn(Optional.of(luis));
+
+        mockMvc.perform(post("/api/citas/Registrar").with(token("luis@clinica.pe", "MEDICO"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"idPaciente": 1, "idMedico": 99, "fechaHoraProgramada": "%s"}
+                                """.formatted(LocalDate.now().plusDays(7))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.idMedico").value(2));
+
+        verify(uS, never()).listId(99);
+    }
+
+    @Test
+    void admin_registraCitaSinMedico_400() throws Exception {
+        when(uS.listId(1)).thenReturn(Optional.of(ana));
+
+        mockMvc.perform(post("/api/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"idPaciente": 1, "fechaHoraProgramada": "%s"}
+                                """.formatted(LocalDate.now().plusDays(7))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("El id del medico es obligatorio"));
+
+        verify(cS, never()).insert(any());
+    }
+
+    // ---- Aviso automatico al paciente cuando la cita cambia ----
+
+    private static String citaActualizada(String estado, LocalDate fecha, int idMedico) {
+        return """
+                {"idCita": 1, "idPaciente": 1, "idMedico": %d, "fechaHoraProgramada": "%s",
+                 "tiempoEsperaMinutos": 10, "estado": "%s"}
+                """.formatted(idMedico, fecha, estado);
+    }
+
+    private void prepararActualizacion() {
+        when(cS.listId(1)).thenReturn(Optional.of(citaConSala("PENDIENTE", "SaludCerca-abc123")));
+        when(uS.listId(1)).thenReturn(Optional.of(ana));
+        when(uS.listId(2)).thenReturn(Optional.of(luis));
+    }
+
+    @Test
+    void actualizar_aCancelada_avisaAlPacienteConElMensajePreArmado() throws Exception {
+        prepararActualizacion();
+
+        mockMvc.perform(put("/api/citas/Actualizar").with(token("admin@clinica.pe", "ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaActualizada("CANCELADA", LocalDate.of(2026, 12, 1), 2)))
+                .andExpect(status().isOk());
+
+        verify(nS).notificarCita(any(Citas.class), eq("CITA_CANCELADA"),
+                eq("https://meet.jit.si/SaludCerca-abc123"));
+    }
+
+    @Test
+    void actualizar_aAtendida_avisaAlPaciente() throws Exception {
+        prepararActualizacion();
+
+        mockMvc.perform(put("/api/citas/Actualizar").with(token("admin@clinica.pe", "ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaActualizada("ATENDIDA", LocalDate.of(2026, 12, 1), 2)))
+                .andExpect(status().isOk());
+
+        verify(nS).notificarCita(any(Citas.class), eq("CITA_ATENDIDA"), anyString());
+    }
+
+    @Test
+    void actualizar_pendienteConOtraFecha_avisaQueSeReprogramo() throws Exception {
+        prepararActualizacion();
+
+        mockMvc.perform(put("/api/citas/Actualizar").with(token("admin@clinica.pe", "ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaActualizada("PENDIENTE", LocalDate.of(2026, 12, 5), 2)))
+                .andExpect(status().isOk());
+
+        verify(nS).notificarCita(any(Citas.class), eq("CITA_REPROGRAMADA"), anyString());
+    }
+
+    @Test
+    void actualizar_sinCambiarEstadoNiFecha_noAvisa() throws Exception {
+        prepararActualizacion();
+
+        mockMvc.perform(put("/api/citas/Actualizar").with(token("admin@clinica.pe", "ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaActualizada("PENDIENTE", LocalDate.of(2026, 12, 1), 2)))
+                .andExpect(status().isOk());
+
+        verify(nS, never()).notificarCita(any(), any(), any());
+    }
+
+    @Test
+    void actualizar_siFallaElCorreoLaCitaIgualSeActualiza_200() throws Exception {
+        prepararActualizacion();
+        when(nS.notificarCita(any(), anyString(), anyString()))
+                .thenThrow(new CorreoException("No se pudo enviar el correo"));
+
+        mockMvc.perform(put("/api/citas/Actualizar").with(token("admin@clinica.pe", "ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaActualizada("CANCELADA", LocalDate.of(2026, 12, 1), 2)))
+                .andExpect(status().isOk());
+
+        verify(cS).update(any());
+    }
+
+    @Test
+    void actualizar_medico_conservaElMedicoDeLaCita() throws Exception {
+        prepararActualizacion();
+
+        mockMvc.perform(put("/api/citas/Actualizar").with(token("luis@clinica.pe", "MEDICO"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaActualizada("PENDIENTE", LocalDate.of(2026, 12, 1), 99)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idMedico").value(2));
+
+        verify(uS, never()).listId(99);
+    }
+
+    // ---- Videollamada desde otro dispositivo ----
+
+    @Test
+    void videollamada_traeElQrDelEnlaceParaElCelular() throws Exception {
+        when(cS.listId(1)).thenReturn(Optional.of(citaConSala("PENDIENTE", "SaludCerca-abc123")));
+
+        mockMvc.perform(get("/api/citas/1/videollamada").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.qr").value(org.hamcrest.Matchers.startsWith("data:image/png;base64,")));
     }
 }
