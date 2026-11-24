@@ -78,6 +78,25 @@ public class EspecialidadesController {
         return ResponseEntity.ok(eS.countMedicosByEspecialidadId(id));
     }
 
+    // Todos los medicos activos con su especialidad: lo primero que ve el paciente.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
+    @GetMapping("/medicos")
+    public ResponseEntity<List<MedicoPorEspecialidadDTO>> listarTodosLosMedicos() {
+        return ResponseEntity.ok(eS.listTodosLosMedicos());
+    }
+
+    // Solo las especialidades con medicos disponibles, para el desplegable del paciente.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
+    @GetMapping("/con-medicos")
+    public ResponseEntity<List<EspecialidadesDTO>> listarConMedicos() {
+        List<EspecialidadesDTO> lista = eS.listEspecialidadesConMedicos()
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+
+        return ResponseEntity.ok(lista);
+    }
+
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/{idEspecialidad}/medicos")
     public ResponseEntity<List<MedicoPorEspecialidadDTO>> listarMedicos(@PathVariable int idEspecialidad) {
