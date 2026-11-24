@@ -5,10 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import pe.edu.upc.proyect_arqui_backend.entities.Notificaciones;
 import pe.edu.upc.proyect_arqui_backend.entities.Roles;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
@@ -25,6 +27,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -55,6 +58,14 @@ class NotificacionesControllerTest {
             {"idUsuario": 1, "tipo": "recordatorio", "mensaje": "  Recuerde su cita de mañana  "}
             """;
 
+    private static RequestPostProcessor token(String correo, String rol) {
+        return jwt().jwt(j -> j.subject(correo)).authorities(new SimpleGrantedAuthority(rol));
+    }
+
+    private static RequestPostProcessor medico() {
+        return token("luis@clinica.pe", "MEDICO");
+    }
+
     @Test
     void enviarCorreo_usuarioExistente_201ConEstadoEnviado() throws Exception {
         when(uS.listId(1)).thenReturn(Optional.of(ana));
@@ -62,7 +73,7 @@ class NotificacionesControllerTest {
                 .thenReturn(new Notificaciones(7, ana, "RECORDATORIO", "Recuerde su cita de mañana",
                         LocalDateTime.of(2026, 11, 16, 10, 0), Notificaciones.ESTADO_ENVIADO));
 
-        mockMvc.perform(post("/api/notificaciones/EnviarCorreo")
+        mockMvc.perform(post("/api/notificaciones/EnviarCorreo").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(CORREO))
                 .andExpect(status().isCreated())
@@ -81,7 +92,7 @@ class NotificacionesControllerTest {
     void enviarCorreo_usuarioInexistente_404() throws Exception {
         when(uS.listId(1)).thenReturn(Optional.empty());
 
-        mockMvc.perform(post("/api/notificaciones/EnviarCorreo")
+        mockMvc.perform(post("/api/notificaciones/EnviarCorreo").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(CORREO))
                 .andExpect(status().isNotFound())
@@ -96,7 +107,7 @@ class NotificacionesControllerTest {
         when(nS.enviarPorCorreo(any(), anyString(), anyString(), anyString(), any()))
                 .thenThrow(new CorreoException("No se pudo enviar el correo: API key is invalid"));
 
-        mockMvc.perform(post("/api/notificaciones/EnviarCorreo")
+        mockMvc.perform(post("/api/notificaciones/EnviarCorreo").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(CORREO))
                 .andExpect(status().isBadGateway())
@@ -105,12 +116,32 @@ class NotificacionesControllerTest {
 
     @Test
     void enviarCorreo_sinMensaje_400() throws Exception {
-        mockMvc.perform(post("/api/notificaciones/EnviarCorreo")
+        mockMvc.perform(post("/api/notificaciones/EnviarCorreo").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"idUsuario": 1, "tipo": "RECORDATORIO", "mensaje": ""}
                                 """))
                 .andExpect(status().isBadRequest());
+
+        verify(nS, never()).enviarPorCorreo(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void enviarCorreo_sinToken_401() throws Exception {
+        mockMvc.perform(post("/api/notificaciones/EnviarCorreo")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CORREO))
+                .andExpect(status().isUnauthorized());
+
+        verify(nS, never()).enviarPorCorreo(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void enviarCorreo_paciente_403() throws Exception {
+        mockMvc.perform(post("/api/notificaciones/EnviarCorreo").with(token("ana@mail.com", "PACIENTE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CORREO))
+                .andExpect(status().isForbidden());
 
         verify(nS, never()).enviarPorCorreo(any(), any(), any(), any(), any());
     }

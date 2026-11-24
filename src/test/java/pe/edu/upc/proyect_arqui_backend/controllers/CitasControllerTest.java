@@ -81,7 +81,7 @@ class CitasControllerTest {
     void admin_consultaCualquierCita_200() throws Exception {
         when(cS.consultarEstado(1, "admin@clinica.pe", true)).thenReturn(estado);
 
-        mockMvc.perform(get("/citas/1/estado").with(token("admin@clinica.pe", "ADMIN")))
+        mockMvc.perform(get("/api/citas/1/estado").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.idCita").value(1))
                 .andExpect(jsonPath("$.fecha").value("2026-10-05"))
@@ -100,7 +100,7 @@ class CitasControllerTest {
                         "Ana Torres", "Luis Rojas", "Cardiologia")
         ));
 
-        mockMvc.perform(get("/citas/paciente/mis-citas")
+        mockMvc.perform(get("/api/citas/paciente/mis-citas")
                         .param("fecha", "2026-10-05")
                         .with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isOk())
@@ -115,7 +115,7 @@ class CitasControllerTest {
     void medico_puedeVerTodas_200() throws Exception {
         when(cS.consultarEstado(1, "luis@clinica.pe", true)).thenReturn(estado);
 
-        mockMvc.perform(get("/citas/1/estado").with(token("luis@clinica.pe", "MEDICO")))
+        mockMvc.perform(get("/api/citas/1/estado").with(token("luis@clinica.pe", "MEDICO")))
                 .andExpect(status().isOk());
     }
 
@@ -123,7 +123,7 @@ class CitasControllerTest {
     void paciente_consultaSuCita_200() throws Exception {
         when(cS.consultarEstado(1, "ana@mail.com", false)).thenReturn(estado);
 
-        mockMvc.perform(get("/citas/1/estado").with(token("ana@mail.com", "PACIENTE")))
+        mockMvc.perform(get("/api/citas/1/estado").with(token("ana@mail.com", "PACIENTE")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("PENDIENTE"));
 
@@ -135,7 +135,7 @@ class CitasControllerTest {
         when(cS.consultarEstado(1, "otro@mail.com", false))
                 .thenThrow(new AccessDeniedException("Solo puedes consultar el estado de tus propias citas"));
 
-        mockMvc.perform(get("/citas/1/estado").with(token("otro@mail.com", "PACIENTE")))
+        mockMvc.perform(get("/api/citas/1/estado").with(token("otro@mail.com", "PACIENTE")))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status").value(403))
                 .andExpect(jsonPath("$.message").value("Solo puedes consultar el estado de tus propias citas"));
@@ -146,30 +146,30 @@ class CitasControllerTest {
         when(cS.consultarEstado(99, "admin@clinica.pe", true))
                 .thenThrow(new ResourceNotFoundException("La cita con id 99 no existe"));
 
-        mockMvc.perform(get("/citas/99/estado").with(token("admin@clinica.pe", "ADMIN")))
+        mockMvc.perform(get("/api/citas/99/estado").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value("La cita con id 99 no existe"))
-                .andExpect(jsonPath("$.path").value("/citas/99/estado"));
+                .andExpect(jsonPath("$.path").value("/api/citas/99/estado"));
     }
 
     @Test
-    void rutaDeEstado_noExigeRol_200() throws Exception {
-        when(cS.consultarEstado(1, "x@mail.com", false)).thenReturn(estado);
+    void rolSinPermiso_403() throws Exception {
+        mockMvc.perform(get("/api/citas/1/estado").with(token("x@mail.com", "RECEPCION")))
+                .andExpect(status().isForbidden());
 
-        mockMvc.perform(get("/citas/1/estado").with(token("x@mail.com", "RECEPCION")))
-                .andExpect(status().isOk());
+        verify(cS, never()).consultarEstado(anyInt(), anyString(), anyBoolean());
     }
 
     @Test
-    void sinToken_200() throws Exception {
-        when(cS.consultarEstado(1, null, true)).thenReturn(estado);
+    void sinToken_401() throws Exception {
+        mockMvc.perform(get("/api/citas/1/estado"))
+                .andExpect(status().isUnauthorized());
 
-        mockMvc.perform(get("/citas/1/estado"))
-                .andExpect(status().isOk());
+        verify(cS, never()).consultarEstado(anyInt(), any(), anyBoolean());
     }
 
-    private static final String MIS_CITAS_MEDICO = "/citas/medico/mis-citas";
+    private static final String MIS_CITAS_MEDICO = "/api/citas/medico/mis-citas";
 
     @Test
     void medico_listaSusCitas_200() throws Exception {
@@ -241,21 +241,25 @@ class CitasControllerTest {
     }
 
     @Test
-    void paciente_puedeConsultarRutaDeCitasMedicoSinTokenObligatorio() throws Exception {
+    void paciente_noPuedeUsarMisCitasDeMedico_403() throws Exception {
         mockMvc.perform(get(MIS_CITAS_MEDICO).with(token("ana@mail.com", "PACIENTE")))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
+
+        verify(cS, never()).listarCitasDelMedico(any(), any(), any(), any());
     }
 
     @Test
-    void admin_puedeConsultarRutaDeCitasMedicoSinTokenObligatorio() throws Exception {
+    void admin_noPuedeUsarMisCitasDeMedico_403() throws Exception {
         mockMvc.perform(get(MIS_CITAS_MEDICO).with(token("admin@clinica.pe", "ADMIN")))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
+
+        verify(cS, never()).listarCitasDelMedico(any(), any(), any(), any());
     }
 
     @Test
-    void misCitasMedico_sinToken_200() throws Exception {
+    void misCitasMedico_sinToken_401() throws Exception {
         mockMvc.perform(get(MIS_CITAS_MEDICO))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 
     private final Usuarios ana = new Usuarios(1, new Roles(3, "PACIENTE"), null, "Ana", "Torres", "12345678",
@@ -279,7 +283,7 @@ class CitasControllerTest {
 
     @Test
     void paciente_registraCitaEnElPasado_400() throws Exception {
-        mockMvc.perform(post("/citas/Registrar").with(token("ana@mail.com", "PACIENTE"))
+        mockMvc.perform(post("/api/citas/Registrar").with(token("ana@mail.com", "PACIENTE"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(cita(LocalDateTime.now().minusDays(1))))
                 .andExpect(status().isBadRequest())
@@ -293,7 +297,7 @@ class CitasControllerTest {
         when(uS.listByCorreo("ana@mail.com")).thenReturn(Optional.of(ana));
         when(uS.listId(2)).thenReturn(Optional.of(luis));
 
-        mockMvc.perform(post("/citas/Registrar").with(token("ana@mail.com", "PACIENTE"))
+        mockMvc.perform(post("/api/citas/Registrar").with(token("ana@mail.com", "PACIENTE"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(cita(LocalDateTime.now().plusDays(7))))
                 .andExpect(status().isCreated())
@@ -310,7 +314,7 @@ class CitasControllerTest {
         when(uS.listId(5)).thenReturn(Optional.of(otroMedico));
         when(uS.listId(2)).thenReturn(Optional.of(luis));
 
-        mockMvc.perform(post("/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
+        mockMvc.perform(post("/api/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(citaConPaciente(5, 0)))
                 .andExpect(status().isBadRequest())
@@ -324,7 +328,7 @@ class CitasControllerTest {
         when(uS.listId(1)).thenReturn(Optional.of(ana));
         when(uS.listId(2)).thenReturn(Optional.of(luis));
 
-        mockMvc.perform(post("/citas/Registrar")
+        mockMvc.perform(post("/api/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(citaConPaciente(1, 15)))
                 .andExpect(status().isCreated())
@@ -335,8 +339,18 @@ class CitasControllerTest {
     }
 
     @Test
+    void registrar_sinToken_401() throws Exception {
+        mockMvc.perform(post("/api/citas/Registrar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(citaConPaciente(1, 0)))
+                .andExpect(status().isUnauthorized());
+
+        verify(cS, never()).insert(any());
+    }
+
+    @Test
     void registrar_tiempoDeEsperaNegativo_400() throws Exception {
-        mockMvc.perform(post("/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
+        mockMvc.perform(post("/api/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(citaConPaciente(1, -30)))
                 .andExpect(status().isBadRequest())
@@ -358,7 +372,7 @@ class CitasControllerTest {
         when(uS.listId(1)).thenReturn(Optional.of(ana));
         when(uS.listId(2)).thenReturn(Optional.of(luis));
 
-        mockMvc.perform(post("/api/citas/Registrar")
+        mockMvc.perform(post("/api/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(citaConPaciente(1, 0)))
                 .andExpect(status().isCreated());
@@ -379,7 +393,7 @@ class CitasControllerTest {
         when(nS.enviarPorCorreo(any(), anyString(), anyString(), anyString(), anyString()))
                 .thenThrow(new CorreoException("No se pudo enviar el correo"));
 
-        mockMvc.perform(post("/api/citas/Registrar")
+        mockMvc.perform(post("/api/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(citaConPaciente(1, 0)))
                 .andExpect(status().isCreated());
@@ -391,7 +405,7 @@ class CitasControllerTest {
     void videollamada_devuelveDominioSalaYEnlace_200() throws Exception {
         when(cS.listId(1)).thenReturn(Optional.of(citaConSala("PENDIENTE", "SaludCerca-abc123")));
 
-        mockMvc.perform(get("/api/citas/1/videollamada"))
+        mockMvc.perform(get("/api/citas/1/videollamada").with(token("ana@mail.com", "PACIENTE")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.idCita").value(1))
                 .andExpect(jsonPath("$.dominio").value("meet.jit.si"))
@@ -409,7 +423,7 @@ class CitasControllerTest {
         Citas cita = citaConSala("PENDIENTE", null);
         when(cS.listId(1)).thenReturn(Optional.of(cita));
 
-        mockMvc.perform(get("/api/citas/1/videollamada"))
+        mockMvc.perform(get("/api/citas/1/videollamada").with(token("ana@mail.com", "PACIENTE")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.sala").value(org.hamcrest.Matchers.startsWith("SaludCerca-")));
 
@@ -420,7 +434,7 @@ class CitasControllerTest {
     void videollamada_citaCancelada_400() throws Exception {
         when(cS.listId(1)).thenReturn(Optional.of(citaConSala("CANCELADA", "SaludCerca-abc123")));
 
-        mockMvc.perform(get("/api/citas/1/videollamada"))
+        mockMvc.perform(get("/api/citas/1/videollamada").with(token("ana@mail.com", "PACIENTE")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("La cita fue cancelada, no tiene videollamada"));
     }
@@ -445,8 +459,16 @@ class CitasControllerTest {
     void videollamada_citaInexistente_404() throws Exception {
         when(cS.listId(99)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/citas/99/videollamada"))
+        mockMvc.perform(get("/api/citas/99/videollamada").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void videollamada_sinToken_401() throws Exception {
+        mockMvc.perform(get("/api/citas/1/videollamada"))
+                .andExpect(status().isUnauthorized());
+
+        verify(cS, never()).listId(anyInt());
     }
 
     @Test
@@ -456,7 +478,7 @@ class CitasControllerTest {
                 new Object[]{"Cardiologia", 2L, 1L, 1L, 4L},
                 new Object[]{"Sin especialidad", 0L, 0L, 1L, 1L}));
 
-        mockMvc.perform(get("/api/citas/estado-por-especialidad"))
+        mockMvc.perform(get("/api/citas/estado-por-especialidad").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].especialidad").value("Cardiologia"))
@@ -473,7 +495,7 @@ class CitasControllerTest {
         when(cS.contarCitasPorEspecialidadYEstado()).thenReturn(List.<Object[]>of(
                 new Object[]{"Pediatria", new java.math.BigDecimal("3"), 0, 2, 5L}));
 
-        mockMvc.perform(get("/api/citas/estado-por-especialidad"))
+        mockMvc.perform(get("/api/citas/estado-por-especialidad").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].atendidas").value(3))
                 .andExpect(jsonPath("$[0].canceladas").value(2));
@@ -483,9 +505,17 @@ class CitasControllerTest {
     void estadoPorEspecialidad_sinCitasDevuelveListaVacia() throws Exception {
         when(cS.contarCitasPorEspecialidadYEstado()).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/citas/estado-por-especialidad"))
+        mockMvc.perform(get("/api/citas/estado-por-especialidad").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void estadoPorEspecialidad_paciente_403() throws Exception {
+        mockMvc.perform(get("/api/citas/estado-por-especialidad").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isForbidden());
+
+        verify(cS, never()).contarCitasPorEspecialidadYEstado();
     }
 
     @Test
@@ -495,7 +525,7 @@ class CitasControllerTest {
                 new Object[]{"Jorge Salazar", "Cardiologia", 6L, new java.math.BigDecimal("24.5"), 40},
                 new Object[]{"Lucia Fernandez", "Pediatria", 9L, new java.math.BigDecimal("8.3"), 15}));
 
-        mockMvc.perform(get("/api/citas/espera-por-medico"))
+        mockMvc.perform(get("/api/citas/espera-por-medico").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].medico").value("Jorge Salazar"))
@@ -510,8 +540,16 @@ class CitasControllerTest {
     void esperaPorMedico_sinCitasAtendidasDevuelveListaVacia() throws Exception {
         when(cS.obtenerEsperaPromedioPorMedico()).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/citas/espera-por-medico"))
+        mockMvc.perform(get("/api/citas/espera-por-medico").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void esperaPorMedico_soloAdmin_medico403() throws Exception {
+        mockMvc.perform(get("/api/citas/espera-por-medico").with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isForbidden());
+
+        verify(cS, never()).obtenerEsperaPromedioPorMedico();
     }
 }

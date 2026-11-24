@@ -10,6 +10,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IHistoriasClinicasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -28,6 +29,7 @@ public class HistoriasClinicasController {
         this.uS = uS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/Listar")
     public ResponseEntity<List<HistoriasClinicasDTO>> listar() {
         List<HistoriasClinicasDTO> lista = hS.list()
@@ -38,6 +40,7 @@ public class HistoriasClinicasController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<HistoriasClinicasDTO> listarPorId(@PathVariable int id) {
         HistoriasClinicas historiaClinica = hS.listId(id)
@@ -50,6 +53,7 @@ public class HistoriasClinicasController {
         return ResponseEntity.ok(convertirADTO(historiaClinica));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/ListarPorPaciente/{idPaciente}")
     public ResponseEntity<HistoriasClinicasDTO> listarPorPaciente(@PathVariable int idPaciente) {
         HistoriasClinicas historiaClinica = hS.listByPacienteId(idPaciente)
@@ -61,15 +65,18 @@ public class HistoriasClinicasController {
 
         return ResponseEntity.ok(convertirADTO(historiaClinica));
     }
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/cantidad-diagnosticos")
     public ResponseEntity<List<CantidadDiagnosticosDTO>> cantidadDiagnosticos() {
         return ResponseEntity.ok(hS.contarDiagnosticosPorHistoria());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/{idHistoria}/cantidad-diagnosticos")
     public ResponseEntity<CantidadDiagnosticosDTO> cantidadDiagnosticosDeHistoria(@PathVariable int idHistoria) {
         return ResponseEntity.ok(hS.contarDiagnosticosDeHistoria(idHistoria));
     }
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PostMapping("/Registrar")
     public ResponseEntity<HistoriasClinicasDTO> registrar(@Valid @RequestBody HistoriasClinicasDTO dto) {
         Usuarios paciente = obtenerPaciente(dto.getIdPaciente());
@@ -94,6 +101,7 @@ public class HistoriasClinicasController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
     public ResponseEntity<HistoriasClinicasDTO> actualizar(@Valid @RequestBody HistoriasClinicasDTO dto) {
         Optional<HistoriasClinicas> existente = hS.listId(dto.getIdHistoriaClinica());
@@ -118,6 +126,7 @@ public class HistoriasClinicasController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         HistoriasClinicas historiaClinica = hS.listId(id)

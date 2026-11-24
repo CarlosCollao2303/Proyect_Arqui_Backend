@@ -8,6 +8,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IEspecialidadesService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -72,11 +73,13 @@ public class EspecialidadesController {
         return ResponseEntity.ok(eS.countMedicosByEspecialidadId(id));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/{idEspecialidad}/medicos")
     public ResponseEntity<List<MedicoPorEspecialidadDTO>> listarMedicos(@PathVariable int idEspecialidad) {
         return ResponseEntity.ok(eS.listMedicosByEspecialidadId(idEspecialidad));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/Registrar")
     public ResponseEntity<EspecialidadesDTO> registrar(@Valid @RequestBody EspecialidadesDTO dto) {
         Especialidades especialidad = new Especialidades();
@@ -97,6 +100,7 @@ public class EspecialidadesController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/Actualizar")
     public ResponseEntity<EspecialidadesDTO> actualizar(@Valid @RequestBody EspecialidadesDTO dto) {
         Optional<Especialidades> existente = eS.listId(dto.getIdEspecialidad());
@@ -117,6 +121,7 @@ public class EspecialidadesController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Especialidades especialidad = eS.listId(id)

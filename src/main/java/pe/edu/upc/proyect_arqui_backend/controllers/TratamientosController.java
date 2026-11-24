@@ -10,6 +10,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ITratamientosService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class TratamientosController {
         this.dhS = dhS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/Listar")
     public ResponseEntity<List<TratamientosDTO>> listar() {
         List<TratamientosDTO> lista = tS.list()
@@ -41,6 +43,7 @@ public class TratamientosController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/{id}")
     public ResponseEntity<TratamientosDTO> listarPorId(@PathVariable int id) {
         Tratamientos tratamiento = tS.listId(id)
@@ -53,6 +56,7 @@ public class TratamientosController {
         return ResponseEntity.ok(convertirADTO(tratamiento));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorEstado")
     public ResponseEntity<List<TratamientosDTO>> buscarPorEstado(@RequestParam String estado) {
         if (estado.isBlank()) {
@@ -66,6 +70,7 @@ public class TratamientosController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorFechaInicio")
     public ResponseEntity<List<TratamientosDTO>> buscarPorFechaInicio(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
@@ -77,6 +82,7 @@ public class TratamientosController {
     }
 
     // Si no se envia la fecha, se toman los tratamientos vigentes hoy.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/ListarVigentes")
     public ResponseEntity<List<TratamientosDTO>> listarVigentes(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
@@ -88,11 +94,13 @@ public class TratamientosController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/ListarPorPaciente/{idPaciente}")
     public ResponseEntity<List<TratamientoPacienteDTO>> listarPorPaciente(@PathVariable int idPaciente) {
         return ResponseEntity.ok(tS.listarTratamientosDePaciente(idPaciente));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PostMapping("/Registrar")
     public ResponseEntity<TratamientosDTO> registrar(@Valid @RequestBody TratamientosDTO dto) {
         validarFechas(dto);
@@ -118,6 +126,7 @@ public class TratamientosController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
     public ResponseEntity<TratamientosDTO> actualizar(@Valid @RequestBody TratamientosDTO dto) {
         validarFechas(dto);
@@ -143,6 +152,7 @@ public class TratamientosController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> eliminar(@PathVariable int id) {

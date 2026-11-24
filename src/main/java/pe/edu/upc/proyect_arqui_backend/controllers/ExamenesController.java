@@ -11,6 +11,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IExamenesService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class ExamenesController {
         this.dhS = dhS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/Listar")
     public ResponseEntity<List<ExamenesDTO>> listar() {
         List<ExamenesDTO> lista = eS.list()
@@ -41,6 +43,7 @@ public class ExamenesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/{id}")
     public ResponseEntity<ExamenesDTO> listarPorId(@PathVariable int id) {
         Examenes examen = eS.listId(id)
@@ -53,6 +56,7 @@ public class ExamenesController {
         return ResponseEntity.ok(convertirADTO(examen));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/Buscar")
     public ResponseEntity<List<ExamenesDTO>> buscarPorTipo(@RequestParam String tipoExamen) {
         List<ExamenesDTO> lista = eS.listByTipoExamen(tipoExamen)
@@ -62,21 +66,25 @@ public class ExamenesController {
 
         return ResponseEntity.ok(lista);
     }
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/cantidad-por-paciente")
     public ResponseEntity<List<CantidadExamenesDTO>> cantidadPorPaciente() {
         return ResponseEntity.ok(eS.contarExamenesPorPaciente());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/cantidad-por-paciente/{idPaciente}")
     public ResponseEntity<CantidadExamenesDTO> cantidadDePaciente(@PathVariable int idPaciente) {
         return ResponseEntity.ok(eS.contarExamenesDePaciente(idPaciente));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/pendientes")
     public ResponseEntity<List<ExamenPendienteDTO>> pendientes() {
         return ResponseEntity.ok(eS.listarExamenesPendientes());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PostMapping("/Registrar")
     public ResponseEntity<ExamenesDTO> registrar(@Valid @RequestBody ExamenesDTO dto) {
         validarFechas(dto);
@@ -103,6 +111,7 @@ public class ExamenesController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
     public ResponseEntity<ExamenesDTO> actualizar(@Valid @RequestBody ExamenesDTO dto) {
         validarFechas(dto);
@@ -129,6 +138,7 @@ public class ExamenesController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> eliminar(@PathVariable int id) {

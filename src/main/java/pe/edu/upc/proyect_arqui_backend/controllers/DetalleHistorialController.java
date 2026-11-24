@@ -19,6 +19,7 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRecetasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ITratamientosService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +52,7 @@ public class DetalleHistorialController {
         this.rS = rS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/Listar")
     public ResponseEntity<List<DetalleHistorialDTO>> listar() {
         List<DetalleHistorialDTO> lista = dhS.list()
@@ -61,6 +63,7 @@ public class DetalleHistorialController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<DetalleHistorialDTO> listarPorId(@PathVariable int id) {
         DetalleHistorial detalle = dhS.listId(id)
@@ -73,6 +76,7 @@ public class DetalleHistorialController {
         return ResponseEntity.ok(convertirADTO(detalle));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorExamen/{idExamen}")
     public ResponseEntity<List<DetalleHistorialDTO>> buscarPorExamen(@PathVariable int idExamen) {
         return ResponseEntity.ok(dhS.findAllByExamenId(idExamen)
@@ -81,6 +85,7 @@ public class DetalleHistorialController {
                 .toList());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorDiagnostico/{idDiagnostico}")
     public ResponseEntity<List<DetalleHistorialDTO>> buscarPorDiagnostico(@PathVariable int idDiagnostico) {
         return ResponseEntity.ok(dhS.findAllByDiagnosticoId(idDiagnostico)
@@ -89,6 +94,7 @@ public class DetalleHistorialController {
                 .toList());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorTratamiento/{idTratamiento}")
     public ResponseEntity<List<DetalleHistorialDTO>> buscarPorTratamiento(@PathVariable int idTratamiento) {
         return ResponseEntity.ok(dhS.findAllByTratamientoId(idTratamiento)
@@ -97,6 +103,7 @@ public class DetalleHistorialController {
                 .toList());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorReceta/{idReceta}")
     public ResponseEntity<List<DetalleHistorialDTO>> buscarPorReceta(@PathVariable int idReceta) {
         return ResponseEntity.ok(dhS.findAllByRecetaId(idReceta)
@@ -105,6 +112,7 @@ public class DetalleHistorialController {
                 .toList());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PostMapping("/Registrar")
     @Transactional
     public ResponseEntity<DetalleHistorialDTO> registrar(@Valid @RequestBody DetalleHistorialDTO dto) {
@@ -141,6 +149,7 @@ public class DetalleHistorialController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
     @Transactional
     public ResponseEntity<DetalleHistorialDTO> actualizar(@Valid @RequestBody DetalleHistorialDTO dto) {
@@ -177,6 +186,7 @@ public class DetalleHistorialController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         DetalleHistorial detalle = dhS.listId(id)
