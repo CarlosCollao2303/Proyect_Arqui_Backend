@@ -12,11 +12,6 @@ public class LoginResponseDTO {
     public LoginResponseDTO() {
     }
 
-    public LoginResponseDTO(String token, String username) {
-        this.token = token;
-        this.username = username;
-    }
-
     public LoginResponseDTO(String token, String username, List<String> roles) {
         this.token = token;
         this.username = username;
