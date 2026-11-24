@@ -72,6 +72,17 @@ public class ExamenesController {
         return ResponseEntity.ok(eS.contarExamenesPorPaciente());
     }
 
+    // Reporte filtrado por el nombre del paciente: es mas facil que buscar por id.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/cantidad-por-paciente/buscar")
+    public ResponseEntity<List<CantidadExamenesDTO>> cantidadPorNombreDePaciente(@RequestParam String nombre) {
+        if (nombre.isBlank()) {
+            throw new BadRequestException("El nombre del paciente no puede estar vacio");
+        }
+
+        return ResponseEntity.ok(eS.contarExamenesPorNombreDePaciente(nombre.trim()));
+    }
+
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/cantidad-por-paciente/{idPaciente}")
     public ResponseEntity<CantidadExamenesDTO> cantidadDePaciente(@PathVariable int idPaciente) {
