@@ -76,6 +76,7 @@ public class CitasController {
     }
     // Las citas del usuario logueado: como paciente o como medico. El correo sale
     // del token (subject del JWT), no del request, asi nadie puede pedir las de otro.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/mis-citas")
     public ResponseEntity<List<CitasDTO>> misCitas(Authentication auth) {
         List<CitasDTO> lista = cS.listByParticipanteCorreo(correo(auth))
