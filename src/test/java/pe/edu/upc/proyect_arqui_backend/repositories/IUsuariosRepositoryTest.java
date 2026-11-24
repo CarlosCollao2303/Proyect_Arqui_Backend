@@ -76,6 +76,16 @@ class IUsuariosRepositoryTest {
     }
 
     @Test
+    void buscarPorNombreODni_sinImportarLasTildes() {
+        em.persist(usuario(ana.getRol(), "Juan", "Pérez García", "66666666", "juan@mail.com"));
+        em.flush();
+
+        // Se escribe sin tildes y encuentra "Perez Garcia" con tildes, y al reves
+        assertEquals(1, uR.buscarPorNombreODni("juan perez", null).size());
+        assertEquals(1, uR.buscarPorNombreODni("García", null).size());
+    }
+
+    @Test
     void buscarPorNombreODni_porDni() {
         em.flush();
 
