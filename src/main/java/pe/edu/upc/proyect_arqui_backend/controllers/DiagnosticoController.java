@@ -9,6 +9,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDiagnosticoService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class DiagnosticoController {
         this.dhS = dhS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/Listar")
     public ResponseEntity<List<DiagnosticoDTO>> listar() {
         List<DiagnosticoDTO> lista = dS.list()
@@ -38,6 +40,7 @@ public class DiagnosticoController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/{id}")
     public ResponseEntity<DiagnosticoDTO> listarPorId(@PathVariable int id) {
         Diagnostico diagnostico = dS.listId(id)
@@ -50,6 +53,7 @@ public class DiagnosticoController {
         return ResponseEntity.ok(convertirADTO(diagnostico));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorCodigo")
     public ResponseEntity<List<DiagnosticoDTO>> buscarPorCodigo(@RequestParam String codigoCie10) {
         if (codigoCie10.isBlank()) {
@@ -63,6 +67,7 @@ public class DiagnosticoController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorDescripcion")
     public ResponseEntity<List<DiagnosticoDTO>> buscarPorDescripcion(@RequestParam String descripcion) {
         if (descripcion.isBlank()) {
@@ -76,6 +81,7 @@ public class DiagnosticoController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PostMapping("/Registrar")
     public ResponseEntity<DiagnosticoDTO> registrar(@Valid @RequestBody DiagnosticoDTO dto) {
         Diagnostico diagnostico = new Diagnostico();
@@ -98,6 +104,7 @@ public class DiagnosticoController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
     public ResponseEntity<DiagnosticoDTO> actualizar(@Valid @RequestBody DiagnosticoDTO dto) {
         Optional<Diagnostico> existente = dS.listId(dto.getIdDiagnostico());
@@ -120,6 +127,7 @@ public class DiagnosticoController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
