@@ -382,7 +382,7 @@ class CitasControllerTest {
         String sala = guardada.getValue().getSalaVideollamada();
         assertTrue(sala.matches("SaludCerca-[0-9a-f]{32}"));
 
-        verify(nS).enviarPorCorreo(eq(ana), eq("CITA_REGISTRADA"), anyString(), anyString(),
+        verify(nS).notificarCita(any(Citas.class), eq("CITA_REGISTRADA"),
                 eq("https://meet.jit.si/" + sala));
     }
 
@@ -390,7 +390,7 @@ class CitasControllerTest {
     void registrar_siFallaElCorreoLaCitaIgualSeRegistra_201() throws Exception {
         when(uS.listId(1)).thenReturn(Optional.of(ana));
         when(uS.listId(2)).thenReturn(Optional.of(luis));
-        when(nS.enviarPorCorreo(any(), anyString(), anyString(), anyString(), anyString()))
+        when(nS.notificarCita(any(), anyString(), anyString()))
                 .thenThrow(new CorreoException("No se pudo enviar el correo"));
 
         mockMvc.perform(post("/api/citas/Registrar").with(token("admin@clinica.pe", "ADMIN"))
