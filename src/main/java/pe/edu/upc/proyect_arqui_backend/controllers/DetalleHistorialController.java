@@ -20,6 +20,7 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ITratamientosService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,7 +116,8 @@ public class DetalleHistorialController {
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PostMapping("/Registrar")
     @Transactional
-    public ResponseEntity<DetalleHistorialDTO> registrar(@Valid @RequestBody DetalleHistorialDTO dto) {
+    public ResponseEntity<DetalleHistorialDTO> registrar(@Valid @RequestBody DetalleHistorialDTO dto,
+                                                         Authentication auth) {
         HistoriasClinicas historiaClinica = hS.listId(dto.getIdHistoriaClinica())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -123,7 +125,10 @@ public class DetalleHistorialController {
                         )
                 );
 
-        Usuarios medico = obtenerMedico(dto.getIdMedico());
+        // Si registra un MEDICO, el detalle queda a su nombre (sale del token).
+        Usuarios medico = esMedico(auth)
+                ? usuarioLogueado(auth)
+                : obtenerMedico(dto.getIdMedico());
 
         DetalleHistorial detalle = new DetalleHistorial();
         detalle.setHistoriaClinica(historiaClinica);
@@ -152,7 +157,8 @@ public class DetalleHistorialController {
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
     @Transactional
-    public ResponseEntity<DetalleHistorialDTO> actualizar(@Valid @RequestBody DetalleHistorialDTO dto) {
+    public ResponseEntity<DetalleHistorialDTO> actualizar(@Valid @RequestBody DetalleHistorialDTO dto,
+                                                          Authentication auth) {
         Optional<DetalleHistorial> existente = dhS.listId(dto.getIdDetalleHistorial());
 
         if (existente.isEmpty()) {
@@ -168,7 +174,10 @@ public class DetalleHistorialController {
                         )
                 );
 
-        Usuarios medico = obtenerMedico(dto.getIdMedico());
+        // El autor no cambia si edita un MEDICO; solo el ADMIN puede reasignarlo.
+        Usuarios medico = esMedico(auth)
+                ? existente.get().getMedico()
+                : obtenerMedico(dto.getIdMedico());
 
         DetalleHistorial detalle = existente.get();
         detalle.setHistoriaClinica(historiaClinica);
@@ -234,6 +243,10 @@ public class DetalleHistorialController {
     }
 
     private Usuarios obtenerMedico(Integer idMedico) {
+        if (idMedico == null) {
+            throw new BadRequestException("El id del medico es obligatorio");
+        }
+
         Usuarios medico = uS.listId(idMedico)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -248,5 +261,21 @@ public class DetalleHistorialController {
         }
 
         return medico;
+    }
+
+    // El usuario dueno del token (el subject del JWT es su correo).
+    private Usuarios usuarioLogueado(Authentication auth) {
+        return uS.listByCorreo(auth.getName())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe el usuario con el correo: " + auth.getName()
+                        )
+                );
+    }
+
+    private boolean esMedico(Authentication auth) {
+        return auth != null
+                && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("MEDICO"))
+                && auth.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ADMIN"));
     }
 }
