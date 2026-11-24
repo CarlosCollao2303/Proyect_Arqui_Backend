@@ -1,6 +1,7 @@
 package pe.edu.upc.proyect_arqui_backend.servicesinterfaces;
 
 import pe.edu.upc.proyect_arqui_backend.dtos.CantidadDiagnosticosDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.HistorialClinicoDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.HistoriasClinicas;
 
 import java.util.List;
@@ -15,4 +16,5 @@ public interface IHistoriasClinicasService {
     public Optional<HistoriasClinicas> listByPacienteId(int idPaciente);
     public List<CantidadDiagnosticosDTO> contarDiagnosticosPorHistoria();
     public CantidadDiagnosticosDTO contarDiagnosticosDeHistoria(int idHistoria);
+    public HistorialClinicoDTO armarHistorial(HistoriasClinicas historia, boolean vistaPaciente);
 }
