@@ -1,6 +1,11 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +24,7 @@ import pe.edu.upc.proyect_arqui_backend.dtos.CitasEspecialidadDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.EsperaMedicoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.VideollamadaDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
+import pe.edu.upc.proyect_arqui_backend.entities.Notificaciones;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.CorreoException;
@@ -27,10 +33,15 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICitasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.INotificacionesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,7 +49,6 @@ import java.util.UUID;
 @RequestMapping("/api/citas")
 public class CitasController {
     private static final Logger log = LoggerFactory.getLogger(CitasController.class);
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final ICitasService cS;
     private final IUsuariosService uS;
@@ -76,6 +86,7 @@ public class CitasController {
     }
     // Las citas del usuario logueado: como paciente o como medico. El correo sale
     // del token (subject del JWT), no del request, asi nadie puede pedir las de otro.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/mis-citas")
     public ResponseEntity<List<CitasDTO>> misCitas(Authentication auth) {
         List<CitasDTO> lista = cS.listByParticipanteCorreo(correo(auth))
@@ -105,6 +116,32 @@ public class CitasController {
         boolean puedeVerTodas = auth == null || tieneRol(auth, "ADMIN") || tieneRol(auth, "MEDICO");
 
         return ResponseEntity.ok(cS.consultarEstado(idCita, correo(auth), puedeVerTodas));
+    }
+
+    // Las citas del paciente logueado con su estado. No pide ningun id: el paciente
+    // sale del token, asi que solo puede ver las suyas.
+    @PreAuthorize("hasAuthority('PACIENTE')")
+    @GetMapping("/estados/mias")
+    public ResponseEntity<List<CitaEstadoDTO>> misEstados(Authentication auth) {
+        return ResponseEntity.ok(cS.listarEstadosDelPaciente(correo(auth)));
+    }
+
+    // Las citas de un paciente elegido por el personal (desde un desplegable por nombre).
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/estados/paciente/{idPaciente}")
+    public ResponseEntity<List<CitaEstadoDTO>> estadosDePaciente(@PathVariable int idPaciente) {
+        obtenerPaciente(idPaciente);
+
+        return ResponseEntity.ok(cS.listarEstadosDelPacientePorId(idPaciente));
+    }
+
+    // Citas con los nombres ya resueltos. El ADMIN ve todas; el MEDICO solo las suyas.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/estados")
+    public ResponseEntity<List<CitaEstadoDTO>> estados(Authentication auth) {
+        String correoMedico = tieneRol(auth, "ADMIN") ? null : correo(auth);
+
+        return ResponseEntity.ok(cS.listarEstadosDeCitas(correoMedico));
     }
 
     // Datos para entrar a la videollamada (Jitsi Meet) de la cita. Si hay token, solo
@@ -206,19 +243,15 @@ public class CitasController {
 
         boolean esPaciente = auth != null && !tieneRol(auth, "ADMIN") && !tieneRol(auth, "MEDICO");
 
-        Usuarios paciente;
-        if (esPaciente) {
-            paciente = uS.listByCorreo(correo(auth))
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException(
-                                    "No existe el usuario con el correo: " + correo(auth)
-                            )
-                    );
-        } else {
-            paciente = obtenerPaciente(dto.getIdPaciente());
-        }
+        Usuarios paciente = esPaciente
+                ? usuarioLogueado(auth)
+                : obtenerPaciente(dto.getIdPaciente());
 
-        Usuarios medico = obtenerMedico(dto.getIdMedico());
+        // Un MEDICO registra las citas a su nombre: queda guardado quien la registro
+        // y no tiene que buscarse a si mismo en una lista.
+        Usuarios medico = esMedico(auth)
+                ? usuarioLogueado(auth)
+                : obtenerMedico(dto.getIdMedico());
 
         Citas cita = new Citas();
         cita.setPaciente(paciente);
@@ -248,7 +281,7 @@ public class CitasController {
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
-    public ResponseEntity<CitasDTO> actualizar(@Valid @RequestBody CitasDTO dto) {
+    public ResponseEntity<CitasDTO> actualizar(@Valid @RequestBody CitasDTO dto, Authentication auth) {
         Optional<Citas> existente = cS.listId(dto.getIdCita());
 
         if (existente.isEmpty()) {
@@ -258,9 +291,16 @@ public class CitasController {
         }
 
         Usuarios paciente = obtenerPaciente(dto.getIdPaciente());
-        Usuarios medico = obtenerMedico(dto.getIdMedico());
+        // Si edita un MEDICO, la cita conserva su medico: solo el ADMIN puede reasignarla.
+        Usuarios medico = esMedico(auth)
+                ? existente.get().getMedico()
+                : obtenerMedico(dto.getIdMedico());
 
         Citas cita = existente.get();
+        // Como estaba antes del cambio, para saber si hay que avisarle al paciente.
+        String estadoAnterior = cita.getEstado();
+        LocalDate fechaAnterior = cita.getFechaHoraProgramada().toLocalDate();
+
         cita.setPaciente(paciente);
         cita.setMedico(medico);
         cita.setFechaHoraProgramada(dto.getFechaHoraProgramada().atStartOfDay());
@@ -268,6 +308,7 @@ public class CitasController {
         cita.setEstado(validarEstado(dto.getEstado()));
 
         cS.update(cita);
+        notificarCambios(cita, estadoAnterior, fechaAnterior);
 
         CitasDTO responseDTO = convertirADTO(cita);
 
@@ -312,6 +353,10 @@ public class CitasController {
     // Ademas de existir, el usuario tiene que tener rol MEDICO: si no, se podria
     // agendar una cita "con" un paciente o un admin.
     private Usuarios obtenerMedico(Integer idMedico) {
+        if (idMedico == null) {
+            throw new BadRequestException("El id del medico es obligatorio");
+        }
+
         Usuarios medico = uS.listId(idMedico)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -341,39 +386,110 @@ public class CitasController {
         return "SaludCerca-" + UUID.randomUUID().toString().replace("-", "");
     }
 
-    // Avisa al paciente por correo (Resend) con el enlace a la videollamada. La cita
-    // ya quedo registrada, asi que si el correo falla no se revierte: la notificacion
-    // queda guardada como FALLIDO y solo se deja constancia en el log.
+    // Avisa al paciente por correo (Resend) con el enlace a la videollamada. El mensaje
+    // es pre armado (NotificacionesServiceImplement.armarMensajeCita). La cita ya quedo
+    // registrada, asi que si el correo falla no se revierte: la notificacion queda
+    // guardada como FALLIDO y solo se deja constancia en el log.
     private void notificarCitaRegistrada(Citas cita) {
-        Usuarios medico = cita.getMedico();
-        String mensaje = "Tu cita con " + medico.getNombres() + " " + medico.getApellidos()
-                + " quedo registrada para el "
-                + cita.getFechaHoraProgramada().toLocalDate().format(FORMATO_FECHA) + ".\n"
-                + "Ese dia puedes ingresar a la consulta por videollamada desde el siguiente boton.";
+        notificar(cita, Notificaciones.TIPO_CITA_REGISTRADA);
+    }
 
+    // Avisa solo, sin que nadie escriba el mensaje, cuando la cita cambia: se atendio,
+    // se cancelo, volvio a estar pendiente o (si sigue pendiente) se movio de fecha.
+    private void notificarCambios(Citas cita, String estadoAnterior, LocalDate fechaAnterior) {
+        String tipo = null;
+
+        if (!cita.getEstado().equals(estadoAnterior)) {
+            tipo = switch (cita.getEstado()) {
+                case "ATENDIDA" -> Notificaciones.TIPO_CITA_ATENDIDA;
+                case "CANCELADA" -> Notificaciones.TIPO_CITA_CANCELADA;
+                default -> Notificaciones.TIPO_RECORDATORIO;
+            };
+        } else if (Citas.ESTADO_PENDIENTE.equals(cita.getEstado())
+                && !cita.getFechaHoraProgramada().toLocalDate().equals(fechaAnterior)) {
+            tipo = Notificaciones.TIPO_CITA_REPROGRAMADA;
+        }
+
+        if (tipo != null) {
+            notificar(cita, tipo);
+        }
+    }
+
+    private void notificar(Citas cita, String tipo) {
         try {
-            nS.enviarPorCorreo(cita.getPaciente(), "CITA_REGISTRADA",
-                    "SaludCerca: tu cita fue registrada", mensaje, enlaceVideollamada(cita));
+            nS.notificarCita(cita, tipo, enlaceVideollamada(cita));
         } catch (CorreoException e) {
             log.warn("No se pudo notificar la cita {} por correo: {}", cita.getIdCita(), e.getMessage());
         }
     }
 
+    // null si la cita todavia no tiene sala (citas registradas antes de la videollamada).
     private String enlaceVideollamada(Citas cita) {
+        if (cita.getSalaVideollamada() == null || cita.getSalaVideollamada().isBlank()) {
+            return null;
+        }
         return "https://" + dominioJitsi + "/" + cita.getSalaVideollamada();
     }
 
     private VideollamadaDTO convertirAVideollamadaDTO(Citas cita) {
+        String enlace = enlaceVideollamada(cita);
+
         return new VideollamadaDTO(
                 cita.getIdCita(),
                 dominioJitsi,
                 cita.getSalaVideollamada(),
-                enlaceVideollamada(cita),
+                enlace,
                 cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos(),
                 cita.getMedico().getNombres() + " " + cita.getMedico().getApellidos(),
                 cita.getFechaHoraProgramada().toLocalDate(),
-                cita.getEstado()
+                cita.getEstado(),
+                generarQr(enlace)
         );
+    }
+
+    // La sala de Jitsi es solo una URL: cualquier dispositivo que la abra entra a la misma
+    // videollamada (en el celular se abre en el navegador o en la app Jitsi Meet). El QR
+    // es esa URL como imagen PNG en base64, lista para un <img> en el front.
+    private String generarQr(String enlace) {
+        if (enlace == null) {
+            return null;
+        }
+
+        try {
+            BitMatrix matriz = new QRCodeWriter().encode(enlace, BarcodeFormat.QR_CODE, 240, 240,
+                    Map.of(EncodeHintType.MARGIN, 1));
+
+            BufferedImage imagen = new BufferedImage(matriz.getWidth(), matriz.getHeight(),
+                    BufferedImage.TYPE_INT_RGB);
+            for (int x = 0; x < matriz.getWidth(); x++) {
+                for (int y = 0; y < matriz.getHeight(); y++) {
+                    imagen.setRGB(x, y, matriz.get(x, y) ? 0x000000 : 0xFFFFFF);
+                }
+            }
+
+            ByteArrayOutputStream png = new ByteArrayOutputStream();
+            ImageIO.write(imagen, "png", png);
+            return "data:image/png;base64," + Base64.getEncoder().encodeToString(png.toByteArray());
+        } catch (WriterException | IOException e) {
+            // Sin QR igual se puede entrar con el enlace, asi que no se corta la respuesta.
+            log.warn("No se pudo generar el QR de la videollamada {}: {}", enlace, e.getMessage());
+            return null;
+        }
+    }
+
+    // El usuario dueno del token (el subject del JWT es su correo).
+    private Usuarios usuarioLogueado(Authentication auth) {
+        return uS.listByCorreo(correo(auth))
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe el usuario con el correo: " + correo(auth)
+                        )
+                );
+    }
+
+    // MEDICO sin ser ADMIN: lo que registra queda a su nombre.
+    private boolean esMedico(Authentication auth) {
+        return tieneRol(auth, "MEDICO") && !tieneRol(auth, "ADMIN");
     }
 
     private boolean tieneRol(Authentication auth, String rol) {

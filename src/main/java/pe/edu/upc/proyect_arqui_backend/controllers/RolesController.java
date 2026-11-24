@@ -28,6 +28,7 @@ public class RolesController {
         this.uS = uS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/Listar")
     public ResponseEntity<List<RolesDTO>> listar() {
         List<RolesDTO> lista = rS.list()
@@ -38,6 +39,7 @@ public class RolesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<RolesDTO> listarPorId(@PathVariable int id) {
         Roles rol = rS.listId(id)
@@ -48,6 +50,22 @@ public class RolesController {
                 );
 
         return ResponseEntity.ok(convertirADTO(rol));
+    }
+
+    // Busca roles cuyo nombre contenga el texto, sin importar mayusculas.
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/Buscar")
+    public ResponseEntity<List<RolesDTO>> buscarPorNombre(@RequestParam String nombre) {
+        if (nombre.isBlank()) {
+            throw new BadRequestException("El nombre del rol no puede estar vacio");
+        }
+
+        List<RolesDTO> lista = rS.buscarPorNombre(nombre.trim())
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+
+        return ResponseEntity.ok(lista);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")

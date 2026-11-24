@@ -12,7 +12,8 @@ public class CitasDTO {
     // CitasController lo exige a mano para ADMIN y MEDICO.
     private Integer idPaciente;
 
-    @NotNull(message = "El id del medico es obligatorio")
+    // Sin @NotNull: si quien registra es MEDICO se ignora y se usa su propio id.
+    // CitasController lo exige a mano para ADMIN y PACIENTE.
     private Integer idMedico;
 
     @NotNull(message = "La fecha y hora programada es obligatoria")

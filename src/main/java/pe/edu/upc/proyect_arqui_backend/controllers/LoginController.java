@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +32,8 @@ public class LoginController {
         this.jwtTokenService = jwtTokenService;
     }
 
+    // Publico: es donde se obtiene el token (tambien esta abierto en SecurityConfig).
+    @PreAuthorize("permitAll()")
     @PostMapping
     public ResponseEntity<LoginResponseDTO> login(
             @RequestBody LoginRequestDTO request) {

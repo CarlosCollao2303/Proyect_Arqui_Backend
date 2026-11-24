@@ -13,4 +13,7 @@ public interface IDetalleHistorialRepository extends JpaRepository<DetalleHistor
     List<DetalleHistorial> findAllByTratamiento_IdTratamiento(int idTratamiento);
 
     List<DetalleHistorial> findAllByReceta_IdReceta(int idReceta);
+
+    // Los detalles de una historia clinica, del mas reciente al mas antiguo.
+    List<DetalleHistorial> findAllByHistoriaClinica_IdHistoriaClinicaOrderByFechaRegistroDesc(int idHistoriaClinica);
 }

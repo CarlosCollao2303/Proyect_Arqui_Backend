@@ -45,7 +45,7 @@ public class EspecialidadesServiceImplement implements IEspecialidadesService {
 
     @Override
     public List<Especialidades> listByNombre(String nombre) {
-        return eR.findByNombreContainingIgnoreCase(nombre);
+        return eR.buscarPorNombreSinTildes(nombre);
     }
 
     @Override
@@ -61,5 +61,15 @@ public class EspecialidadesServiceImplement implements IEspecialidadesService {
             );
         }
         return eR.findMedicosByEspecialidadId(idEspecialidad);
+    }
+
+    @Override
+    public List<MedicoPorEspecialidadDTO> listTodosLosMedicos() {
+        return eR.findTodosLosMedicos();
+    }
+
+    @Override
+    public List<Especialidades> listEspecialidadesConMedicos() {
+        return eR.findEspecialidadesConMedicos();
     }
 }

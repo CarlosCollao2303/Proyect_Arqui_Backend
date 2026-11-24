@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import pe.edu.upc.proyect_arqui_backend.dtos.MedicoPorEspecialidadDTO;
+import pe.edu.upc.proyect_arqui_backend.entities.Especialidades;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.securities.SecurityConfig;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IEspecialidadesService;
@@ -115,5 +116,62 @@ class EspecialidadesControllerTest {
                 .andExpect(status().isUnauthorized());
 
         verify(eS, never()).listMedicosByEspecialidadId(anyInt());
+    }
+
+    // ---- Consultas que ahora tienen @PreAuthorize ----
+
+    @Test
+    void paciente_listaEspecialidades_200() throws Exception {
+        when(eS.list()).thenReturn(List.of(new Especialidades(1, "Cardiologia")));
+
+        mockMvc.perform(get("/api/especialidades/Listar").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].nombre").value("Cardiologia"));
+    }
+
+    @Test
+    void listarEspecialidades_rolSinPermiso_403() throws Exception {
+        mockMvc.perform(get("/api/especialidades/Listar").with(token("x@mail.com", "RECEPCION")))
+                .andExpect(status().isForbidden());
+
+        verify(eS, never()).list();
+    }
+
+    @Test
+    void buscarPorNombre_sinToken_401() throws Exception {
+        mockMvc.perform(get("/api/especialidades/Buscar").param("nombre", "cardio"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // ---- Todos los medicos y especialidades disponibles para el paciente ----
+
+    @Test
+    void paciente_todosLosMedicos_200() throws Exception {
+        when(eS.listTodosLosMedicos()).thenReturn(List.of(
+                new MedicoPorEspecialidadDTO(7, "Eva", "Diaz", "Cardiologia"),
+                new MedicoPorEspecialidadDTO(8, "Rosa", "Castillo", "Sin especialidad")
+        ));
+
+        mockMvc.perform(get("/api/especialidades/medicos").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[1].especialidad").value("Sin especialidad"));
+    }
+
+    @Test
+    void paciente_especialidadesConMedicos_200() throws Exception {
+        when(eS.listEspecialidadesConMedicos()).thenReturn(List.of(new Especialidades(3, "Cardiologia")));
+
+        mockMvc.perform(get("/api/especialidades/con-medicos").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idEspecialidad").value(3));
+    }
+
+    @Test
+    void todosLosMedicos_sinToken_401() throws Exception {
+        mockMvc.perform(get("/api/especialidades/medicos"))
+                .andExpect(status().isUnauthorized());
+
+        verify(eS, never()).listTodosLosMedicos();
     }
 }

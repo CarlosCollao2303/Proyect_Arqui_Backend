@@ -11,6 +11,13 @@ public class Notificaciones {
     public static final String ESTADO_ENVIADO = "ENVIADO";
     public static final String ESTADO_FALLIDO = "FALLIDO";
 
+    // Tipos de notificacion que se arman solos a partir de los datos de una cita.
+    public static final String TIPO_CITA_REGISTRADA = "CITA_REGISTRADA";
+    public static final String TIPO_RECORDATORIO = "RECORDATORIO";
+    public static final String TIPO_CITA_REPROGRAMADA = "CITA_REPROGRAMADA";
+    public static final String TIPO_CITA_ATENDIDA = "CITA_ATENDIDA";
+    public static final String TIPO_CITA_CANCELADA = "CITA_CANCELADA";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idNotificacion;

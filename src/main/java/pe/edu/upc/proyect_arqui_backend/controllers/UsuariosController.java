@@ -50,7 +50,59 @@ public class UsuariosController {
         return ResponseEntity.ok(lista);
     }
 
+    // Todos los pacientes: para los formularios y para la opcion "Todos los pacientes" del medico.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/pacientes")
+    public ResponseEntity<List<UsuariosDTO>> listarPacientes() {
+        return ResponseEntity.ok(convertirLista(uS.listByRol("PACIENTE")));
+    }
+
+    // Los pacientes asignados al medico logueado (los que tienen citas con el).
+    // El medico sale del token, asi que nadie puede pedir los pacientes de otro.
+    @PreAuthorize("hasAuthority('MEDICO')")
+    @GetMapping("/mis-pacientes")
+    public ResponseEntity<List<UsuariosDTO>> listarMisPacientes(Authentication auth) {
+        return ResponseEntity.ok(convertirLista(uS.listPacientesDelMedico(auth.getName())));
+    }
+
+    // Los medicos, para elegir uno al registrar citas o detalles del historial.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/medicos")
+    public ResponseEntity<List<UsuariosDTO>> listarMedicos() {
+        return ResponseEntity.ok(convertirLista(uS.listByRol("MEDICO")));
+    }
+
+    // Datos del usuario logueado. El front lo usa, por ejemplo, para poner al medico
+    // como autor de lo que registra sin tener que buscarlo por id.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
+    @GetMapping("/perfil")
+    public ResponseEntity<UsuariosDTO> perfil(Authentication auth) {
+        Usuarios usuario = uS.listByCorreo(auth.getName())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe el usuario con el correo: " + auth.getName()
+                        )
+                );
+
+        return ResponseEntity.ok(convertirADTO(usuario));
+    }
+
+    // Busca por nombre o DNI. El ADMIN busca entre todos los usuarios; el MEDICO solo
+    // entre los pacientes, porque es lo unico que puede ver en su listado.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/Buscar")
+    public ResponseEntity<List<UsuariosDTO>> buscar(@RequestParam String texto, Authentication auth) {
+        if (texto.isBlank()) {
+            throw new BadRequestException("Escribe un nombre o un DNI para buscar");
+        }
+
+        String rol = tieneRol(auth, "ADMIN") ? null : "PACIENTE";
+
+        return ResponseEntity.ok(convertirLista(uS.buscarPorNombreODni(texto.trim(), rol)));
+    }
+
     // ADMIN y MEDICO ven a cualquiera; un PACIENTE solo a si mismo.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<UsuariosDTO> listarPorId(@PathVariable int id, Authentication auth) {
         Usuarios usuario = uS.listId(id)
@@ -69,6 +121,8 @@ public class UsuariosController {
 
     // El registro publico siempre crea pacientes. Un ADMIN puede elegir el rol;
     // las especialidades se asignan despues y solo a medicos.
+    // permitAll: es el registro publico (tambien esta abierto en SecurityConfig).
+    @PreAuthorize("permitAll()")
     @PostMapping("/Registrar")
     public ResponseEntity<UsuariosDTO> registrar(@Valid @RequestBody UsuariosDTO dto, Authentication auth) {
         // La contrasena no lleva @NotBlank en el DTO (el PUT puede omitirla),
@@ -124,6 +178,7 @@ public class UsuariosController {
 
     // ADMIN edita a cualquiera. Los demas solo su propio usuario, y sin poder
     // cambiarse rol, especialidad ni estado.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @PutMapping("/Actualizar")
     public ResponseEntity<UsuariosDTO> actualizar(@Valid @RequestBody UsuariosDTO dto, Authentication auth) {
         Optional<Usuarios> existente = uS.listId(dto.getIdUsuario());
@@ -269,6 +324,12 @@ public class UsuariosController {
                                 "No existe la especialidad con el id: " + idEspecialidad
                         )
                 );
+    }
+
+    private List<UsuariosDTO> convertirLista(List<Usuarios> usuarios) {
+        return usuarios.stream()
+                .map(this::convertirADTO)
+                .toList();
     }
 
     private UsuariosDTO convertirADTO(Usuarios usuario) {

@@ -12,7 +12,8 @@ public class DetalleHistorialDTO {
     @NotNull(message = "El id de la historia clinica es obligatorio")
     private Integer idHistoriaClinica;
 
-    @NotNull(message = "El id del medico es obligatorio")
+    // Sin @NotNull: si quien registra es MEDICO se ignora y queda el del token.
+    // DetalleHistorialController lo exige a mano cuando registra un ADMIN.
     private Integer idMedico;
 
     @Positive(message = "El id del examen debe ser positivo")

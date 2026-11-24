@@ -35,6 +35,27 @@ public interface IExamenesRepository extends JpaRepository<Examenes, Integer> {
             "GROUP BY u.idUsuario, u.nombres, u.apellidos, u.dni")
     Optional<CantidadExamenesDTO> contarExamenesDePaciente(@Param("idPaciente") int idPaciente);
 
+    // Para comparar sin tildes: TRANSLATE cambia cada vocal con tilde (y la enie) por la
+    // letra sin tilde. Existe en PostgreSQL y en H2 (la base de los tests).
+    String CON_TILDES = "\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1";
+    String SIN_TILDES = "aeiouun";
+
+    // Igual que contarExamenesPorPaciente, pero solo los pacientes cuyo nombre completo
+    // contiene el texto buscado (sin importar mayusculas ni tildes).
+    @Query("SELECT new pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO(" +
+            "u.idUsuario, CONCAT(u.nombres, ' ', u.apellidos), u.dni, COUNT(e.idExamen)) " +
+            "FROM Usuarios u " +
+            "JOIN u.rol r " +
+            "LEFT JOIN HistoriasClinicas h ON h.paciente = u " +
+            "LEFT JOIN DetalleHistorial d ON d.historiaClinica = h " +
+            "LEFT JOIN d.examen e " +
+            "WHERE r.nombre = 'PACIENTE' " +
+            "AND CAST(FUNCTION('TRANSLATE', LOWER(CONCAT(u.nombres, ' ', u.apellidos)), '" + CON_TILDES + "', '" + SIN_TILDES + "') AS String) " +
+            "LIKE CONCAT('%', CAST(FUNCTION('TRANSLATE', LOWER(:nombre), '" + CON_TILDES + "', '" + SIN_TILDES + "') AS String), '%') " +
+            "GROUP BY u.idUsuario, u.nombres, u.apellidos, u.dni " +
+            "ORDER BY COUNT(e.idExamen) DESC")
+    List<CantidadExamenesDTO> contarExamenesPorNombreDePaciente(@Param("nombre") String nombre);
+
     // Examenes que aun no tienen resultado, del mas antiguo al mas reciente.
     @Query("SELECT new pe.edu.upc.proyect_arqui_backend.dtos.ExamenPendienteDTO(" +
             "e.idExamen, e.tipoExamen, e.fechaSolicitud) " +

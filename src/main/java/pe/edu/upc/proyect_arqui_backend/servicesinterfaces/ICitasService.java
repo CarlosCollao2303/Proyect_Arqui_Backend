@@ -19,6 +19,9 @@ public interface ICitasService {
     public List<CitaPacienteDTO> listarTodasLasCitasPorFecha(LocalDate fecha);
     public List<Citas> listByParticipanteCorreo(String correo);
     public CitaEstadoDTO consultarEstado(int idCita, String correo, boolean puedeVerTodas);
+    public List<CitaEstadoDTO> listarEstadosDelPaciente(String correoPaciente);
+    public List<CitaEstadoDTO> listarEstadosDelPacientePorId(int idPaciente);
+    public List<CitaEstadoDTO> listarEstadosDeCitas(String correoMedico);
     public List<CitaMedicoDTO> listarCitasDelMedico(String correoMedico, String estado, LocalDate inicio, LocalDate fin);
     public List<Object[]> contarCitasPorEspecialidadYEstado();
     public List<Object[]> obtenerEsperaPromedioPorMedico();

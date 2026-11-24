@@ -12,4 +12,5 @@ public interface IRolesService {
     public List<Roles> list();
     public Optional<Roles> listId(int id);
     public Optional<Roles> listByNombre(String nombre);
+    public List<Roles> buscarPorNombre(String nombre);
 }

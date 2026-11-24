@@ -66,6 +66,11 @@ public class ExamenesServiceImplement implements IExamenesService {
     }
 
     @Override
+    public List<CantidadExamenesDTO> contarExamenesPorNombreDePaciente(String nombre) {
+        return eR.contarExamenesPorNombreDePaciente(nombre);
+    }
+
+    @Override
     public List<ExamenPendienteDTO> listarExamenesPendientes() {
         return eR.listarExamenesPendientes();
     }

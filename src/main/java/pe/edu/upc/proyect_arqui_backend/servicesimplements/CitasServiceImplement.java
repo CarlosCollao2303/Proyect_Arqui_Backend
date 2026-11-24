@@ -91,6 +91,22 @@ public class CitasServiceImplement implements ICitasService {
     }
 
     @Override
+    public List<CitaEstadoDTO> listarEstadosDelPaciente(String correoPaciente) {
+        return cR.findEstadosDelPacientePorCorreo(correoPaciente);
+    }
+
+    @Override
+    public List<CitaEstadoDTO> listarEstadosDelPacientePorId(int idPaciente) {
+        return cR.findEstadosDelPaciente(idPaciente);
+    }
+
+    // correoMedico en null devuelve todas las citas (vista del ADMIN).
+    @Override
+    public List<CitaEstadoDTO> listarEstadosDeCitas(String correoMedico) {
+        return cR.findEstadosDeCitas(correoMedico);
+    }
+
+    @Override
     public List<CitaMedicoDTO> listarCitasDelMedico(String correoMedico, String estado,
                                                     LocalDate inicio, LocalDate fin) {
         if (inicio != null && fin != null && inicio.isAfter(fin)) {

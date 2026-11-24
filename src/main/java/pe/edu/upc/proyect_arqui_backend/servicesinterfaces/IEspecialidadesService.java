@@ -15,4 +15,6 @@ public interface IEspecialidadesService {
     public List<Especialidades> listByNombre(String nombre);
     public long countMedicosByEspecialidadId(int idEspecialidad);
     public List<MedicoPorEspecialidadDTO> listMedicosByEspecialidadId(int idEspecialidad);
+    public List<MedicoPorEspecialidadDTO> listTodosLosMedicos();
+    public List<Especialidades> listEspecialidadesConMedicos();
 }

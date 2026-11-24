@@ -11,15 +11,19 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.securities.SecurityConfig;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IExamenesService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -108,5 +112,31 @@ class ExamenesControllerTest {
                 .andExpect(status().isForbidden());
 
         verify(eS, never()).insert(any());
+    }
+
+    // ---- Reporte de examenes buscando al paciente por nombre ----
+
+    @Test
+    void cantidadPorNombreDePaciente_200() throws Exception {
+        when(eS.contarExamenesPorNombreDePaciente("juan")).thenReturn(java.util.List.of(
+                new CantidadExamenesDTO(9, "Juan Perez Garcia", "70000001", 3L)
+        ));
+
+        mockMvc.perform(get("/api/examenes/cantidad-por-paciente/buscar").param("nombre", " juan ")
+                        .with(medico()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].paciente").value("Juan Perez Garcia"))
+                .andExpect(jsonPath("$[0].cantidadExamenes").value(3));
+
+        verify(eS).contarExamenesPorNombreDePaciente("juan");
+    }
+
+    @Test
+    void cantidadPorNombreDePaciente_nombreVacio_400() throws Exception {
+        mockMvc.perform(get("/api/examenes/cantidad-por-paciente/buscar").param("nombre", "  ")
+                        .with(medico()))
+                .andExpect(status().isBadRequest());
+
+        verify(eS, never()).contarExamenesPorNombreDePaciente(anyString());
     }
 }

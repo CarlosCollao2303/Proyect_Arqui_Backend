@@ -1,7 +1,10 @@
 package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.MensajeCitaDTO;
+import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Notificaciones;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
+import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.CorreoException;
 import pe.edu.upc.proyect_arqui_backend.repositories.INotificacionesRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICorreoService;
@@ -10,11 +13,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class NotificacionesServiceImplement implements INotificacionesService {
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String INDICACION_VIDEOLLAMADA =
+            "Ese dia puedes ingresar a la consulta por videollamada desde el siguiente boton, "
+                    + "desde tu computadora o tu celular.";
 
     private final INotificacionesRepository nR;
     private final ICorreoService correoService;
@@ -44,6 +52,84 @@ public class NotificacionesServiceImplement implements INotificacionesService {
             nR.save(notificacion);
             throw e;
         }
+    }
+
+    // Mensajes pre armados: cada uno se arma con los datos que ya tiene la cita
+    // (paciente, medico, especialidad, fecha, estado y tiempo de espera).
+    @Override
+    public MensajeCitaDTO armarMensajeCita(Citas cita, String tipo) {
+        String tipoFinal = tipo != null ? tipo : tipoSegunEstado(cita);
+
+        Usuarios paciente = cita.getPaciente();
+        Usuarios medico = cita.getMedico();
+        String conMedico = "con " + nombreCompleto(medico)
+                + (medico.getEspecialidad() != null ? " (" + medico.getEspecialidad().getNombre() + ")" : "");
+        String fecha = cita.getFechaHoraProgramada().toLocalDate().format(FORMATO_FECHA);
+
+        String asunto;
+        String mensaje;
+        switch (tipoFinal) {
+            case Notificaciones.TIPO_CITA_REGISTRADA -> {
+                asunto = "SaludCerca: tu cita fue registrada";
+                mensaje = String.format("Tu cita #%d %s quedo registrada para el %s.",
+                        cita.getIdCita(), conMedico, fecha)
+                        + "\n" + INDICACION_VIDEOLLAMADA;
+            }
+            case Notificaciones.TIPO_RECORDATORIO -> {
+                asunto = String.format("SaludCerca: recordatorio de tu cita del %s", fecha);
+                mensaje = String.format("Te recordamos tu cita #%d %s programada para el %s.",
+                        cita.getIdCita(), conMedico, fecha)
+                        + "\n" + INDICACION_VIDEOLLAMADA;
+            }
+            case Notificaciones.TIPO_CITA_REPROGRAMADA -> {
+                asunto = "SaludCerca: tu cita cambio de fecha";
+                mensaje = String.format("Tu cita #%d %s fue reprogramada para el %s.",
+                        cita.getIdCita(), conMedico, fecha)
+                        + "\n" + INDICACION_VIDEOLLAMADA;
+            }
+            case Notificaciones.TIPO_CITA_ATENDIDA -> {
+                asunto = "SaludCerca: gracias por asistir a tu cita";
+                mensaje = String.format("Tu cita #%d %s del %s fue atendida.",
+                        cita.getIdCita(), conMedico, fecha)
+                        + (cita.getTiempoEsperaMinutos() > 0
+                        ? String.format(" Tu tiempo de espera fue de %d minutos.", cita.getTiempoEsperaMinutos())
+                        : "")
+                        + "\nPuedes revisar tus examenes y recetas en Mi historia clinica de SaludCerca.";
+            }
+            case Notificaciones.TIPO_CITA_CANCELADA -> {
+                asunto = "SaludCerca: tu cita fue cancelada";
+                mensaje = String.format("Tu cita #%d %s del %s fue cancelada.",
+                        cita.getIdCita(), conMedico, fecha)
+                        + "\nSi necesitas una nueva cita, puedes reservarla en SaludCerca.";
+            }
+            default -> throw new BadRequestException("No hay un mensaje de cita para el tipo: " + tipoFinal);
+        }
+
+        return new MensajeCitaDTO(cita.getIdCita(), tipoFinal, asunto,
+                nombreCompleto(paciente), paciente.getCorreo(), mensaje);
+    }
+
+    @Override
+    public Notificaciones notificarCita(Citas cita, String tipo, String enlaceVideollamada) {
+        MensajeCitaDTO mensaje = armarMensajeCita(cita, tipo);
+
+        // Solo las citas que siguen pendientes llevan el boton para entrar a la videollamada.
+        String enlace = Citas.ESTADO_PENDIENTE.equals(cita.getEstado()) ? enlaceVideollamada : null;
+
+        return enviarPorCorreo(cita.getPaciente(), mensaje.tipo(), mensaje.asunto(),
+                mensaje.mensaje(), enlace);
+    }
+
+    private String tipoSegunEstado(Citas cita) {
+        return switch (cita.getEstado()) {
+            case "ATENDIDA" -> Notificaciones.TIPO_CITA_ATENDIDA;
+            case "CANCELADA" -> Notificaciones.TIPO_CITA_CANCELADA;
+            default -> Notificaciones.TIPO_RECORDATORIO;
+        };
+    }
+
+    private String nombreCompleto(Usuarios usuario) {
+        return usuario.getNombres() + " " + usuario.getApellidos();
     }
 
     // El mensaje lo escribe un usuario, por eso se escapa antes de meterlo en el HTML.

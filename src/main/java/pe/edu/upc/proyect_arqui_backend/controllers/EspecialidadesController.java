@@ -26,6 +26,8 @@ public class EspecialidadesController {
         this.eS = eS;
     }
 
+    // Todos los roles: el paciente usa la lista para el desplegable de especialidades.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/Listar")
     public ResponseEntity<List<EspecialidadesDTO>> listar() {
         List<EspecialidadesDTO> lista = eS.list()
@@ -36,6 +38,7 @@ public class EspecialidadesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<EspecialidadesDTO> listarPorId(@PathVariable int id) {
         Especialidades especialidad = eS.listId(id)
@@ -48,6 +51,7 @@ public class EspecialidadesController {
         return ResponseEntity.ok(convertirADTO(especialidad));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/Buscar")
     public ResponseEntity<List<EspecialidadesDTO>> buscarPorNombre(@RequestParam String nombre) {
         if (nombre.isBlank()) {
@@ -62,6 +66,7 @@ public class EspecialidadesController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/ContarMedicos/{id}")
     public ResponseEntity<Long> contarMedicos(@PathVariable int id) {
         if (eS.listId(id).isEmpty()) {
@@ -71,6 +76,25 @@ public class EspecialidadesController {
         }
 
         return ResponseEntity.ok(eS.countMedicosByEspecialidadId(id));
+    }
+
+    // Todos los medicos activos con su especialidad: lo primero que ve el paciente.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
+    @GetMapping("/medicos")
+    public ResponseEntity<List<MedicoPorEspecialidadDTO>> listarTodosLosMedicos() {
+        return ResponseEntity.ok(eS.listTodosLosMedicos());
+    }
+
+    // Solo las especialidades con medicos disponibles, para el desplegable del paciente.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
+    @GetMapping("/con-medicos")
+    public ResponseEntity<List<EspecialidadesDTO>> listarConMedicos() {
+        List<EspecialidadesDTO> lista = eS.listEspecialidadesConMedicos()
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
+
+        return ResponseEntity.ok(lista);
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")

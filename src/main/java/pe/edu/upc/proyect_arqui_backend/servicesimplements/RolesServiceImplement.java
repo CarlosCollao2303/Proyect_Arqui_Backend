@@ -46,4 +46,9 @@ public class RolesServiceImplement implements IRolesService {
     public Optional<Roles> listByNombre(String nombre) {
         return rR.findByNombre(nombre);
     }
+
+    @Override
+    public List<Roles> buscarPorNombre(String nombre) {
+        return rR.findByNombreContainingIgnoreCase(nombre);
+    }
 }
