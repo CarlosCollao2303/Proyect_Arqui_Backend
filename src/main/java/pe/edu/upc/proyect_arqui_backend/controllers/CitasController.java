@@ -108,6 +108,32 @@ public class CitasController {
         return ResponseEntity.ok(cS.consultarEstado(idCita, correo(auth), puedeVerTodas));
     }
 
+    // Las citas del paciente logueado con su estado. No pide ningun id: el paciente
+    // sale del token, asi que solo puede ver las suyas.
+    @PreAuthorize("hasAuthority('PACIENTE')")
+    @GetMapping("/estados/mias")
+    public ResponseEntity<List<CitaEstadoDTO>> misEstados(Authentication auth) {
+        return ResponseEntity.ok(cS.listarEstadosDelPaciente(correo(auth)));
+    }
+
+    // Las citas de un paciente elegido por el personal (desde un desplegable por nombre).
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/estados/paciente/{idPaciente}")
+    public ResponseEntity<List<CitaEstadoDTO>> estadosDePaciente(@PathVariable int idPaciente) {
+        obtenerPaciente(idPaciente);
+
+        return ResponseEntity.ok(cS.listarEstadosDelPacientePorId(idPaciente));
+    }
+
+    // Citas con los nombres ya resueltos. El ADMIN ve todas; el MEDICO solo las suyas.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/estados")
+    public ResponseEntity<List<CitaEstadoDTO>> estados(Authentication auth) {
+        String correoMedico = tieneRol(auth, "ADMIN") ? null : correo(auth);
+
+        return ResponseEntity.ok(cS.listarEstadosDeCitas(correoMedico));
+    }
+
     // Datos para entrar a la videollamada (Jitsi Meet) de la cita. Si hay token, solo
     // el paciente o el medico de la cita (o un ADMIN) pueden pedirlos.
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
