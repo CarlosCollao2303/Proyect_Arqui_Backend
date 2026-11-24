@@ -2,6 +2,7 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.CantidadDiagnosticosDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.HistorialClinicoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.HistoriasClinicasDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.HistoriasClinicas;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
@@ -11,6 +12,7 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IHistoriasClinicasSer
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -65,6 +67,44 @@ public class HistoriasClinicasController {
 
         return ResponseEntity.ok(convertirADTO(historiaClinica));
     }
+    // Historial completo de una historia: citas, consultas, diagnosticos, examenes,
+    // tratamientos y recetas. Es lo que se abre con "Ver historial" en el listado.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/{id}/historial")
+    public ResponseEntity<HistorialClinicoDTO> historial(@PathVariable int id) {
+        HistoriasClinicas historiaClinica = hS.listId(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una historia clinica con el id: " + id
+                        )
+                );
+
+        return ResponseEntity.ok(hS.armarHistorial(historiaClinica, false));
+    }
+
+    // Historial del paciente logueado. La historia se busca con el id del paciente que sale
+    // del token, asi que no tiene que escribir ningun id y no puede ver la de otro.
+    // Solo trae citas, examenes y recetas.
+    @PreAuthorize("hasAuthority('PACIENTE')")
+    @GetMapping("/mi-historial")
+    public ResponseEntity<HistorialClinicoDTO> miHistorial(Authentication auth) {
+        Usuarios paciente = uS.listByCorreo(auth.getName())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe el usuario con el correo: " + auth.getName()
+                        )
+                );
+
+        HistoriasClinicas historiaClinica = hS.listByPacienteId(paciente.getIdUsuario())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Todavia no tienes una historia clinica registrada"
+                        )
+                );
+
+        return ResponseEntity.ok(hS.armarHistorial(historiaClinica, true));
+    }
+
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/cantidad-diagnosticos")
     public ResponseEntity<List<CantidadDiagnosticosDTO>> cantidadDiagnosticos() {
