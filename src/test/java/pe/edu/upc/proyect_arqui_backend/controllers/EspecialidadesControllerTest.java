@@ -55,7 +55,7 @@ class EspecialidadesControllerTest {
     void paciente_listaMedicosDeUnaEspecialidad_200() throws Exception {
         when(eS.listMedicosByEspecialidadId(1)).thenReturn(medicos);
 
-        mockMvc.perform(get("/especialidades/1/medicos").with(token("ana@mail.com", "PACIENTE")))
+        mockMvc.perform(get("/api/especialidades/1/medicos").with(token("ana@mail.com", "PACIENTE")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].idMedico").value(7))
@@ -68,7 +68,7 @@ class EspecialidadesControllerTest {
     void admin_200() throws Exception {
         when(eS.listMedicosByEspecialidadId(1)).thenReturn(medicos);
 
-        mockMvc.perform(get("/especialidades/1/medicos").with(token("admin@clinica.pe", "ADMIN")))
+        mockMvc.perform(get("/api/especialidades/1/medicos").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isOk());
     }
 
@@ -76,7 +76,7 @@ class EspecialidadesControllerTest {
     void medico_200() throws Exception {
         when(eS.listMedicosByEspecialidadId(1)).thenReturn(medicos);
 
-        mockMvc.perform(get("/especialidades/1/medicos").with(token("luis@clinica.pe", "MEDICO")))
+        mockMvc.perform(get("/api/especialidades/1/medicos").with(token("luis@clinica.pe", "MEDICO")))
                 .andExpect(status().isOk());
     }
 
@@ -84,7 +84,7 @@ class EspecialidadesControllerTest {
     void especialidadSinMedicos_200ConListaVacia() throws Exception {
         when(eS.listMedicosByEspecialidadId(2)).thenReturn(List.of());
 
-        mockMvc.perform(get("/especialidades/2/medicos").with(token("ana@mail.com", "PACIENTE")))
+        mockMvc.perform(get("/api/especialidades/2/medicos").with(token("ana@mail.com", "PACIENTE")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
@@ -94,22 +94,22 @@ class EspecialidadesControllerTest {
         when(eS.listMedicosByEspecialidadId(99))
                 .thenThrow(new ResourceNotFoundException("La especialidad con id 99 no existe"));
 
-        mockMvc.perform(get("/especialidades/99/medicos").with(token("ana@mail.com", "PACIENTE")))
+        mockMvc.perform(get("/api/especialidades/99/medicos").with(token("ana@mail.com", "PACIENTE")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value("La especialidad con id 99 no existe"))
-                .andExpect(jsonPath("$.path").value("/especialidades/99/medicos"));
+                .andExpect(jsonPath("$.path").value("/api/especialidades/99/medicos"));
     }
 
     @Test
     void rolSinRestriccion_noRequiereToken_200() throws Exception {
-        mockMvc.perform(get("/especialidades/1/medicos").with(token("x@mail.com", "RECEPCION")))
+        mockMvc.perform(get("/api/especialidades/1/medicos").with(token("x@mail.com", "RECEPCION")))
                 .andExpect(status().isOk());
     }
 
     @Test
     void sinToken_200() throws Exception {
-        mockMvc.perform(get("/especialidades/1/medicos"))
+        mockMvc.perform(get("/api/especialidades/1/medicos"))
                 .andExpect(status().isOk());
     }
 }
