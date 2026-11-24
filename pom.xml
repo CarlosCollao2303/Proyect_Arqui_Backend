@@ -59,6 +59,13 @@
             <artifactId>resend-java</artifactId>
             <version>4.4.0</version>
         </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/com.google.zxing/core -->
+        <!-- Genera el codigo QR del enlace de la videollamada -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
