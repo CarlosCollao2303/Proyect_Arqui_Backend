@@ -10,6 +10,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDetalleHistorialService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRecetasService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class RecetasController {
         this.dhS = dhS;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/Listar")
     public ResponseEntity<List<RecetasDTO>> listar() {
         List<RecetasDTO> lista = rS.list()
@@ -41,6 +43,7 @@ public class RecetasController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/{id}")
     public ResponseEntity<RecetasDTO> listarPorId(@PathVariable int id) {
         Recetas receta = rS.listId(id)
@@ -53,6 +56,7 @@ public class RecetasController {
         return ResponseEntity.ok(convertirADTO(receta));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorMedicamento")
     public ResponseEntity<List<RecetasDTO>> buscarPorMedicamento(@RequestParam String medicamento) {
         if (medicamento.isBlank()) {
@@ -66,6 +70,7 @@ public class RecetasController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/BuscarPorFechaEmision")
     public ResponseEntity<List<RecetasDTO>> buscarPorFechaEmision(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
@@ -76,11 +81,13 @@ public class RecetasController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/ListarConDetalle")
     public ResponseEntity<List<RecetaDetalleDTO>> listarConDetalle() {
         return ResponseEntity.ok(rS.listarRecetasConDetalle());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PostMapping("/Registrar")
     public ResponseEntity<RecetasDTO> registrar(@Valid @RequestBody RecetasDTO dto) {
         Recetas receta = new Recetas();
@@ -106,6 +113,7 @@ public class RecetasController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping("/Actualizar")
     public ResponseEntity<RecetasDTO> actualizar(@Valid @RequestBody RecetasDTO dto) {
         Optional<Recetas> existente = rS.listId(dto.getIdReceta());
@@ -131,6 +139,7 @@ public class RecetasController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
