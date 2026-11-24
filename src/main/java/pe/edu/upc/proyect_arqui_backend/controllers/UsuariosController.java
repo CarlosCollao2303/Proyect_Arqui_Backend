@@ -51,6 +51,7 @@ public class UsuariosController {
     }
 
     // ADMIN y MEDICO ven a cualquiera; un PACIENTE solo a si mismo.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @GetMapping("/ListarPorId/{id}")
     public ResponseEntity<UsuariosDTO> listarPorId(@PathVariable int id, Authentication auth) {
         Usuarios usuario = uS.listId(id)
@@ -69,6 +70,8 @@ public class UsuariosController {
 
     // El registro publico siempre crea pacientes. Un ADMIN puede elegir el rol;
     // las especialidades se asignan despues y solo a medicos.
+    // permitAll: es el registro publico (tambien esta abierto en SecurityConfig).
+    @PreAuthorize("permitAll()")
     @PostMapping("/Registrar")
     public ResponseEntity<UsuariosDTO> registrar(@Valid @RequestBody UsuariosDTO dto, Authentication auth) {
         // La contrasena no lleva @NotBlank en el DTO (el PUT puede omitirla),
@@ -124,6 +127,7 @@ public class UsuariosController {
 
     // ADMIN edita a cualquiera. Los demas solo su propio usuario, y sin poder
     // cambiarse rol, especialidad ni estado.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO') or hasAuthority('PACIENTE')")
     @PutMapping("/Actualizar")
     public ResponseEntity<UsuariosDTO> actualizar(@Valid @RequestBody UsuariosDTO dto, Authentication auth) {
         Optional<Usuarios> existente = uS.listId(dto.getIdUsuario());
