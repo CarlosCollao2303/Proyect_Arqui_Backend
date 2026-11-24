@@ -8,6 +8,7 @@ import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IRolesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -49,6 +50,7 @@ public class RolesController {
         return ResponseEntity.ok(convertirADTO(rol));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/Registrar")
     public ResponseEntity<RolesDTO> registrar(@Valid @RequestBody RolesDTO dto) {
         String nombre = normalizarNombre(dto.getNombre());
@@ -75,6 +77,7 @@ public class RolesController {
                 .body(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/Actualizar")
     public ResponseEntity<RolesDTO> actualizar(@Valid @RequestBody RolesDTO dto) {
         Optional<Roles> existente = rS.listId(dto.getIdRol());
@@ -105,6 +108,7 @@ public class RolesController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Roles rol = rS.listId(id)
