@@ -107,8 +107,13 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        // Login público
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/Registrar").permitAll()
+
+                        // Registro público de usuarios (siempre crea un PACIENTE)
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios/Registrar").permitAll()
+
+                        // Swagger
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
