@@ -19,6 +19,7 @@ import pe.edu.upc.proyect_arqui_backend.dtos.CitasEspecialidadDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.EsperaMedicoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.VideollamadaDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
+import pe.edu.upc.proyect_arqui_backend.entities.Notificaciones;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.CorreoException;
@@ -29,7 +30,6 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,7 +38,6 @@ import java.util.UUID;
 @RequestMapping("/api/citas")
 public class CitasController {
     private static final Logger log = LoggerFactory.getLogger(CitasController.class);
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final ICitasService cS;
     private final IUsuariosService uS;
@@ -287,6 +286,10 @@ public class CitasController {
                 : obtenerMedico(dto.getIdMedico());
 
         Citas cita = existente.get();
+        // Como estaba antes del cambio, para saber si hay que avisarle al paciente.
+        String estadoAnterior = cita.getEstado();
+        LocalDate fechaAnterior = cita.getFechaHoraProgramada().toLocalDate();
+
         cita.setPaciente(paciente);
         cita.setMedico(medico);
         cita.setFechaHoraProgramada(dto.getFechaHoraProgramada().atStartOfDay());
@@ -294,6 +297,7 @@ public class CitasController {
         cita.setEstado(validarEstado(dto.getEstado()));
 
         cS.update(cita);
+        notificarCambios(cita, estadoAnterior, fechaAnterior);
 
         CitasDTO responseDTO = convertirADTO(cita);
 
@@ -371,25 +375,48 @@ public class CitasController {
         return "SaludCerca-" + UUID.randomUUID().toString().replace("-", "");
     }
 
-    // Avisa al paciente por correo (Resend) con el enlace a la videollamada. La cita
-    // ya quedo registrada, asi que si el correo falla no se revierte: la notificacion
-    // queda guardada como FALLIDO y solo se deja constancia en el log.
+    // Avisa al paciente por correo (Resend) con el enlace a la videollamada. El mensaje
+    // es pre armado (NotificacionesServiceImplement.armarMensajeCita). La cita ya quedo
+    // registrada, asi que si el correo falla no se revierte: la notificacion queda
+    // guardada como FALLIDO y solo se deja constancia en el log.
     private void notificarCitaRegistrada(Citas cita) {
-        Usuarios medico = cita.getMedico();
-        String mensaje = "Tu cita con " + medico.getNombres() + " " + medico.getApellidos()
-                + " quedo registrada para el "
-                + cita.getFechaHoraProgramada().toLocalDate().format(FORMATO_FECHA) + ".\n"
-                + "Ese dia puedes ingresar a la consulta por videollamada desde el siguiente boton.";
+        notificar(cita, Notificaciones.TIPO_CITA_REGISTRADA);
+    }
 
+    // Avisa solo, sin que nadie escriba el mensaje, cuando la cita cambia: se atendio,
+    // se cancelo, volvio a estar pendiente o (si sigue pendiente) se movio de fecha.
+    private void notificarCambios(Citas cita, String estadoAnterior, LocalDate fechaAnterior) {
+        String tipo = null;
+
+        if (!cita.getEstado().equals(estadoAnterior)) {
+            tipo = switch (cita.getEstado()) {
+                case "ATENDIDA" -> Notificaciones.TIPO_CITA_ATENDIDA;
+                case "CANCELADA" -> Notificaciones.TIPO_CITA_CANCELADA;
+                default -> Notificaciones.TIPO_RECORDATORIO;
+            };
+        } else if (Citas.ESTADO_PENDIENTE.equals(cita.getEstado())
+                && !cita.getFechaHoraProgramada().toLocalDate().equals(fechaAnterior)) {
+            tipo = Notificaciones.TIPO_CITA_REPROGRAMADA;
+        }
+
+        if (tipo != null) {
+            notificar(cita, tipo);
+        }
+    }
+
+    private void notificar(Citas cita, String tipo) {
         try {
-            nS.enviarPorCorreo(cita.getPaciente(), "CITA_REGISTRADA",
-                    "SaludCerca: tu cita fue registrada", mensaje, enlaceVideollamada(cita));
+            nS.notificarCita(cita, tipo, enlaceVideollamada(cita));
         } catch (CorreoException e) {
             log.warn("No se pudo notificar la cita {} por correo: {}", cita.getIdCita(), e.getMessage());
         }
     }
 
+    // null si la cita todavia no tiene sala (citas registradas antes de la videollamada).
     private String enlaceVideollamada(Citas cita) {
+        if (cita.getSalaVideollamada() == null || cita.getSalaVideollamada().isBlank()) {
+            return null;
+        }
         return "https://" + dominioJitsi + "/" + cita.getSalaVideollamada();
     }
 
