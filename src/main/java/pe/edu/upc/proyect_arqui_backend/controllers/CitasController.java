@@ -1,6 +1,11 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,9 +33,15 @@ import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICitasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.INotificacionesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -421,16 +432,49 @@ public class CitasController {
     }
 
     private VideollamadaDTO convertirAVideollamadaDTO(Citas cita) {
+        String enlace = enlaceVideollamada(cita);
+
         return new VideollamadaDTO(
                 cita.getIdCita(),
                 dominioJitsi,
                 cita.getSalaVideollamada(),
-                enlaceVideollamada(cita),
+                enlace,
                 cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos(),
                 cita.getMedico().getNombres() + " " + cita.getMedico().getApellidos(),
                 cita.getFechaHoraProgramada().toLocalDate(),
-                cita.getEstado()
+                cita.getEstado(),
+                generarQr(enlace)
         );
+    }
+
+    // La sala de Jitsi es solo una URL: cualquier dispositivo que la abra entra a la misma
+    // videollamada (en el celular se abre en el navegador o en la app Jitsi Meet). El QR
+    // es esa URL como imagen PNG en base64, lista para un <img> en el front.
+    private String generarQr(String enlace) {
+        if (enlace == null) {
+            return null;
+        }
+
+        try {
+            BitMatrix matriz = new QRCodeWriter().encode(enlace, BarcodeFormat.QR_CODE, 240, 240,
+                    Map.of(EncodeHintType.MARGIN, 1));
+
+            BufferedImage imagen = new BufferedImage(matriz.getWidth(), matriz.getHeight(),
+                    BufferedImage.TYPE_INT_RGB);
+            for (int x = 0; x < matriz.getWidth(); x++) {
+                for (int y = 0; y < matriz.getHeight(); y++) {
+                    imagen.setRGB(x, y, matriz.get(x, y) ? 0x000000 : 0xFFFFFF);
+                }
+            }
+
+            ByteArrayOutputStream png = new ByteArrayOutputStream();
+            ImageIO.write(imagen, "png", png);
+            return "data:image/png;base64," + Base64.getEncoder().encodeToString(png.toByteArray());
+        } catch (WriterException | IOException e) {
+            // Sin QR igual se puede entrar con el enlace, asi que no se corta la respuesta.
+            log.warn("No se pudo generar el QR de la videollamada {}: {}", enlace, e.getMessage());
+            return null;
+        }
     }
 
     // El usuario dueno del token (el subject del JWT es su correo).
