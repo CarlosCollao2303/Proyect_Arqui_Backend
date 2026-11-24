@@ -57,7 +57,7 @@ class TratamientosControllerTest {
 
     @Test
     void registrar_fechaFinAntesDeInicio_400() throws Exception {
-        mockMvc.perform(post("/api/tratamientos/Registrar")
+        mockMvc.perform(post("/api/tratamientos/Registrar").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(tratamiento("2026-10-10", "2026-10-01")))
                 .andExpect(status().isBadRequest())
@@ -68,7 +68,7 @@ class TratamientosControllerTest {
 
     @Test
     void registrar_mismaFechaDeInicioYFin_201() throws Exception {
-        mockMvc.perform(post("/api/tratamientos/Registrar")
+        mockMvc.perform(post("/api/tratamientos/Registrar").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(tratamiento("2026-10-10", "2026-10-10")))
                 .andExpect(status().isCreated());
@@ -78,12 +78,34 @@ class TratamientosControllerTest {
 
     @Test
     void actualizar_fechaFinAntesDeInicio_400() throws Exception {
-        mockMvc.perform(put("/api/tratamientos/Actualizar")
+        mockMvc.perform(put("/api/tratamientos/Actualizar").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(tratamiento("2026-10-10", "2026-10-01")))
                 .andExpect(status().isBadRequest());
 
         verify(tS, never()).listId(anyInt());
         verify(tS, never()).update(any());
+    }
+
+    @Test
+    void registrar_sinToken_401() throws Exception {
+        mockMvc.perform(post("/api/tratamientos/Registrar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(tratamiento("2026-10-10", "2026-10-10")))
+                .andExpect(status().isUnauthorized());
+
+        verify(tS, never()).insert(any());
+    }
+
+    @Test
+    void registrar_paciente_403() throws Exception {
+        mockMvc.perform(post("/api/tratamientos/Registrar")
+                        .with(jwt().jwt(j -> j.subject("ana@mail.com"))
+                                .authorities(new SimpleGrantedAuthority("PACIENTE")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(tratamiento("2026-10-10", "2026-10-10")))
+                .andExpect(status().isForbidden());
+
+        verify(tS, never()).insert(any());
     }
 }
