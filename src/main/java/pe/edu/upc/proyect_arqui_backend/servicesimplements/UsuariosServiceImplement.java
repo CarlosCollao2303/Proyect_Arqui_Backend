@@ -60,4 +60,19 @@ public class UsuariosServiceImplement implements IUsuariosService {
     public boolean existsByCorreoEnOtroUsuario(String correo, int idUsuario) {
         return uR.existsByCorreoIgnoreCaseAndIdUsuarioNot(correo, idUsuario);
     }
+
+    @Override
+    public List<Usuarios> listByRol(String nombreRol) {
+        return uR.findByRol_NombreOrderByApellidosAscNombresAsc(nombreRol);
+    }
+
+    @Override
+    public List<Usuarios> listPacientesDelMedico(String correoMedico) {
+        return uR.findPacientesDelMedico(correoMedico);
+    }
+
+    @Override
+    public List<Usuarios> buscarPorNombreODni(String texto, String rol) {
+        return uR.buscarPorNombreODni(texto, rol);
+    }
 }
