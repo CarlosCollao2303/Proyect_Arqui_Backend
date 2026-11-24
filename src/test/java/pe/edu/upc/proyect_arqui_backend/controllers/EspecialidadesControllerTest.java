@@ -102,14 +102,18 @@ class EspecialidadesControllerTest {
     }
 
     @Test
-    void rolSinRestriccion_noRequiereToken_200() throws Exception {
+    void rolSinPermiso_403() throws Exception {
         mockMvc.perform(get("/api/especialidades/1/medicos").with(token("x@mail.com", "RECEPCION")))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
+
+        verify(eS, never()).listMedicosByEspecialidadId(anyInt());
     }
 
     @Test
-    void sinToken_200() throws Exception {
+    void sinToken_401() throws Exception {
         mockMvc.perform(get("/api/especialidades/1/medicos"))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
+
+        verify(eS, never()).listMedicosByEspecialidadId(anyInt());
     }
 }
