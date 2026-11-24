@@ -1,15 +1,22 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import pe.edu.upc.proyect_arqui_backend.dtos.MensajeCitaDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.NotificacionCitaDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.NotificacionesDTO;
+import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Notificaciones;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
+import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.ICitasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.INotificacionesService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -22,10 +29,16 @@ import java.util.Optional;
 public class NotificacionesController {
     private final INotificacionesService nS;
     private final IUsuariosService uS;
+    private final ICitasService cS;
 
-    public NotificacionesController(INotificacionesService nS, IUsuariosService uS) {
+    // Servidor de Jitsi Meet de las videollamadas (el mismo que usa CitasController).
+    @Value("${jitsi.dominio:meet.jit.si}")
+    private String dominioJitsi;
+
+    public NotificacionesController(INotificacionesService nS, IUsuariosService uS, ICitasService cS) {
         this.nS = nS;
         this.uS = uS;
+        this.cS = cS;
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
@@ -143,6 +156,39 @@ public class NotificacionesController {
                 .body(responseDTO);
     }
 
+    // Muestra el mensaje que se enviaria para la cita, sin enviarlo. El texto lo arma
+    // el back con los datos de la cita: nadie tiene que escribirlo.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/VistaPrevia/{idCita}")
+    public ResponseEntity<MensajeCitaDTO> vistaPrevia(@PathVariable int idCita, Authentication auth) {
+        Citas cita = obtenerCita(idCita, auth);
+
+        return ResponseEntity.ok(nS.armarMensajeCita(cita, null));
+    }
+
+    // Envia al paciente el mensaje pre armado de la cita segun su estado: recordatorio
+    // (con el enlace de la videollamada), cita atendida o cita cancelada.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @PostMapping("/EnviarPorCita")
+    public ResponseEntity<NotificacionesDTO> enviarPorCita(@Valid @RequestBody NotificacionCitaDTO dto,
+                                                           Authentication auth) {
+        Citas cita = obtenerCita(dto.getIdCita(), auth);
+
+        Notificaciones notificacion = nS.notificarCita(cita, null, enlaceVideollamada(cita));
+
+        NotificacionesDTO responseDTO = convertirADTO(notificacion);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/api/notificaciones/ListarPorId/{id}")
+                .buildAndExpand(notificacion.getIdNotificacion())
+                .toUri();
+
+        return ResponseEntity
+                .created(location)
+                .body(responseDTO);
+    }
+
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @PutMapping
     public ResponseEntity<NotificacionesDTO> actualizar(@Valid @RequestBody NotificacionesDTO dto) {
@@ -188,6 +234,31 @@ public class NotificacionesController {
 
         nS.delete(notificacion.getIdNotificacion());
         return ResponseEntity.noContent().build();
+    }
+
+    // Un MEDICO solo puede notificar las citas que atiende; el ADMIN, cualquiera.
+    private Citas obtenerCita(int idCita, Authentication auth) {
+        Citas cita = cS.listId(idCita)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No existe una cita con el id: " + idCita
+                        )
+                );
+
+        boolean esAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
+        if (!esAdmin && !cita.getMedico().getCorreo().equals(auth.getName())) {
+            throw new AccessDeniedException("Solo puedes notificar las citas que atiendes");
+        }
+
+        return cita;
+    }
+
+    private String enlaceVideollamada(Citas cita) {
+        if (cita.getSalaVideollamada() == null || cita.getSalaVideollamada().isBlank()) {
+            return null;
+        }
+        return "https://" + dominioJitsi + "/" + cita.getSalaVideollamada();
     }
 
     private NotificacionesDTO convertirADTO(Notificaciones notificacion) {
