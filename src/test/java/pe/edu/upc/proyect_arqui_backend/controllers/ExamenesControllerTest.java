@@ -58,7 +58,7 @@ class ExamenesControllerTest {
 
     @Test
     void registrar_resultadoAntesDeLaSolicitud_400() throws Exception {
-        mockMvc.perform(post("/api/examenes/Registrar")
+        mockMvc.perform(post("/api/examenes/Registrar").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(examen("2026-10-10", "2026-10-09")))
                 .andExpect(status().isBadRequest())
@@ -69,7 +69,7 @@ class ExamenesControllerTest {
 
     @Test
     void registrar_sinResultadoQuedaPendiente_201() throws Exception {
-        mockMvc.perform(post("/api/examenes/Registrar")
+        mockMvc.perform(post("/api/examenes/Registrar").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(examen("2026-10-10", null)))
                 .andExpect(status().isCreated());
@@ -79,12 +79,34 @@ class ExamenesControllerTest {
 
     @Test
     void actualizar_resultadoAntesDeLaSolicitud_400() throws Exception {
-        mockMvc.perform(put("/api/examenes/Actualizar")
+        mockMvc.perform(put("/api/examenes/Actualizar").with(medico())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(examen("2026-10-10", "2026-10-09")))
                 .andExpect(status().isBadRequest());
 
         verify(eS, never()).listId(anyInt());
         verify(eS, never()).update(any());
+    }
+
+    @Test
+    void registrar_sinToken_401() throws Exception {
+        mockMvc.perform(post("/api/examenes/Registrar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(examen("2026-10-10", null)))
+                .andExpect(status().isUnauthorized());
+
+        verify(eS, never()).insert(any());
+    }
+
+    @Test
+    void registrar_paciente_403() throws Exception {
+        mockMvc.perform(post("/api/examenes/Registrar")
+                        .with(jwt().jwt(j -> j.subject("ana@mail.com"))
+                                .authorities(new SimpleGrantedAuthority("PACIENTE")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(examen("2026-10-10", null)))
+                .andExpect(status().isForbidden());
+
+        verify(eS, never()).insert(any());
     }
 }
