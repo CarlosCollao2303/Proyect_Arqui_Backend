@@ -25,11 +25,18 @@ public interface IUsuariosRepository extends JpaRepository<Usuarios, Integer> {
             "ORDER BY p.apellidos ASC, p.nombres ASC")
     List<Usuarios> findPacientesDelMedico(@Param("correoMedico") String correoMedico);
 
-    // Busca por nombre completo o por DNI. Si rol es null busca en todos los roles.
-    // El CAST es necesario en PostgreSQL para el ":rol IS NULL" (ver ICitasRepository).
+    // Para comparar sin tildes: TRANSLATE cambia cada vocal con tilde (y la enie) por la
+    // letra sin tilde. Existe en PostgreSQL y en H2 (la base de los tests).
+    String CON_TILDES = "\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1";
+    String SIN_TILDES = "aeiouun";
+
+    // Busca por nombre completo (sin importar mayusculas ni tildes) o por DNI. Si rol es
+    // null busca en todos los roles. El CAST es necesario en PostgreSQL para el
+    // ":rol IS NULL" (ver ICitasRepository).
     @Query("SELECT u FROM Usuarios u " +
             "WHERE (CAST(:rol AS String) IS NULL OR u.rol.nombre = :rol) " +
-            "AND (LOWER(CONCAT(u.nombres, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :texto, '%')) " +
+            "AND (CAST(FUNCTION('TRANSLATE', LOWER(CONCAT(u.nombres, ' ', u.apellidos)), '" + CON_TILDES + "', '" + SIN_TILDES + "') AS String) " +
+            "LIKE CONCAT('%', CAST(FUNCTION('TRANSLATE', LOWER(:texto), '" + CON_TILDES + "', '" + SIN_TILDES + "') AS String), '%') " +
             "OR u.dni LIKE CONCAT('%', :texto, '%')) " +
             "ORDER BY u.apellidos ASC, u.nombres ASC")
     List<Usuarios> buscarPorNombreODni(@Param("texto") String texto, @Param("rol") String rol);

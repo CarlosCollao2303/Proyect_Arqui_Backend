@@ -45,7 +45,7 @@ public class EspecialidadesServiceImplement implements IEspecialidadesService {
 
     @Override
     public List<Especialidades> listByNombre(String nombre) {
-        return eR.findByNombreContainingIgnoreCase(nombre);
+        return eR.buscarPorNombreSinTildes(nombre);
     }
 
     @Override
