@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -38,6 +39,7 @@ public class UsuariosController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
     @GetMapping("/Listar")
     public ResponseEntity<List<UsuariosDTO>> listar() {
         List<UsuariosDTO> lista = uS.list()
@@ -171,6 +173,7 @@ public class UsuariosController {
 
     // Cambia solo el rol de un usuario, sin tener que mandar todos sus datos como en
     // /Actualizar. Un ADMIN no puede cambiarse su propio rol para no quitarse el acceso.
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/AsignarRol/{idUsuario}/{idRol}")
     public ResponseEntity<UsuariosDTO> asignarRol(@PathVariable int idUsuario, @PathVariable int idRol,
                                                   Authentication auth) {
@@ -192,6 +195,7 @@ public class UsuariosController {
         return ResponseEntity.ok(convertirADTO(usuario));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/AsignarEspecialidad/{idUsuario}/{idEspecialidad}")
     public ResponseEntity<UsuariosDTO> asignarEspecialidad(
             @PathVariable int idUsuario,
@@ -213,6 +217,7 @@ public class UsuariosController {
         return ResponseEntity.ok(convertirADTO(usuario));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         Usuarios usuario = uS.listId(id)
