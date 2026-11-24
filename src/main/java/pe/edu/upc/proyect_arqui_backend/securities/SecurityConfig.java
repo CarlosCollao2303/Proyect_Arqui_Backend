@@ -119,9 +119,14 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        // CORS (peticiones preflight)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .anyRequest().permitAll()
+
+                        // Todo lo demás requiere un token JWT válido
+                        .anyRequest().authenticated()
                 )
+
+                // Valida el token JWT (Authorization: Bearer ...) en cada petición
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwt ->
                                 jwt.jwtAuthenticationConverter(
