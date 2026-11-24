@@ -69,6 +69,35 @@ public interface ICitasRepository extends JpaRepository<Citas, Integer> {
 
     boolean existsByIdCitaAndPacienteCorreo(int idCita, String correo);
 
+    // Parte comun de las consultas que devuelven el estado de varias citas con los nombres
+    // del paciente, del medico y de la especialidad (igual que findEstadoById).
+    String SELECT_ESTADO_CITA = "SELECT new pe.edu.upc.proyect_arqui_backend.dtos.CitaEstadoDTO(" +
+            "c.idCita, c.fechaHoraProgramada, c.estado, " +
+            "CONCAT(p.nombres, ' ', p.apellidos), " +
+            "CONCAT(m.nombres, ' ', m.apellidos), " +
+            "e.nombre) " +
+            "FROM Citas c " +
+            "JOIN c.paciente p " +
+            "JOIN c.medico m " +
+            "LEFT JOIN m.especialidad e ";
+
+    // Las citas de un paciente, de la mas reciente a la mas antigua.
+    @Query(SELECT_ESTADO_CITA +
+            "WHERE p.correo = :correo " +
+            "ORDER BY c.fechaHoraProgramada DESC")
+    List<CitaEstadoDTO> findEstadosDelPacientePorCorreo(@Param("correo") String correo);
+
+    @Query(SELECT_ESTADO_CITA +
+            "WHERE p.idUsuario = :idPaciente " +
+            "ORDER BY c.fechaHoraProgramada DESC")
+    List<CitaEstadoDTO> findEstadosDelPaciente(@Param("idPaciente") int idPaciente);
+
+    // Todas las citas, o solo las de un medico si se manda su correo.
+    @Query(SELECT_ESTADO_CITA +
+            "WHERE (CAST(:correoMedico AS String) IS NULL OR m.correo = :correoMedico) " +
+            "ORDER BY c.fechaHoraProgramada DESC")
+    List<CitaEstadoDTO> findEstadosDeCitas(@Param("correoMedico") String correoMedico);
+
     // Cada filtro en null no filtra. El CAST en ":param IS NULL" es necesario en
     // PostgreSQL: sin el, no puede deducir el tipo del parametro y la consulta falla con
     // "could not determine data type of parameter" (H2, la base de los tests, si lo deduce).
