@@ -10,10 +10,12 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import pe.edu.upc.proyect_arqui_backend.dtos.CantidadDiagnosticosDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.HistorialClinicoDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.HistoriasClinicas;
 import pe.edu.upc.proyect_arqui_backend.entities.Roles;
 import pe.edu.upc.proyect_arqui_backend.entities.Usuarios;
+import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
 import pe.edu.upc.proyect_arqui_backend.securities.SecurityConfig;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IHistoriasClinicasService;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IUsuariosService;
@@ -135,5 +137,49 @@ class HistoriasClinicasControllerTest {
 
         mockMvc.perform(get("/api/historiasclinicas/99/historial").with(token("admin@clinica.pe", "ADMIN")))
                 .andExpect(status().isNotFound());
+    }
+
+    // ---- HU-24: cantidad de diagnosticos por historia clinica ----
+
+    @Test
+    void admin_cantidadDiagnosticosDeTodasLasHistorias_200() throws Exception {
+        when(hS.contarDiagnosticosPorHistoria()).thenReturn(List.of(
+                new CantidadDiagnosticosDTO(5, "Ana Torres", 3L),
+                new CantidadDiagnosticosDTO(6, "Luis Gomez", 0L)));
+
+        mockMvc.perform(get("/api/historiasclinicas/cantidad-diagnosticos").with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].idHistoriaClinica").value(5))
+                .andExpect(jsonPath("$[0].paciente").value("Ana Torres"))
+                .andExpect(jsonPath("$[0].cantidadDiagnosticos").value(3))
+                .andExpect(jsonPath("$[1].cantidadDiagnosticos").value(0));
+    }
+
+    @Test
+    void medico_cantidadDiagnosticosDeUnaHistoria_200() throws Exception {
+        when(hS.contarDiagnosticosDeHistoria(5)).thenReturn(new CantidadDiagnosticosDTO(5, "Ana Torres", 3L));
+
+        mockMvc.perform(get("/api/historiasclinicas/5/cantidad-diagnosticos").with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idHistoriaClinica").value(5))
+                .andExpect(jsonPath("$.cantidadDiagnosticos").value(3));
+    }
+
+    @Test
+    void historiaInexistente_cantidadDiagnosticos_404() throws Exception {
+        when(hS.contarDiagnosticosDeHistoria(99))
+                .thenThrow(new ResourceNotFoundException("No existe la historia clinica con el id: 99"));
+
+        mockMvc.perform(get("/api/historiasclinicas/99/cantidad-diagnosticos").with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void paciente_noPuedeVerCantidadDiagnosticos_403() throws Exception {
+        mockMvc.perform(get("/api/historiasclinicas/cantidad-diagnosticos").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isForbidden());
+
+        verify(hS, never()).contarDiagnosticosPorHistoria();
     }
 }
