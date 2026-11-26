@@ -174,4 +174,64 @@ class EspecialidadesControllerTest {
 
         verify(eS, never()).listTodosLosMedicos();
     }
+
+    // ---- Reporte de medicos por especialidad (GET /api/especialidades/reporte-medicos) ----
+
+    private List<Object[]> filasReporte() {
+        return List.of(
+                new Object[]{1, "Cardiologia", 3L, 1L, 4L},
+                new Object[]{2, "Pediatria", 0L, 0L, 0L},
+                new Object[]{null, "Sin especialidad", 2L, 0L, 2L}
+        );
+    }
+
+    @Test
+    void admin_reporteMedicosPorEspecialidad_200ConCantidades() throws Exception {
+        when(eS.contarMedicosPorEspecialidad()).thenReturn(filasReporte());
+
+        mockMvc.perform(get("/api/especialidades/reporte-medicos").with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0].idEspecialidad").value(1))
+                .andExpect(jsonPath("$[0].especialidad").value("Cardiologia"))
+                .andExpect(jsonPath("$[0].activos").value(3))
+                .andExpect(jsonPath("$[0].inactivos").value(1))
+                .andExpect(jsonPath("$[0].total").value(4))
+                .andExpect(jsonPath("$[1].activos").value(0))
+                .andExpect(jsonPath("$[2].idEspecialidad").doesNotExist())
+                .andExpect(jsonPath("$[2].especialidad").value("Sin especialidad"));
+    }
+
+    @Test
+    void admin_reporteSinEspecialidades_200ConListaVacia() throws Exception {
+        when(eS.contarMedicosPorEspecialidad()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/especialidades/reporte-medicos").with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void medico_noPuedeVerElReporteDeMedicos_403() throws Exception {
+        mockMvc.perform(get("/api/especialidades/reporte-medicos").with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isForbidden());
+
+        verify(eS, never()).contarMedicosPorEspecialidad();
+    }
+
+    @Test
+    void paciente_noPuedeVerElReporteDeMedicos_403() throws Exception {
+        mockMvc.perform(get("/api/especialidades/reporte-medicos").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isForbidden());
+
+        verify(eS, never()).contarMedicosPorEspecialidad();
+    }
+
+    @Test
+    void sinToken_reporteDeMedicos_401() throws Exception {
+        mockMvc.perform(get("/api/especialidades/reporte-medicos"))
+                .andExpect(status().isUnauthorized());
+
+        verify(eS, never()).contarMedicosPorEspecialidad();
+    }
 }
