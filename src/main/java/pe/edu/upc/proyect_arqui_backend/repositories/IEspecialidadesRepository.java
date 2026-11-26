@@ -58,4 +58,30 @@ public interface IEspecialidadesRepository extends JpaRepository<Especialidades,
             "AND u.estado = true " +
             "ORDER BY e.nombre ASC")
     List<Especialidades> findEspecialidadesConMedicos();
+
+    // Reporte: medicos de cada especialidad, separados en activos e inactivos.
+    // Incluye las especialidades sin medicos (salen con 0) y, si hay medicos que aun no
+    // tienen especialidad, una fila "Sin especialidad" con id null.
+    // Cada fila: [idEspecialidad, especialidad, activos, inactivos, total]
+    @Query(value = "SELECT * FROM (" +
+            " SELECT e.id_especialidad AS id_especialidad, e.nombre AS especialidad, " +
+            "  SUM(CASE WHEN m.estado = TRUE THEN 1 ELSE 0 END) AS activos, " +
+            "  SUM(CASE WHEN m.estado = FALSE THEN 1 ELSE 0 END) AS inactivos, " +
+            "  COUNT(m.id_usuario) AS total " +
+            " FROM especialidades e " +
+            " LEFT JOIN usuarios m ON m.especialidad_id = e.id_especialidad " +
+            "  AND m.rol_id IN (SELECT r.id_rol FROM roles r WHERE r.nombre = 'MEDICO') " +
+            " GROUP BY e.id_especialidad, e.nombre " +
+            " UNION ALL " +
+            " SELECT CAST(NULL AS INTEGER), 'Sin especialidad', " +
+            "  SUM(CASE WHEN m.estado = TRUE THEN 1 ELSE 0 END), " +
+            "  SUM(CASE WHEN m.estado = FALSE THEN 1 ELSE 0 END), " +
+            "  COUNT(m.id_usuario) " +
+            " FROM usuarios m " +
+            " INNER JOIN roles r ON r.id_rol = m.rol_id " +
+            " WHERE r.nombre = 'MEDICO' AND m.especialidad_id IS NULL " +
+            " HAVING COUNT(m.id_usuario) > 0 " +
+            ") reporte " +
+            "ORDER BY activos DESC, especialidad ASC", nativeQuery = true)
+    List<Object[]> contarMedicosPorEspecialidad();
 }

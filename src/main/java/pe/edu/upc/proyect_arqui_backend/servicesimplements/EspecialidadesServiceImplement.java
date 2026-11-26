@@ -72,4 +72,9 @@ public class EspecialidadesServiceImplement implements IEspecialidadesService {
     public List<Especialidades> listEspecialidadesConMedicos() {
         return eR.findEspecialidadesConMedicos();
     }
+
+    @Override
+    public List<Object[]> contarMedicosPorEspecialidad() {
+        return eR.contarMedicosPorEspecialidad();
+    }
 }
