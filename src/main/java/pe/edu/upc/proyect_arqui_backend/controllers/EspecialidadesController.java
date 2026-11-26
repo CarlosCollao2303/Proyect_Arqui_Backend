@@ -3,6 +3,7 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.EspecialidadesDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.MedicoPorEspecialidadDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.MedicosEspecialidadDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Especialidades;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
 import pe.edu.upc.proyect_arqui_backend.exceptions.ResourceNotFoundException;
@@ -92,6 +93,28 @@ public class EspecialidadesController {
         List<EspecialidadesDTO> lista = eS.listEspecialidadesConMedicos()
                 .stream()
                 .map(this::convertirADTO)
+                .toList();
+
+        return ResponseEntity.ok(lista);
+    }
+
+    // Reporte para el grafico de dona: cuantos medicos activos tiene cada especialidad.
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/reporte-medicos")
+    public ResponseEntity<List<MedicosEspecialidadDTO>> reporteMedicosPorEspecialidad() {
+        List<MedicosEspecialidadDTO> lista = eS.contarMedicosPorEspecialidad()
+                .stream()
+                .map(item -> {
+                    MedicosEspecialidadDTO dto = new MedicosEspecialidadDTO();
+
+                    dto.setIdEspecialidad(item[0] == null ? null : ((Number) item[0]).intValue());
+                    dto.setEspecialidad((String) item[1]);
+                    dto.setActivos(item[2] == null ? 0L : ((Number) item[2]).longValue());
+                    dto.setInactivos(item[3] == null ? 0L : ((Number) item[3]).longValue());
+                    dto.setTotal(((Number) item[4]).longValue());
+
+                    return dto;
+                })
                 .toList();
 
         return ResponseEntity.ok(lista);
