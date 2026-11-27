@@ -139,4 +139,35 @@ class ExamenesControllerTest {
 
         verify(eS, never()).contarExamenesPorNombreDePaciente(anyString());
     }
+
+    @Test
+    void tiempoEntrega_convierteCadaFilaYRespetaLosDiasNull() throws Exception {
+        // ROUND de PostgreSQL devuelve BigDecimal; un tipo sin resultados trae los dias en null
+        when(eS.obtenerTiempoEntregaPorTipo()).thenReturn(java.util.List.<Object[]>of(
+                new Object[]{"Resonancia", 2L, new java.math.BigDecimal("2"), new java.math.BigDecimal("0"),
+                        new java.math.BigDecimal("4.5"), new java.math.BigDecimal("6.0")},
+                new Object[]{"Urocultivo", 1L, 0L, 1L, null, null}));
+
+        mockMvc.perform(get("/api/examenes/tiempo-entrega").with(medico()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].tipoExamen").value("Resonancia"))
+                .andExpect(jsonPath("$[0].solicitados").value(2))
+                .andExpect(jsonPath("$[0].conResultado").value(2))
+                .andExpect(jsonPath("$[0].pendientes").value(0))
+                .andExpect(jsonPath("$[0].diasPromedio").value(4.5))
+                .andExpect(jsonPath("$[0].diasMaximo").value(6.0))
+                .andExpect(jsonPath("$[1].pendientes").value(1))
+                .andExpect(jsonPath("$[1].diasPromedio").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$[1].diasMaximo").value(org.hamcrest.Matchers.nullValue()));
+    }
+
+    @Test
+    void tiempoEntrega_paciente_403() throws Exception {
+        mockMvc.perform(get("/api/examenes/tiempo-entrega")
+                        .with(jwt().jwt(j -> j.subject("ana@mail.com")).authorities(new SimpleGrantedAuthority("PACIENTE"))))
+                .andExpect(status().isForbidden());
+
+        verify(eS, never()).obtenerTiempoEntregaPorTipo();
+    }
 }

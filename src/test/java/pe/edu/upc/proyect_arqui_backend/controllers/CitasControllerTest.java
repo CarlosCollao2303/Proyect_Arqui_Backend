@@ -554,6 +554,68 @@ class CitasControllerTest {
         verify(cS, never()).obtenerEsperaPromedioPorMedico();
     }
 
+    @Test
+    void evolucionMensual_completaLosDoceMesesConCeros() throws Exception {
+        // EXTRACT de PostgreSQL devuelve el mes como BigDecimal
+        when(cS.contarCitasPorMesYEstado(2026)).thenReturn(List.<Object[]>of(
+                new Object[]{new java.math.BigDecimal("3"), 2L, 0L, 1L, 3L},
+                new Object[]{new java.math.BigDecimal("11"), 5L, 4L, 3L, 12L}));
+
+        mockMvc.perform(get("/api/citas/evolucion-mensual").param("anio", "2026")
+                        .with(token("luis@clinica.pe", "MEDICO")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(12))
+                .andExpect(jsonPath("$[0].mes").value(1))
+                .andExpect(jsonPath("$[0].total").value(0))
+                .andExpect(jsonPath("$[2].mes").value(3))
+                .andExpect(jsonPath("$[2].atendidas").value(2))
+                .andExpect(jsonPath("$[2].canceladas").value(1))
+                .andExpect(jsonPath("$[2].total").value(3))
+                .andExpect(jsonPath("$[10].pendientes").value(4))
+                .andExpect(jsonPath("$[10].total").value(12))
+                .andExpect(jsonPath("$[11].mes").value(12))
+                .andExpect(jsonPath("$[11].total").value(0));
+    }
+
+    @Test
+    void evolucionMensual_sinAnioUsaElActual() throws Exception {
+        int anioActual = LocalDate.now().getYear();
+        when(cS.contarCitasPorMesYEstado(anioActual)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/citas/evolucion-mensual").with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(12));
+
+        verify(cS).contarCitasPorMesYEstado(anioActual);
+    }
+
+    @Test
+    void evolucionMensual_anioFueraDeRango_400() throws Exception {
+        mockMvc.perform(get("/api/citas/evolucion-mensual").param("anio", "1990")
+                        .with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isBadRequest());
+
+        verify(cS, never()).contarCitasPorMesYEstado(anyInt());
+    }
+
+    @Test
+    void evolucionMensual_paciente_403() throws Exception {
+        mockMvc.perform(get("/api/citas/evolucion-mensual").with(token("ana@mail.com", "PACIENTE")))
+                .andExpect(status().isForbidden());
+
+        verify(cS, never()).contarCitasPorMesYEstado(anyInt());
+    }
+
+    @Test
+    void aniosConCitas_devuelveLaLista() throws Exception {
+        when(cS.listarAniosConCitas()).thenReturn(List.of(2026, 2025));
+
+        mockMvc.perform(get("/api/citas/anios-con-citas").with(token("admin@clinica.pe", "ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value(2026))
+                .andExpect(jsonPath("$[1]").value(2025));
+    }
+
     // ---- Estado de las citas sin escribir el id ----
 
     @Test

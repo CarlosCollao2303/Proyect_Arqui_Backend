@@ -127,7 +127,26 @@ INSERT INTO examenes (id_examen, tipo_examen, resultado, fecha_solicitud, fecha_
     (7,  'Urocultivo', 'Urocultivo de control tras antibioticoterapia.', '2026-11-13 00:00:00', NULL),
     (8,  'Ecocardiograma', 'Solicitado para evaluar soplo sistólico.', '2026-11-18 00:00:00', NULL),
     (9,  'Espirometría', 'Solicitada para confirmar diagnóstico de asma.', '2026-11-20 00:00:00', NULL),
-    (10, 'Radiografía de tórax', 'Solicitada para descartar neumonía.', '2026-11-22 00:00:00', NULL);
+    (10, 'Radiografía de tórax', 'Solicitada para descartar neumonía.', '2026-11-22 00:00:00', NULL),
+    -- Mas examenes de los mismos tipos (marzo-agosto) para el reporte de tiempo de entrega:
+    -- asi cada tipo tiene varios dias distintos y el promedio no es igual al maximo
+    (11, 'Hemograma completo', 'Valores dentro de rangos normales.', '2026-03-12 00:00:00', '2026-03-14 00:00:00'),
+    (12, 'Perfil lipídico', 'Colesterol total 228 mg/dL, LDL 148 mg/dL, HDL 42 mg/dL.', '2026-06-10 00:00:00', '2026-06-13 00:00:00'),
+    (13, 'Glucosa en ayunas', 'Glucosa 98 mg/dL.', '2026-06-10 00:00:00', '2026-06-11 00:00:00'),
+    (14, 'Hemograma completo', 'Hemoglobina 12.9 g/dL, sin alteraciones.', '2026-04-02 00:00:00', '2026-04-03 00:00:00'),
+    (15, 'Examen de orina completo', 'Leucocitos 2-4 x campo, nitritos negativos.', '2026-06-22 00:00:00', '2026-06-23 00:00:00'),
+    (16, 'Urocultivo', 'Negativo: sin desarrollo bacteriano a las 72 horas.', '2026-07-29 00:00:00', '2026-08-01 00:00:00'),
+    (17, 'Electrocardiograma', 'Ritmo sinusal, FC 72 lpm, sin alteraciones.', '2026-06-17 00:00:00', '2026-06-17 00:00:00'),
+    (18, 'Perfil lipídico', 'Colesterol total 251 mg/dL, LDL 165 mg/dL, triglicéridos 190 mg/dL.', '2026-06-17 00:00:00', '2026-06-21 00:00:00'),
+    (19, 'Ecocardiograma', 'Fracción de eyección 60 %, sin alteraciones estructurales.', '2026-06-17 00:00:00', '2026-06-25 00:00:00'),
+    (20, 'Hemograma completo', 'Leucocitos 10 800/mm³, eosinofilia leve.', '2026-06-08 00:00:00', '2026-06-10 00:00:00'),
+    (21, 'Glucosa en ayunas', 'Glucosa 91 mg/dL.', '2026-08-26 00:00:00', '2026-08-27 00:00:00'),
+    (22, 'Hemoglobina glicosilada (HbA1c)', 'HbA1c 6.9 %.', '2026-07-15 00:00:00', '2026-07-20 00:00:00'),
+    (23, 'Glucosa en ayunas', 'Glucosa 118 mg/dL (valor elevado).', '2026-07-15 00:00:00', '2026-07-16 00:00:00'),
+    (24, 'Radiografía de tórax', 'Campos pulmonares sin infiltrados.', '2026-03-12 00:00:00', '2026-03-13 00:00:00'),
+    (25, 'Radiografía de tórax', 'Silueta cardiaca de tamaño normal.', '2026-07-08 00:00:00', '2026-07-10 00:00:00'),
+    (26, 'Hemograma completo', 'Solicitado como control de rutina.', '2026-11-23 00:00:00', NULL),
+    (27, 'Electrocardiograma', 'Extrasístoles auriculares aisladas.', '2026-07-08 00:00:00', '2026-07-09 00:00:00');
 
 -- ---------------------------------------------------------------------
 -- Tratamientos (estados del formulario: Activo, Pendiente, Finalizado)
@@ -170,7 +189,25 @@ INSERT INTO detalles_historial (id_detalle_historial, historial_id, medico_id, e
     (10, 7, 8, NULL, 5,    NULL, 6,    'Dolor epigástrico y acidez después de las comidas', NULL, '2026-11-12 00:00:00'),
     (11, 3, 4, 8,    NULL, NULL, NULL, 'Soplo sistólico detectado en control', NULL, '2026-11-18 00:00:00'),
     (12, 1, 2, 9,    7,    7,    7,    'Tos persistente y silbidos al respirar', 'SatO2 96 %. Sibilancias espiratorias.', '2026-11-20 00:00:00'),
-    (13, 1, 2, 10,   NULL, NULL, NULL, 'Control de tos persistente', NULL, '2026-11-22 00:00:00');
+    (13, 1, 2, 10,   NULL, NULL, NULL, 'Control de tos persistente', NULL, '2026-11-22 00:00:00'),
+    -- Un detalle por cada examen nuevo (11-27), con el medico y la fecha de la consulta
+    (14, 1, 2, 11,   NULL, NULL, NULL, 'Chequeo general anual', NULL, '2026-03-12 00:00:00'),
+    (15, 1, 2, 24,   NULL, NULL, NULL, 'Tos de dos semanas sin fiebre', NULL, '2026-03-12 00:00:00'),
+    (16, 2, 6, 14,   NULL, NULL, NULL, 'Control ginecológico de rutina', NULL, '2026-04-02 00:00:00'),
+    (17, 4, 5, 20,   NULL, NULL, NULL, 'Brote de dermatitis con lesiones sobreinfectadas', NULL, '2026-06-08 00:00:00'),
+    (18, 1, 2, 12,   NULL, NULL, NULL, 'Control de colesterol', NULL, '2026-06-10 00:00:00'),
+    (19, 1, 2, 13,   NULL, NULL, NULL, 'Descarte de diabetes por antecedente familiar', NULL, '2026-06-10 00:00:00'),
+    (20, 3, 4, 17,   NULL, NULL, NULL, 'Control de presión arterial', 'PA 140/90 mmHg.', '2026-06-17 00:00:00'),
+    (21, 3, 4, 18,   NULL, NULL, NULL, 'Control de presión arterial', NULL, '2026-06-17 00:00:00'),
+    (22, 3, 4, 19,   NULL, NULL, NULL, 'Dolor torácico al esfuerzo', NULL, '2026-06-17 00:00:00'),
+    (23, 2, 6, 15,   NULL, NULL, NULL, 'Molestias urinarias leves', NULL, '2026-06-22 00:00:00'),
+    (24, 1, 4, 27,   NULL, NULL, NULL, 'Palpitaciones ocasionales', NULL, '2026-07-08 00:00:00'),
+    (25, 1, 4, 25,   NULL, NULL, NULL, 'Palpitaciones ocasionales', NULL, '2026-07-08 00:00:00'),
+    (26, 5, 2, 22,   NULL, NULL, NULL, 'Control trimestral de diabetes', NULL, '2026-07-15 00:00:00'),
+    (27, 5, 2, 23,   NULL, NULL, NULL, 'Control trimestral de diabetes', NULL, '2026-07-15 00:00:00'),
+    (28, 2, 6, 16,   NULL, NULL, NULL, 'Control de infección urinaria', NULL, '2026-07-29 00:00:00'),
+    (29, 4, 5, 21,   NULL, NULL, NULL, 'Control antes de iniciar corticoide oral', NULL, '2026-08-26 00:00:00'),
+    (30, 5, 2, 26,   NULL, NULL, NULL, 'Control de diabetes', NULL, '2026-11-23 00:00:00');
 
 -- ---------------------------------------------------------------------
 -- Citas: atendidas (pasadas, con tiempo de espera), canceladas y pendientes
@@ -202,7 +239,54 @@ FROM (VALUES
     (20, 14, 7, '2026-12-01 17:00', 0,  'PENDIENTE'),
     (21, 12, 5, '2026-12-03 11:30', 0,  'PENDIENTE'),
     (22, 13, 2, '2026-12-05 08:30', 0,  'PENDIENTE'),
-    (23, 13, 4, '2026-12-09 09:00', 0,  'PENDIENTE')
+    (23, 13, 4, '2026-12-09 09:00', 0,  'PENDIENTE'),
+    -- Citas pasadas de octubre 2025 a agosto 2026 para el reporte de evolucion mensual
+    -- (dos años en el selector; varios meses llegan al 25 % de cancelacion, marzo 2026 al 50 %)
+    (24, 9,  2, '2025-10-08 09:00', 20, 'ATENDIDA'),
+    (25, 11, 4, '2025-10-22 10:00', 30, 'ATENDIDA'),
+    (26, 10, 6, '2025-11-05 16:00', 10, 'ATENDIDA'),
+    (27, 12, 5, '2025-11-19 11:00', 0,  'CANCELADA'),
+    (28, 13, 2, '2025-12-03 08:30', 15, 'ATENDIDA'),
+    (29, 14, 7, '2025-12-17 17:00', 0,  'CANCELADA'),
+    (30, 9,  3, '2025-12-29 10:00', 12, 'ATENDIDA'),
+    (31, 9,  2, '2026-01-09 09:00', 18, 'ATENDIDA'),
+    (32, 10, 3, '2026-01-21 10:30', 9,  'ATENDIDA'),
+    (33, 11, 4, '2026-01-28 11:00', 0,  'CANCELADA'),
+    (34, 12, 5, '2026-02-04 15:00', 28, 'ATENDIDA'),
+    (35, 13, 2, '2026-02-11 08:30', 14, 'ATENDIDA'),
+    (36, 14, 7, '2026-02-18 17:00', 6,  'ATENDIDA'),
+    (37, 15, 3, '2026-02-25 10:00', 11, 'ATENDIDA'),
+    (38, 9,  2, '2026-03-12 09:00', 22, 'ATENDIDA'),
+    (39, 10, 6, '2026-03-18 16:00', 0,  'CANCELADA'),
+    (40, 11, 4, '2026-03-20 10:00', 35, 'ATENDIDA'),
+    (41, 12, 5, '2026-03-27 11:30', 0,  'CANCELADA'),
+    (42, 10, 6, '2026-04-02 16:30', 7,  'ATENDIDA'),
+    (43, 13, 2, '2026-04-09 08:30', 16, 'ATENDIDA'),
+    (44, 14, 7, '2026-04-15 17:00', 4,  'ATENDIDA'),
+    (45, 15, 3, '2026-04-22 10:00', 0,  'CANCELADA'),
+    (46, 11, 4, '2026-04-29 09:30', 27, 'ATENDIDA'),
+    (47, 11, 4, '2026-05-06 10:00', 31, 'ATENDIDA'),
+    (48, 9,  8, '2026-05-13 10:00', 24, 'ATENDIDA'),
+    (49, 12, 5, '2026-05-14 15:00', 19, 'ATENDIDA'),
+    (50, 13, 2, '2026-05-20 08:30', 13, 'ATENDIDA'),
+    (51, 10, 3, '2026-05-26 10:30', 10, 'ATENDIDA'),
+    (52, 14, 7, '2026-05-28 17:00', 0,  'CANCELADA'),
+    (53, 12, 5, '2026-06-08 11:00', 26, 'ATENDIDA'),
+    (54, 9,  2, '2026-06-10 09:00', 17, 'ATENDIDA'),
+    (55, 15, 3, '2026-06-15 10:00', 8,  'ATENDIDA'),
+    (56, 11, 4, '2026-06-17 10:30', 38, 'ATENDIDA'),
+    (57, 10, 6, '2026-06-22 16:00', 9,  'ATENDIDA'),
+    (58, 13, 8, '2026-06-24 10:00', 21, 'ATENDIDA'),
+    (59, 14, 2, '2026-06-29 08:00', 0,  'CANCELADA'),
+    (60, 9,  4, '2026-07-08 10:00', 29, 'ATENDIDA'),
+    (61, 13, 2, '2026-07-15 08:30', 19, 'ATENDIDA'),
+    (62, 12, 5, '2026-07-22 15:30', 0,  'CANCELADA'),
+    (63, 14, 7, '2026-07-24 17:00', 5,  'ATENDIDA'),
+    (64, 10, 6, '2026-07-29 16:30', 11, 'ATENDIDA'),
+    (65, 14, 7, '2026-08-03 17:00', 7,  'ATENDIDA'),
+    (66, 11, 4, '2026-08-12 10:00', 0,  'CANCELADA'),
+    (67, 15, 3, '2026-08-19 10:00', 10, 'ATENDIDA'),
+    (68, 12, 5, '2026-08-26 11:00', 23, 'ATENDIDA')
 ) AS v(id, paciente, medico, fecha, espera, estado);
 
 -- ---------------------------------------------------------------------

@@ -18,4 +18,5 @@ public interface IExamenesService {
     public CantidadExamenesDTO contarExamenesDePaciente(int idPaciente);
     public List<CantidadExamenesDTO> contarExamenesPorNombreDePaciente(String nombre);
     public List<ExamenPendienteDTO> listarExamenesPendientes();
+    public List<Object[]> obtenerTiempoEntregaPorTipo();
 }
