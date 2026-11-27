@@ -13,6 +13,7 @@
 --   ADMIN    admin@saludcerca.pe      / Admin123
 --   ADMIN    correos del equipo (javier.27.29.24, carlos.collao.quiroz,
 --            fabianaqr09 @gmail.com) / Admin123
+--   PACIENTE danielorellanagutierrez@gmail.com / Admin123 (con una cita pendiente)
 --   MEDICO   cmendoza@saludcerca.test / 123456   (y los demas medicos)
 --   PACIENTE jperez@saludcerca.test   / 123456   (y los demas pacientes)
 -- El admin tiene los mismos datos que crea DataInitializer con
@@ -96,7 +97,10 @@ INSERT INTO usuarios (id_usuario, rol_id, especialidad_id, nombres, apellidos, d
     (18, 1, NULL, 'Carlos', 'Collao Quiroz', '00000002', '000000002', 'carlos.collao.quiroz@gmail.com',
         '$2a$10$tnGts.pyX0bLP8XeD5p9hOu2XUr6ExN7oIooGo1i4Bu3G2jOEABzq', NULL, NULL, true),
     (19, 1, NULL, 'Fabiana', 'Quintana', '00000003', '000000003', 'fabianaqr09@gmail.com',
-        '$2a$10$tnGts.pyX0bLP8XeD5p9hOu2XUr6ExN7oIooGo1i4Bu3G2jOEABzq', NULL, NULL, true);
+        '$2a$10$tnGts.pyX0bLP8XeD5p9hOu2XUr6ExN7oIooGo1i4Bu3G2jOEABzq', NULL, NULL, true),
+    -- PACIENTE del equipo (contrasena "Admin123"): tiene la cita 69 para probar el envio de correos
+    (20, 3, NULL, 'Daniel', 'Orellana Gutiérrez', '00000004', '000000004', 'danielorellanagutierrez@gmail.com',
+        '$2a$10$tnGts.pyX0bLP8XeD5p9hOu2XUr6ExN7oIooGo1i4Bu3G2jOEABzq', NULL, 'Lima', true);
 
 -- ---------------------------------------------------------------------
 -- Historias clinicas (Mateo Herrera, id 15, queda sin historia a proposito)
