@@ -74,4 +74,9 @@ public class ExamenesServiceImplement implements IExamenesService {
     public List<ExamenPendienteDTO> listarExamenesPendientes() {
         return eR.listarExamenesPendientes();
     }
+
+    @Override
+    public List<Object[]> obtenerTiempoEntregaPorTipo() {
+        return eR.obtenerTiempoEntregaPorTipo();
+    }
 }

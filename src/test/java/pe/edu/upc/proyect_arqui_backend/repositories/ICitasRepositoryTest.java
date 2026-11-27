@@ -265,6 +265,58 @@ class ICitasRepositoryTest {
         assertTrue(cR.obtenerEsperaPromedioPorMedico().isEmpty());
     }
 
+    @Test
+    void contarCitasPorMesYEstado_agrupaPorMesSoloDelAnioPedido() {
+        Usuarios medico = em.persist(usuario(rolMedico, null, "Luis", "Rojas", "luis@clinica.pe"));
+        citaEn(medico, LocalDateTime.of(2026, 3, 2, 9, 0), "ATENDIDA");
+        citaEn(medico, LocalDateTime.of(2026, 3, 20, 9, 0), "CANCELADA");
+        citaEn(medico, LocalDateTime.of(2026, 3, 31, 23, 30), "ATENDIDA");
+        citaEn(medico, LocalDateTime.of(2026, 7, 1, 0, 0), "PENDIENTE");
+        // Otro año: no debe sumarse
+        citaEn(medico, LocalDateTime.of(2025, 3, 10, 9, 0), "ATENDIDA");
+        em.flush();
+
+        List<Object[]> filas = cR.contarCitasPorMesYEstado(2026);
+
+        // Solo los meses con citas, en orden
+        assertEquals(2, filas.size());
+        assertMes(filas.get(0), 3, 2, 0, 1, 3);
+        assertMes(filas.get(1), 7, 0, 1, 0, 1);
+    }
+
+    @Test
+    void contarCitasPorMesYEstado_anioSinCitasDevuelveListaVacia() {
+        Usuarios medico = em.persist(usuario(rolMedico, null, "Luis", "Rojas", "luis@clinica.pe"));
+        citaEn(medico, LocalDateTime.of(2026, 3, 2, 9, 0), "ATENDIDA");
+        em.flush();
+
+        assertTrue(cR.contarCitasPorMesYEstado(2024).isEmpty());
+    }
+
+    @Test
+    void listarAniosConCitas_sinRepetirYDelMasReciente() {
+        Usuarios medico = em.persist(usuario(rolMedico, null, "Luis", "Rojas", "luis@clinica.pe"));
+        citaEn(medico, LocalDateTime.of(2025, 5, 2, 9, 0), "ATENDIDA");
+        citaEn(medico, LocalDateTime.of(2026, 1, 2, 9, 0), "ATENDIDA");
+        citaEn(medico, LocalDateTime.of(2026, 8, 2, 9, 0), "PENDIENTE");
+        em.flush();
+
+        assertEquals(List.of(2026, 2025), cR.listarAniosConCitas());
+    }
+
+    private void citaEn(Usuarios medico, LocalDateTime fecha, String estado) {
+        em.persist(new Citas(0, paciente, medico, fecha, 0, estado));
+    }
+
+    private void assertMes(Object[] fila, int mes, long atendidas, long pendientes,
+                           long canceladas, long total) {
+        assertEquals(mes, ((Number) fila[0]).intValue());
+        assertEquals(atendidas, ((Number) fila[1]).longValue());
+        assertEquals(pendientes, ((Number) fila[2]).longValue());
+        assertEquals(canceladas, ((Number) fila[3]).longValue());
+        assertEquals(total, ((Number) fila[4]).longValue());
+    }
+
     private Especialidades especialidad(String nombre) {
         Especialidades especialidad = new Especialidades();
         especialidad.setNombre(nombre);

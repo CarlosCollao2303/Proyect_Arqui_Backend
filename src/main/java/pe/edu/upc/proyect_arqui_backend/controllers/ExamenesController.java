@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.CantidadExamenesDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.ExamenPendienteDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.ExamenesDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.TiempoExamenDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Examenes;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
@@ -93,6 +94,31 @@ public class ExamenesController {
     @GetMapping("/pendientes")
     public ResponseEntity<List<ExamenPendienteDTO>> pendientes() {
         return ResponseEntity.ok(eS.listarExamenesPendientes());
+    }
+
+    // Reporte para el grafico combinado: examenes con resultado y pendientes (barras apiladas)
+    // y dias promedio hasta el resultado (linea), por tipo de examen.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/tiempo-entrega")
+    public ResponseEntity<List<TiempoExamenDTO>> tiempoEntregaPorTipo() {
+        List<TiempoExamenDTO> lista = eS.obtenerTiempoEntregaPorTipo()
+                .stream()
+                .map(item -> {
+                    TiempoExamenDTO dto = new TiempoExamenDTO();
+
+                    dto.setTipoExamen((String) item[0]);
+                    dto.setSolicitados(((Number) item[1]).longValue());
+                    dto.setConResultado(((Number) item[2]).longValue());
+                    dto.setPendientes(((Number) item[3]).longValue());
+                    // Sin examenes con resultado los dias llegan null
+                    dto.setDiasPromedio(item[4] != null ? ((Number) item[4]).doubleValue() : null);
+                    dto.setDiasMaximo(item[5] != null ? ((Number) item[5]).doubleValue() : null);
+
+                    return dto;
+                })
+                .toList();
+
+        return ResponseEntity.ok(lista);
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")

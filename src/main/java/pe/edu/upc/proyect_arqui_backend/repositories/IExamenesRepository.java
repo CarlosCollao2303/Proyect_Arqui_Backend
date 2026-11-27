@@ -63,4 +63,24 @@ public interface IExamenesRepository extends JpaRepository<Examenes, Integer> {
             "WHERE e.fechaResultado IS NULL " +
             "ORDER BY e.fechaSolicitud ASC")
     List<ExamenPendienteDTO> listarExamenesPendientes();
+
+    // Dias entre la solicitud y el resultado. Se restan los EPOCH (segundos) de cada fecha
+    // porque funciona igual en PostgreSQL y en H2; restar las fechas directo da un INTERVAL
+    // distinto en cada base.
+    String DIAS_ENTREGA = "(EXTRACT(EPOCH FROM e.fecha_resultado) - EXTRACT(EPOCH FROM e.fecha_solicitud)) / 86400";
+
+    // Reporte: tiempo de entrega de cada tipo de examen. Los dias solo salen de los examenes
+    // con resultado (en los pendientes la resta da NULL y AVG/MAX la ignoran); si ningun examen
+    // del tipo tiene resultado, los dias salen NULL y ese tipo va al final.
+    // Cada fila: [tipo de examen, solicitados, con resultado, pendientes, dias promedio, dias maximo]
+    @Query(value = "SELECT e.tipo_examen AS tipo, " +
+            " COUNT(*) AS solicitados, " +
+            " SUM(CASE WHEN e.fecha_resultado IS NOT NULL THEN 1 ELSE 0 END) AS con_resultado, " +
+            " SUM(CASE WHEN e.fecha_resultado IS NULL THEN 1 ELSE 0 END) AS pendientes, " +
+            " ROUND(AVG(CAST(" + DIAS_ENTREGA + " AS DECIMAL(10, 2))), 1) AS dias_promedio, " +
+            " ROUND(MAX(CAST(" + DIAS_ENTREGA + " AS DECIMAL(10, 2))), 1) AS dias_maximo " +
+            " FROM examenes e " +
+            " GROUP BY e.tipo_examen " +
+            " ORDER BY dias_promedio DESC NULLS LAST, tipo ASC", nativeQuery = true)
+    List<Object[]> obtenerTiempoEntregaPorTipo();
 }

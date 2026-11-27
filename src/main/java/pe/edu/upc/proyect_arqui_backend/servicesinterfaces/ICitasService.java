@@ -25,4 +25,6 @@ public interface ICitasService {
     public List<CitaMedicoDTO> listarCitasDelMedico(String correoMedico, String estado, LocalDate inicio, LocalDate fin);
     public List<Object[]> contarCitasPorEspecialidadYEstado();
     public List<Object[]> obtenerEsperaPromedioPorMedico();
+    public List<Object[]> contarCitasPorMesYEstado(int anio);
+    public List<Integer> listarAniosConCitas();
 }

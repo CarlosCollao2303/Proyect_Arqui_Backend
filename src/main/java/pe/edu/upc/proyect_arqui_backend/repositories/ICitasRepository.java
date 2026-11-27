@@ -151,4 +151,24 @@ public interface ICitasRepository extends JpaRepository<Citas, Integer> {
             " GROUP BY m.id_usuario, m.nombres, m.apellidos, e.nombre " +
             " ORDER BY espera_promedio DESC, medico ASC", nativeQuery = true)
     List<Object[]> obtenerEsperaPromedioPorMedico();
+
+    // Reporte: citas de cada mes del año pedido, separadas por estado. Los meses sin citas
+    // no salen aqui; el controller los completa en cero para que el grafico tenga los 12.
+    // Cada fila: [mes (1-12), atendidas, pendientes, canceladas, total]
+    @Query(value = "SELECT EXTRACT(MONTH FROM c.fecha_hora_programada) AS mes, " +
+            " SUM(CASE WHEN c.estado = 'ATENDIDA' THEN 1 ELSE 0 END) AS atendidas, " +
+            " SUM(CASE WHEN c.estado = 'PENDIENTE' THEN 1 ELSE 0 END) AS pendientes, " +
+            " SUM(CASE WHEN c.estado = 'CANCELADA' THEN 1 ELSE 0 END) AS canceladas, " +
+            " COUNT(*) AS total " +
+            " FROM citas c " +
+            " WHERE EXTRACT(YEAR FROM c.fecha_hora_programada) = :anio " +
+            " GROUP BY EXTRACT(MONTH FROM c.fecha_hora_programada) " +
+            " ORDER BY mes", nativeQuery = true)
+    List<Object[]> contarCitasPorMesYEstado(@Param("anio") int anio);
+
+    // Años que tienen al menos una cita, del mas reciente al mas antiguo (para el selector del reporte)
+    @Query(value = "SELECT DISTINCT CAST(EXTRACT(YEAR FROM c.fecha_hora_programada) AS INTEGER) AS anio " +
+            " FROM citas c " +
+            " ORDER BY anio DESC", nativeQuery = true)
+    List<Integer> listarAniosConCitas();
 }

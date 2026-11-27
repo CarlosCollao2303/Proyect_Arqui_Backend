@@ -21,6 +21,7 @@ import pe.edu.upc.proyect_arqui_backend.dtos.CitaMedicoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitaPacienteDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitasDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.CitasEspecialidadDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.CitasMesDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.EsperaMedicoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.VideollamadaDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
@@ -39,6 +40,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -217,6 +219,41 @@ public class CitasController {
                 .toList();
 
         return ResponseEntity.ok(lista);
+    }
+
+    // Reporte para el grafico combinado: citas de cada mes por estado (barras apiladas) y
+    // porcentaje de cancelacion (linea). Siempre devuelve los 12 meses, los vacios en cero.
+    // Sin el parametro anio usa el año actual.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/evolucion-mensual")
+    public ResponseEntity<List<CitasMesDTO>> evolucionMensual(@RequestParam(required = false) Integer anio) {
+        int anioReporte = anio != null ? anio : LocalDate.now().getYear();
+        if (anioReporte < 2000 || anioReporte > 2100) {
+            throw new BadRequestException("El año debe estar entre 2000 y 2100");
+        }
+
+        List<CitasMesDTO> meses = new ArrayList<>();
+        for (int mes = 1; mes <= 12; mes++) {
+            meses.add(new CitasMesDTO(mes));
+        }
+
+        for (Object[] item : cS.contarCitasPorMesYEstado(anioReporte)) {
+            CitasMesDTO dto = meses.get(((Number) item[0]).intValue() - 1);
+
+            dto.setAtendidas(((Number) item[1]).longValue());
+            dto.setPendientes(((Number) item[2]).longValue());
+            dto.setCanceladas(((Number) item[3]).longValue());
+            dto.setTotal(((Number) item[4]).longValue());
+        }
+
+        return ResponseEntity.ok(meses);
+    }
+
+    // Años con citas, para elegir cual ver en el reporte de evolucion mensual.
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/anios-con-citas")
+    public ResponseEntity<List<Integer>> aniosConCitas() {
+        return ResponseEntity.ok(cS.listarAniosConCitas());
     }
 
     @PreAuthorize("hasAuthority('MEDICO')")
