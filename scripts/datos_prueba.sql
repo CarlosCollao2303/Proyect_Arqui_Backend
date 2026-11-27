@@ -1,10 +1,11 @@
 -- =====================================================================
 -- Datos de prueba para SaludCerca (BD_Proyect_Arqui_Backend)
 --
--- Ejecutar desde la raiz del backend con el backend ya iniciado al menos una
--- vez (crea las tablas y los roles ADMIN=1, MEDICO=2, PACIENTE=3):
---   psql -U postgres -h localhost -d BD_Proyect_Arqui_Backend -v ON_ERROR_STOP=1 -f scripts/datos_prueba.sql
--- No se ejecuta solo al arrancar: Spring Boot solo carga data.sql/schema.sql.
+-- En local se carga solo: con APP_PREPARAR_BD_LOCAL=true en el .env de la raiz,
+-- el backend lo ejecuta al arrancar si la base no tiene usuarios (DatosPruebaInitializer).
+-- Para cargarlo a mano, con el backend ya iniciado al menos una vez (crea las tablas
+-- y los roles ADMIN=1, MEDICO=2, PACIENTE=3):
+--   psql -U postgres -h localhost -d bd_proyect_arqui_backend -v ON_ERROR_STOP=1 -f scripts/datos_prueba.sql
 --
 -- Solo se carga sobre una base sin datos (aparte de los roles). Todo va en
 -- una transaccion: si algo falla no queda nada a medias.
