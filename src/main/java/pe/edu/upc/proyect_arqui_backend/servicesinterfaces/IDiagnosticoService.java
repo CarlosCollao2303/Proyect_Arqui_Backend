@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesinterfaces;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.DiagnosticoFrecuenteDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Diagnostico;
 
 import java.util.List;
@@ -13,4 +14,5 @@ public interface IDiagnosticoService {
     public Optional<Diagnostico> listId(int id);
     public List<Diagnostico> listByCodigoCie10(String codigoCie10);
     public List<Diagnostico> listByDescripcion(String descripcion);
+    public List<DiagnosticoFrecuenteDTO> listarDiagnosticosFrecuentes();
 }

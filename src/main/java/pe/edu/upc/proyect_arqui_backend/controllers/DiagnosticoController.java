@@ -2,6 +2,7 @@ package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
 import pe.edu.upc.proyect_arqui_backend.dtos.DiagnosticoDTO;
+import pe.edu.upc.proyect_arqui_backend.dtos.DiagnosticoFrecuenteDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.DetalleHistorial;
 import pe.edu.upc.proyect_arqui_backend.entities.Diagnostico;
 import pe.edu.upc.proyect_arqui_backend.exceptions.BadRequestException;
@@ -38,6 +39,12 @@ public class DiagnosticoController {
                 .toList();
 
         return ResponseEntity.ok(lista);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/Frecuentes")
+    public ResponseEntity<List<DiagnosticoFrecuenteDTO>> listarDiagnosticosFrecuentes() {
+        return ResponseEntity.ok(dS.listarDiagnosticosFrecuentes());
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")

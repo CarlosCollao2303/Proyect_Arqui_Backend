@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.DiagnosticoFrecuenteDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Diagnostico;
 import pe.edu.upc.proyect_arqui_backend.repositories.IDiagnosticoRepository;
 import pe.edu.upc.proyect_arqui_backend.servicesinterfaces.IDiagnosticoService;
@@ -50,5 +51,10 @@ public class DiagnosticoServiceImplement implements IDiagnosticoService {
     @Override
     public List<Diagnostico> listByDescripcion(String descripcion) {
         return dR.findByDescripcionContainingIgnoreCase(descripcion);
+    }
+
+    @Override
+    public List<DiagnosticoFrecuenteDTO> listarDiagnosticosFrecuentes() {
+        return dR.listarDiagnosticosFrecuentes();
     }
 }

@@ -235,6 +235,21 @@ class NotificacionesControllerTest {
     }
 
     @Test
+    void contarPorEstado_medico_200() throws Exception {
+        when(nS.contarNotificacionesPorEstado()).thenReturn(java.util.List.of(
+                new pe.edu.upc.proyect_arqui_backend.dtos.ConteoNotificacionesEstadoDTO("ENVIADO", 5L),
+                new pe.edu.upc.proyect_arqui_backend.dtos.ConteoNotificacionesEstadoDTO("FALLIDO", 2L)
+        ));
+
+        mockMvc.perform(get("/api/notificaciones/PorEstado").with(medico()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].estadoEnvio").value("ENVIADO"))
+                .andExpect(jsonPath("$[0].total").value(5))
+                .andExpect(jsonPath("$[1].estadoEnvio").value("FALLIDO"))
+                .andExpect(jsonPath("$[1].total").value(2));
+    }
+
+    @Test
     void enviarPorCita_paciente_403() throws Exception {
         mockMvc.perform(post("/api/notificaciones/EnviarPorCita").with(token("ana@mail.com", "PACIENTE"))
                         .contentType(MediaType.APPLICATION_JSON)

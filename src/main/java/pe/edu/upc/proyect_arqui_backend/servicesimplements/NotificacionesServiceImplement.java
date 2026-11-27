@@ -1,5 +1,6 @@
 package pe.edu.upc.proyect_arqui_backend.servicesimplements;
 
+import pe.edu.upc.proyect_arqui_backend.dtos.ConteoNotificacionesEstadoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.MensajeCitaDTO;
 import pe.edu.upc.proyect_arqui_backend.entities.Citas;
 import pe.edu.upc.proyect_arqui_backend.entities.Notificaciones;
@@ -29,6 +30,11 @@ public class NotificacionesServiceImplement implements INotificacionesService {
     public NotificacionesServiceImplement(INotificacionesRepository nR, ICorreoService correoService) {
         this.nR = nR;
         this.correoService = correoService;
+    }
+
+    @Override
+    public List<ConteoNotificacionesEstadoDTO> contarNotificacionesPorEstado() {
+        return nR.contarNotificacionesPorEstado();
     }
 
     @Override
