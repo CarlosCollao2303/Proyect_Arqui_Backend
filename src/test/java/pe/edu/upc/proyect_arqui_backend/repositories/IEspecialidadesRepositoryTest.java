@@ -67,6 +67,72 @@ class IEspecialidadesRepositoryTest {
         assertTrue(eR.findMedicosByEspecialidadId(pediatria.getIdEspecialidad()).isEmpty());
     }
 
+    // ---- Reporte de medicos por especialidad ----
+
+    @Test
+    void contarMedicosPorEspecialidad_separaActivosEInactivosYSoloCuentaMedicos() {
+        em.persist(usuario(rolMedico, cardio, "Luis", "Rojas", "luis@clinica.pe", true));
+        em.persist(usuario(rolMedico, cardio, "Eva", "Diaz", "eva@clinica.pe", true));
+        em.persist(usuario(rolMedico, cardio, "Inactivo", "Perez", "perez@clinica.pe", false));
+        em.persist(usuario(rolPaciente, cardio, "No", "Medico", "pac@mail.com", true));
+        em.flush();
+
+        List<Object[]> filas = eR.contarMedicosPorEspecialidad();
+
+        Object[] cardiologia = fila(filas, "Cardiologia");
+        assertEquals(cardio.getIdEspecialidad(), ((Number) cardiologia[0]).intValue());
+        assertEquals(2L, ((Number) cardiologia[2]).longValue());
+        assertEquals(1L, ((Number) cardiologia[3]).longValue());
+        assertEquals(3L, ((Number) cardiologia[4]).longValue());
+        // La especialidad con mas medicos activos va primero
+        assertEquals("Cardiologia", filas.get(0)[1]);
+    }
+
+    @Test
+    void contarMedicosPorEspecialidad_incluyeEspecialidadesSinMedicosEnCero() {
+        em.persist(usuario(rolMedico, cardio, "Luis", "Rojas", "luis@clinica.pe", true));
+        em.flush();
+
+        Object[] ped = fila(eR.contarMedicosPorEspecialidad(), "Pediatria");
+
+        assertEquals(0L, ((Number) ped[2]).longValue());
+        assertEquals(0L, ((Number) ped[3]).longValue());
+        assertEquals(0L, ((Number) ped[4]).longValue());
+    }
+
+    @Test
+    void contarMedicosPorEspecialidad_agrupaLosMedicosSinEspecialidad() {
+        em.persist(usuario(rolMedico, null, "Sin", "Asignar", "sin@clinica.pe", true));
+        em.persist(usuario(rolPaciente, null, "Otro", "Paciente", "otro@mail.com", true));
+        em.flush();
+
+        List<Object[]> filas = eR.contarMedicosPorEspecialidad();
+        Object[] sinEspecialidad = fila(filas, "Sin especialidad");
+
+        assertEquals(3, filas.size());
+        assertEquals(null, sinEspecialidad[0]);
+        assertEquals(1L, ((Number) sinEspecialidad[2]).longValue());
+        assertEquals(1L, ((Number) sinEspecialidad[4]).longValue());
+    }
+
+    @Test
+    void contarMedicosPorEspecialidad_sinMedicosSinEspecialidadNoAgregaEsaFila() {
+        em.persist(usuario(rolMedico, cardio, "Luis", "Rojas", "luis@clinica.pe", true));
+        em.flush();
+
+        List<Object[]> filas = eR.contarMedicosPorEspecialidad();
+
+        assertEquals(2, filas.size());
+        assertTrue(filas.stream().noneMatch(f -> "Sin especialidad".equals(f[1])));
+    }
+
+    private Object[] fila(List<Object[]> filas, String especialidad) {
+        return filas.stream()
+                .filter(f -> especialidad.equals(f[1]))
+                .findFirst()
+                .orElseThrow();
+    }
+
     private Especialidades especialidad(String nombre) {
         Especialidades e = new Especialidades();
         e.setNombre(nombre);
