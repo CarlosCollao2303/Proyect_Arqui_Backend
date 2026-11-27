@@ -1,6 +1,7 @@
 package pe.edu.upc.proyect_arqui_backend.controllers;
 
 import jakarta.validation.Valid;
+import pe.edu.upc.proyect_arqui_backend.dtos.ConteoNotificacionesEstadoDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.MensajeCitaDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.NotificacionCitaDTO;
 import pe.edu.upc.proyect_arqui_backend.dtos.NotificacionesDTO;
@@ -50,6 +51,12 @@ public class NotificacionesController {
                 .toList();
 
         return ResponseEntity.ok(lista);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
+    @GetMapping("/PorEstado")
+    public ResponseEntity<List<ConteoNotificacionesEstadoDTO>> contarPorEstado() {
+        return ResponseEntity.ok(nS.contarNotificacionesPorEstado());
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MEDICO')")
