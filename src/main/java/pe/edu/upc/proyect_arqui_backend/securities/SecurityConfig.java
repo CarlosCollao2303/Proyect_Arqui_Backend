@@ -59,10 +59,15 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Origen permitido: aplicación Angular
+        // Origenes permitidos: desarrollo local, Firebase Hosting y patrones generales
         configuration.setAllowedOrigins(
-                List.of("http://localhost:4200")
+                List.of(
+                        "http://localhost:4200",
+                        "https://saludcerca-front-carlos.web.app",
+                        "https://saludcerca-front-carlos.firebaseapp.com"
+                )
         );
+        configuration.setAllowedOriginPatterns(List.of("*"));
 
         // Métodos HTTP permitidos
         configuration.setAllowedMethods(
