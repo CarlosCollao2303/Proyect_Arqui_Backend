@@ -299,7 +299,9 @@ FROM (VALUES
     (65, 14, 7, '2026-08-03 17:00', 7,  'ATENDIDA'),
     (66, 11, 4, '2026-08-12 10:00', 0,  'CANCELADA'),
     (67, 15, 3, '2026-08-19 10:00', 10, 'ATENDIDA'),
-    (68, 12, 5, '2026-08-26 11:00', 23, 'ATENDIDA')
+    (68, 12, 5, '2026-08-26 11:00', 23, 'ATENDIDA'),
+    -- Cita del paciente del equipo (Daniel Orellana) para probar "Notificar cita por correo"
+    (69, 20, 2, '2026-12-02 10:00', 0,  'PENDIENTE')
 ) AS v(id, paciente, medico, fecha, espera, estado);
 
 -- ---------------------------------------------------------------------
