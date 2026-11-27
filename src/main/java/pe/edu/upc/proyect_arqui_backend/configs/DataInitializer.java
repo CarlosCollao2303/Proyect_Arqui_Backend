@@ -2,6 +2,7 @@ package pe.edu.upc.proyect_arqui_backend.configs;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import pe.edu.upc.proyect_arqui_backend.entities.Roles;
@@ -12,7 +13,9 @@ import pe.edu.upc.proyect_arqui_backend.repositories.IUsuariosRepository;
 // Crea al arrancar los roles que usan los @PreAuthorize (si no existen) y, si se
 // configuran app.admin.correo y app.admin.password, el primer usuario ADMIN.
 // Sin esto nadie podria llegar a ser ADMIN: el registro publico siempre da PACIENTE.
+// @Order(1): corre antes que DatosPruebaInitializer, que necesita los roles.
 @Component
+@Order(1)
 public class DataInitializer implements CommandLineRunner {
 
     private final IRolesRepository rR;

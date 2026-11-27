@@ -1,16 +1,20 @@
 -- =====================================================================
 -- Datos de prueba para SaludCerca (BD_Proyect_Arqui_Backend)
 --
--- Ejecutar desde la raiz del backend con el backend ya iniciado al menos una
--- vez (crea las tablas y los roles ADMIN=1, MEDICO=2, PACIENTE=3):
---   psql -U postgres -h localhost -d BD_Proyect_Arqui_Backend -v ON_ERROR_STOP=1 -f scripts/datos_prueba.sql
--- No se ejecuta solo al arrancar: Spring Boot solo carga data.sql/schema.sql.
+-- En local se carga solo: con APP_PREPARAR_BD_LOCAL=true en el .env de la raiz,
+-- el backend lo ejecuta al arrancar si la base no tiene usuarios (DatosPruebaInitializer).
+-- Para cargarlo a mano, con el backend ya iniciado al menos una vez (crea las tablas
+-- y los roles ADMIN=1, MEDICO=2, PACIENTE=3):
+--   psql -U postgres -h localhost -d bd_proyect_arqui_backend -v ON_ERROR_STOP=1 -f scripts/datos_prueba.sql
 --
 -- Solo se carga sobre una base sin datos (aparte de los roles). Todo va en
 -- una transaccion: si algo falla no queda nada a medias.
 --
 -- Accesos (Guia_prueba_seguridad_SaludCerca):
 --   ADMIN    admin@saludcerca.pe      / Admin123
+--   ADMIN    correos del equipo (javier.27.29.24, carlos.collao.quiroz,
+--            fabianaqr09 @gmail.com) / Admin123
+--   PACIENTE danielorellanagutierrez@gmail.com / Admin123 (con una cita pendiente)
 --   MEDICO   cmendoza@saludcerca.test / 123456   (y los demas medicos)
 --   PACIENTE jperez@saludcerca.test   / 123456   (y los demas pacientes)
 -- El admin tiene los mismos datos que crea DataInitializer con
@@ -87,7 +91,17 @@ INSERT INTO usuarios (id_usuario, rol_id, especialidad_id, nombres, apellidos, d
     (15, 3, NULL, 'Mateo', 'Herrera Campos', '81236547', '953147852', 'mherrera@saludcerca.test',
         '$2a$10$2BicHckmY6v9yYeHjYjazex.fc6xzqY2XrdbGmZUS/Lc7CzReMNVO', NULL, 'Junín', true),
     (16, 3, NULL, 'Elena', 'Silva Cárdenas', '76321458', '954785214', 'esilva@saludcerca.test',
-        '$2a$10$2BicHckmY6v9yYeHjYjazex.fc6xzqY2XrdbGmZUS/Lc7CzReMNVO', NULL, 'Ica', false);
+        '$2a$10$2BicHckmY6v9yYeHjYjazex.fc6xzqY2XrdbGmZUS/Lc7CzReMNVO', NULL, 'Ica', false),
+    -- ADMIN del equipo (contrasena "Admin123", igual que el admin del sistema)
+    (17, 1, NULL, 'Javier', 'Ramos', '00000001', '000000001', 'javier.27.29.24@gmail.com',
+        '$2a$10$tnGts.pyX0bLP8XeD5p9hOu2XUr6ExN7oIooGo1i4Bu3G2jOEABzq', NULL, NULL, true),
+    (18, 1, NULL, 'Carlos', 'Collao Quiroz', '00000002', '000000002', 'carlos.collao.quiroz@gmail.com',
+        '$2a$10$tnGts.pyX0bLP8XeD5p9hOu2XUr6ExN7oIooGo1i4Bu3G2jOEABzq', NULL, NULL, true),
+    (19, 1, NULL, 'Fabiana', 'Quintana', '00000003', '000000003', 'fabianaqr09@gmail.com',
+        '$2a$10$tnGts.pyX0bLP8XeD5p9hOu2XUr6ExN7oIooGo1i4Bu3G2jOEABzq', NULL, NULL, true),
+    -- PACIENTE del equipo (contrasena "Admin123"): tiene la cita 69 para probar el envio de correos
+    (20, 3, NULL, 'Daniel', 'Orellana Gutiérrez', '00000004', '000000004', 'danielorellanagutierrez@gmail.com',
+        '$2a$10$tnGts.pyX0bLP8XeD5p9hOu2XUr6ExN7oIooGo1i4Bu3G2jOEABzq', NULL, 'Lima', true);
 
 -- ---------------------------------------------------------------------
 -- Historias clinicas (Mateo Herrera, id 15, queda sin historia a proposito)
@@ -286,7 +300,9 @@ FROM (VALUES
     (65, 14, 7, '2026-08-03 17:00', 7,  'ATENDIDA'),
     (66, 11, 4, '2026-08-12 10:00', 0,  'CANCELADA'),
     (67, 15, 3, '2026-08-19 10:00', 10, 'ATENDIDA'),
-    (68, 12, 5, '2026-08-26 11:00', 23, 'ATENDIDA')
+    (68, 12, 5, '2026-08-26 11:00', 23, 'ATENDIDA'),
+    -- Cita del paciente del equipo (Daniel Orellana) para probar "Notificar cita por correo"
+    (69, 20, 2, '2026-12-02 10:00', 0,  'PENDIENTE')
 ) AS v(id, paciente, medico, fecha, espera, estado);
 
 -- ---------------------------------------------------------------------
